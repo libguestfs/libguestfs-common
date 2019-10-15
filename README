@@ -1,0 +1,6 @@
+This is a git module which contains common code shared between
+libguestfs and the tools.  It is referenced as a submodule from here:
+
+https://github.com/libguestfs/libguestfs
+https://github.com/libguestfs/guestfs-tools
+https://github.com/libguestfs/virt-v2v
