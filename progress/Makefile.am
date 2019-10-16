@@ -33,5 +33,4 @@ libprogress_la_CFLAGS = \
 	$(LIBTINFO_CFLAGS)
 libprogress_la_LIBADD = \
 	$(top_builddir)/common/utils/libutils.la \
-	$(top_builddir)/lib/libguestfs.la \
 	$(LIBTINFO_LIBS)

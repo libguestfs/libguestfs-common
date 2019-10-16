@@ -31,5 +31,4 @@ libedit_la_CPPFLAGS = \
 libedit_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS)
 libedit_la_LIBADD = \
-	$(top_builddir)/common/utils/libutils.la \
-	$(top_builddir)/lib/libguestfs.la
+	$(top_builddir)/common/utils/libutils.la

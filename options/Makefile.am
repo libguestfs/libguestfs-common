@@ -44,7 +44,6 @@ liboptions_la_CFLAGS = \
 	$(LIBXML2_CFLAGS)
 liboptions_la_LIBADD = \
 	$(top_builddir)/common/utils/libutils.la \
-	$(top_builddir)/lib/libguestfs.la \
 	$(LIBCONFIG_LIBS) \
 	$(LIBXML2_LIBS) \
 	$(LTLIBINTL)
