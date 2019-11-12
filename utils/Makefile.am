@@ -20,7 +20,6 @@ include $(top_srcdir)/subdir-rules.mk
 noinst_LTLIBRARIES = libutils.la
 
 libutils_la_SOURCES = \
-	../../lib/guestfs.h \
 	cleanups.c \
 	cleanups.h \
 	gnulib-cleanups.c \
