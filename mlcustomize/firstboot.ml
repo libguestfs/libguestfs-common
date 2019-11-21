@@ -307,7 +307,7 @@ for %%%%f in (\"%%scripts%%\"\\*.bat) do (
 )
 
 echo uninstalling firstboot service
-%s -s firstboot uninstall
+\"%%firstboot%%\\%s\" -s firstboot uninstall
 " firstboot_dir_win srvany in
 
     g#write (firstboot_dir // "firstboot.bat")
