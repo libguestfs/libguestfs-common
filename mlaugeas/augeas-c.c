@@ -1,5 +1,5 @@
 /* Augeas OCaml bindings
- * Copyright (C) 2008-2019 Red Hat Inc., Richard W.M. Jones
+ * Copyright (C) 2008-2017 Red Hat Inc., Richard W.M. Jones
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,8 @@
 #include <caml/callback.h>
 #include <caml/custom.h>
 
+#include <stdbool.h>
+
 #ifdef __GNUC__
   #define NORETURN __attribute__ ((noreturn))
 #else
@@ -37,15 +39,20 @@
 
 extern CAMLprim value ocaml_augeas_create (value rootv, value loadpathv, value flagsv);
 extern CAMLprim value ocaml_augeas_close (value tv);
+extern CAMLprim value ocaml_augeas_defnode (value tv, value namev, value exprv, value valv);
+extern CAMLprim value ocaml_augeas_defvar (value tv, value namev, value exprv);
 extern CAMLprim value ocaml_augeas_get (value tv, value pathv);
 extern CAMLprim value ocaml_augeas_exists (value tv, value pathv);
 extern CAMLprim value ocaml_augeas_insert (value tv, value beforev, value pathv, value labelv);
+extern CAMLprim value ocaml_augeas_label (value tv, value pathv);
+extern CAMLprim value ocaml_augeas_mv (value tv, value srcv, value destv);
 extern CAMLprim value ocaml_augeas_rm (value tv, value pathv);
 extern CAMLprim value ocaml_augeas_match (value tv, value pathv);
 extern CAMLprim value ocaml_augeas_count_matches (value tv, value pathv);
 extern CAMLprim value ocaml_augeas_save (value tv);
 extern CAMLprim value ocaml_augeas_load (value tv);
 extern CAMLprim value ocaml_augeas_set (value tv, value pathv, value valuev);
+extern CAMLprim value ocaml_augeas_setm (value tv, value basev, value subv, value valv);
 extern CAMLprim value ocaml_augeas_transform (value tv, value lensv, value filev, value modev);
 extern CAMLprim value ocaml_augeas_source (value tv, value pathv)
 #ifndef HAVE_AUG_SOURCE
@@ -73,21 +80,28 @@ static const int error_map[] = {
 };
 static const int error_map_len = sizeof error_map / sizeof error_map[0];
 
-/* Raise an Augeas.Error exception. */
+/* Raise an Augeas.Error exception, and optionally close the
+ * specified handle.
+ */
 static void
-raise_error (augeas_t t, const char *msg)
+raise_error_and_maybe_close (augeas_t t, const char *msg, bool close_handle)
 {
-  value *exn = caml_named_value ("Augeas.Error");
-  value args[4];
+  const value *exn = caml_named_value ("Augeas.Error");
+  value args[5];
   const int code = aug_error (t);
+  const char *aug_err_msg;
   const char *aug_err_minor;
   const char *aug_err_details;
   int ocaml_code = -1;
   int i;
 
-  if (code == AUG_ENOMEM)
+  if (code == AUG_ENOMEM) {
+    if (close_handle)
+      aug_close (t);
     caml_raise_out_of_memory ();
+  }
 
+  aug_err_msg = aug_error_message (t);
   aug_err_minor = aug_error_minor_message (t);
   aug_err_details = aug_error_details (t);
 
@@ -104,25 +118,40 @@ raise_error (augeas_t t, const char *msg)
     Store_field (args[0], 0, Val_int (code));
   }
   args[1] = caml_copy_string (msg);
-  args[2] = caml_copy_string (aug_err_minor ? : "");
-  args[3] = caml_copy_string (aug_err_details ? : "");
+  args[2] = caml_copy_string (aug_err_msg);
+  args[3] = caml_copy_string (aug_err_minor ? : "");
+  args[4] = caml_copy_string (aug_err_details ? : "");
 
-  caml_raise_with_args (*exn, 4, args);
+  if (close_handle)
+    aug_close (t);
+
+  caml_raise_with_args (*exn, 5, args);
 }
+#define raise_error(t, msg) raise_error_and_maybe_close(t, msg, false)
 
 static void
 raise_init_error (const char *msg)
 {
-  value *exn = caml_named_value ("Augeas.Error");
-  value args[4];
+  const value *exn = caml_named_value ("Augeas.Error");
+  value args[5];
 
   args[0] = caml_alloc (1, 0);
   Store_field (args[0], 0, Val_int (-1));
   args[1] = caml_copy_string (msg);
-  args[2] = caml_copy_string ("augeas initialization failed");
-  args[3] = caml_copy_string ("");
+  args[2] = caml_copy_string ("aug_init failed");
+  args[3] = caml_copy_string ("augeas initialization failed");
+  args[4] = caml_copy_string ("");
 
-  caml_raise_with_args (*exn, 4, args);
+  caml_raise_with_args (*exn, 5, args);
+}
+
+static const char *
+Optstring_val (value strv)
+{
+  if (strv == Val_int (0))      /* None */
+    return NULL;
+  else                          /* Some string */
+    return String_val (Field (strv, 0));
 }
 
 /* Map OCaml flags to C flags. */
@@ -133,6 +162,10 @@ static const int flag_map[] = {
   /* AugNoStdinc */    AUG_NO_STDINC,
   /* AugSaveNoop */    AUG_SAVE_NOOP,
   /* AugNoLoad */      AUG_NO_LOAD,
+  /* AugNoModlAutoload */ AUG_NO_MODL_AUTOLOAD,
+  /* AugEnableSpan */  AUG_ENABLE_SPAN,
+  /* AugNoErrClose */  AUG_NO_ERR_CLOSE,
+  /* AugTraceModuleLoading */ AUG_TRACE_MODULE_LOADING,
 };
 
 /* Wrap and unwrap augeas_t handles, with a finalizer. */
@@ -180,15 +213,9 @@ ocaml_augeas_create (value rootv, value loadpathv, value flagsv)
 {
   CAMLparam1 (rootv);
   const char *root = String_val (rootv);
-  const char *loadpath;
+  const char *loadpath = Optstring_val (loadpathv);
   int flags = 0, i;
   augeas_t t;
-
-  /* Optional loadpath. */
-  loadpath =
-    loadpathv == Val_int (0)
-    ? NULL
-    : String_val (Field (loadpathv, 0));
 
   /* Convert list of flags to C. */
   for (; flagsv != Val_int (0); flagsv = Field (flagsv, 1)) {
@@ -196,10 +223,15 @@ ocaml_augeas_create (value rootv, value loadpathv, value flagsv)
     flags |= flag_map[i];
   }
 
-  t = aug_init (root, loadpath, flags);
+  /* Pass AUG_NO_ERR_CLOSE so we raise a detailed Augeas.Error. */
+  t = aug_init (root, loadpath, flags | AUG_NO_ERR_CLOSE);
 
   if (t == NULL)
     raise_init_error ("Augeas.create");
+
+  if (aug_error (t) != AUG_NOERROR) {
+    raise_error_and_maybe_close (t, "Augeas.init", true);
+  }
 
   CAMLreturn (Val_augeas_t (t));
 }
@@ -217,6 +249,56 @@ ocaml_augeas_close (value tv)
   }
 
   CAMLreturn (Val_unit);
+}
+
+/* val defnode : t -> string -> string -> string option -> int * bool */
+CAMLprim value
+ocaml_augeas_defnode (value tv, value namev, value exprv, value valv)
+{
+  CAMLparam4 (tv, namev, exprv, valv);
+  CAMLlocal2 (optv, v);
+  augeas_t t = Augeas_t_val (tv);
+  const char *name = String_val (namev);
+  const char *expr = String_val (exprv);
+  const char *val = Optstring_val (valv);
+  int r, created;
+
+  r = aug_defnode (t, name, expr, val, &created);
+  if (r == -1) {
+    raise_error (t, "Augeas.defnode");
+  }
+
+  v = caml_alloc (2, 0);
+  Store_field (v, 0, Val_int (r));
+  Store_field (v, 1, Val_bool (created));
+
+  CAMLreturn (v);
+}
+
+/* val defvar : t -> string -> string option -> int option */
+CAMLprim value
+ocaml_augeas_defvar (value tv, value namev, value exprv)
+{
+  CAMLparam3 (tv, namev, exprv);
+  CAMLlocal2 (optv, v);
+  augeas_t t = Augeas_t_val (tv);
+  const char *name = String_val (namev);
+  const char *expr = Optstring_val (exprv);
+  int r;
+
+  r = aug_defvar (t, name, expr);
+  if (r > 0) {		/* Return Some val */
+    v = Val_int (r);
+    optv = caml_alloc (1, 0);
+    Field (optv, 0) = v;
+  } else if (r == 0)	/* Return None */
+    optv = Val_int (0);
+  else if (r == -1)		/* Error or multiple matches */
+    raise_error (t, "Augeas.defvar");
+  else
+    caml_failwith ("Augeas.defvar: bad return value");
+
+  CAMLreturn (optv);
 }
 
 /* val get : t -> path -> value option */
@@ -263,7 +345,7 @@ ocaml_augeas_exists (value tv, value pathv)
   else if (r == -1)		/* Error or multiple matches */
     raise_error (t, "Augeas.exists");
   else
-    failwith ("Augeas.exists: bad return value");
+    caml_failwith ("Augeas.exists: bad return value");
 
   CAMLreturn (v);
 }
@@ -282,6 +364,47 @@ ocaml_augeas_insert (value tv, value beforev, value pathv, value labelv)
 
   if (aug_insert (t, path, label, before) == -1)
     raise_error (t, "Augeas.insert");
+
+  CAMLreturn (Val_unit);
+}
+
+/* val label : t -> path -> string option */
+CAMLprim value
+ocaml_augeas_label (value tv, value pathv)
+{
+  CAMLparam2 (tv, pathv);
+  CAMLlocal2 (optv, v);
+  augeas_t t = Augeas_t_val (tv);
+  const char *path = String_val (pathv);
+  const char *val;
+  int r;
+
+  r = aug_label (t, path, &val);
+  if (r == 1 && val) {		/* Return Some val */
+    v = caml_copy_string (val);
+    optv = caml_alloc (1, 0);
+    Field (optv, 0) = v;
+  } else if (r == 0 || !val)	/* Return None */
+    optv = Val_int (0);
+  else if (r == -1)		/* Error or multiple matches */
+    raise_error (t, "Augeas.label");
+  else
+    caml_failwith ("Augeas.label: bad return value");
+
+  CAMLreturn (optv);
+}
+
+/* val mv : t -> path -> path -> unit */
+CAMLprim value
+ocaml_augeas_mv (value tv, value srcv, value destv)
+{
+  CAMLparam3 (tv, srcv, destv);
+  augeas_t t = Augeas_t_val (tv);
+  const char *src = String_val (srcv);
+  const char *dest = String_val (destv);
+
+  if (aug_mv (t, src, dest) == -1)
+    raise_error (t, "Augeas.mv");
 
   CAMLreturn (Val_unit);
 }
@@ -382,17 +505,30 @@ ocaml_augeas_set (value tv, value pathv, value valuev)
   CAMLparam3 (tv, pathv, valuev);
   augeas_t t = Augeas_t_val (tv);
   const char *path = String_val (pathv);
-  const char *val;
-
-  val =
-    valuev == Val_int (0)
-    ? NULL
-    : String_val (Field (valuev, 0));
+  const char *val = Optstring_val (valuev);
 
   if (aug_set (t, path, val) == -1)
     raise_error (t, "Augeas.set");
 
   CAMLreturn (Val_unit);
+}
+
+/* val setm : t -> path -> string option -> value option -> int */
+CAMLprim value
+ocaml_augeas_setm (value tv, value basev, value subv, value valv)
+{
+  CAMLparam4 (tv, basev, subv, valv);
+  augeas_t t = Augeas_t_val (tv);
+  const char *base = String_val (basev);
+  const char *sub = Optstring_val (subv);
+  const char *val = Optstring_val (valv);
+  int r;
+
+  r = aug_setm (t, base, sub, val);
+  if (r == -1)
+    raise_error (t, "Augeas.setm");
+
+  CAMLreturn (Val_int (r));
 }
 
 /* val transform : t -> string -> string -> transform_mode -> unit */

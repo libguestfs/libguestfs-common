@@ -27,6 +27,10 @@ type flag =
   | AugNoStdinc
   | AugSaveNoop
   | AugNoLoad
+  | AugNoModlAutoload
+  | AugEnableSpan
+  | AugNoErrClose
+  | AugTraceModuleLoading
 
 type error_code =
   | AugErrInternal
@@ -48,7 +52,7 @@ type transform_mode =
   | Include
   | Exclude
 
-exception Error of error_code * string * string * string
+exception Error of error_code * string * string * string * string
 
 type path = string
 
@@ -58,12 +62,18 @@ external create : string -> string option -> flag list -> t
   = "ocaml_augeas_create"
 external close : t -> unit
   = "ocaml_augeas_close"
+external defnode : t -> string -> string -> string option -> int * bool
+  = "ocaml_augeas_defnode"
+external defvar : t -> string -> string option -> int option
+  = "ocaml_augeas_defvar"
 external get : t -> path -> value option
   = "ocaml_augeas_get"
 external exists : t -> path -> bool
   = "ocaml_augeas_exists"
 external insert : t -> ?before:bool -> path -> string -> unit
   = "ocaml_augeas_insert"
+external label : t -> path -> string option
+  = "ocaml_augeas_label"
 external rm : t -> path -> int
   = "ocaml_augeas_rm"
 external matches : t -> path -> path list
@@ -74,12 +84,16 @@ external save : t -> unit
   = "ocaml_augeas_save"
 external load : t -> unit
   = "ocaml_augeas_load"
+external mv : t -> path -> path -> unit
+  = "ocaml_augeas_mv"
 external set : t -> path -> value option -> unit
   = "ocaml_augeas_set"
+external setm : t -> path -> string option -> value option -> int
+  = "ocaml_augeas_setm"
 external transform : t -> string -> string -> transform_mode -> unit
   = "ocaml_augeas_transform"
 external source : t -> path -> path option
   = "ocaml_augeas_source"
 
 let () =
-  Callback.register_exception "Augeas.Error" (Error (AugErrInternal, "", "", ""))
+  Callback.register_exception "Augeas.Error" (Error (AugErrInternal, "", "", "", ""))

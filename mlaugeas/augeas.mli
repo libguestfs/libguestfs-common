@@ -28,6 +28,10 @@ type flag =
   | AugNoStdinc
   | AugSaveNoop
   | AugNoLoad
+  | AugNoModlAutoload
+  | AugEnableSpan
+  | AugNoErrClose
+  | AugTraceModuleLoading
   (** Flags passed to the {!create} function. *)
 
 type error_code =
@@ -52,11 +56,12 @@ type transform_mode =
   | Exclude
   (** The operation mode for the {!transform} function. *)
 
-exception Error of error_code * string * string * string
+exception Error of error_code * string * string * string * string
   (** This exception is thrown when the underlying Augeas library
       returns an error.  The tuple represents:
       - the Augeas error code
       - the ocaml-augeas error string
+      - the Augeas error message
       - the human-readable explanation of the Augeas error, if available
       - a string with details of the Augeas error
    *)
@@ -90,6 +95,15 @@ val close : t -> unit
 
       Do not use the handle after closing it. *)
 
+val defnode : t -> string -> string -> string option -> int * bool
+  (** [defnode t name expr value] defines [name] whose value is the
+      result of evaluating [expr], which is a nodeset. *)
+
+val defvar : t -> string -> string option -> int option
+  (** [defvar t name expr] defines [name] whose value is the result
+      of evaluating [expr], replacing the old value if existing.
+      [None] as [expr] removes the variable [name]. *)
+
 val get : t -> path -> value option
   (** [get t path] returns the value at [path], or [None] if there
       is no value. *)
@@ -102,6 +116,12 @@ val insert : t -> ?before:bool -> path -> string -> unit
       of [path].  By default it is inserted after [path], unless
       [~before:true] is specified. *)
 
+val label : t -> path -> string option
+  (** [label t path] gets the label of [path].
+
+      Returns [Some value] when [path] matches only one node, and
+      that has an associated label. *)
+
 val rm : t -> path -> int
   (** [rm t path] removes all nodes matching [path].
 
@@ -110,6 +130,9 @@ val rm : t -> path -> int
 val matches : t -> path -> path list
   (** [matches t path] returns a list of path expressions
       of all nodes matching [path]. *)
+
+val mv : t -> path -> path -> unit
+  (** [mv t src dest] moves a node. *)
 
 val count_matches : t -> path -> int
   (** [count_matches t path] counts the number of nodes matching
@@ -123,6 +146,13 @@ val load : t -> unit
 
 val set : t -> path -> value option -> unit
   (** [set t path] sets [value] as new value at [path]. *)
+
+val setm : t -> path -> string option -> value option -> int
+  (** [setm t base sub value] sets [value] as new value for all the
+      nodes under [base] that match [sub] (or all, if [sub] is
+      [None]).
+
+      Returns the number of nodes modified. *)
 
 val transform : t -> string -> string -> transform_mode -> unit
   (** [transform t lens file mode] adds or removes (depending on
