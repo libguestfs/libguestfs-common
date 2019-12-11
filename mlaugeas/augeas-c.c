@@ -18,7 +18,7 @@
  * $Id: augeas_c.c,v 1.1 2008/05/06 10:48:20 rjones Exp $
  */
 
-#include "config.h"
+//#include "config.h"
 
 #include <augeas.h>
 
