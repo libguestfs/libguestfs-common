@@ -19,8 +19,11 @@ include $(top_srcdir)/subdir-rules.mk
 
 EXTRA_DIST = \
 	$(SOURCES_MLI) \
-	$(SOURCES_ML) \
+	$(filter-out $(CONFIGURE_GENERATED_ML),$(SOURCES_ML)) \
 	std_utils_tests.ml
+
+CONFIGURE_GENERATED_ML = \
+	guestfs_config.ml
 
 SOURCES_MLI =
 
@@ -41,7 +44,7 @@ SOURCES_ML += bytes.ml
 endif
 
 SOURCES_ML += \
-	guestfs_config.ml \
+	$(CONFIGURE_GENERATED_ML) \
 	stringMap.ml \
 	stringSet.ml \
 	std_utils.ml
