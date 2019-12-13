@@ -18,11 +18,74 @@
 include $(top_srcdir)/subdir-rules.mk
 
 EXTRA_DIST = \
-	$(generator_built)
+	$(generator_built) \
+	$(SOURCES_MLI) \
+	$(SOURCES_ML) \
+	$(SOURCES_C)
 
-# Note: These are not compiled into a library.  They are used directly
-# by virt-v2v and are only located here because the files are
-# generated (since the split).
 generator_built = \
 	uefi.mli \
 	uefi.ml
+
+SOURCES_MLI = \
+	uefi.mli
+
+SOURCES_ML = \
+	uefi.ml
+
+SOURCES_C = \
+	dummy.c
+
+# We pretend that we're building a C library.  automake handles the
+# compilation of the C sources for us.  At the end we take the C
+# objects and OCaml objects and link them into the OCaml library.
+# This C library is never used.
+
+noinst_LIBRARIES = libmlv2v.a
+
+if !HAVE_OCAMLOPT
+MLV2V_CMA = mlv2v.cma
+else
+MLV2V_CMA = mlv2v.cmxa
+endif
+
+noinst_DATA = $(MLV2V_CMA)
+
+libmlv2v_a_SOURCES = $(SOURCES_C)
+libmlv2v_a_CPPFLAGS = \
+	-DCAML_NAME_SPACE \
+	-I. \
+	-I$(top_builddir) \
+	-I$(shell $(OCAMLC) -where)
+libmlv2v_a_CFLAGS = \
+	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
+	-fPIC
+
+BOBJECTS = $(SOURCES_ML:.ml=.cmo)
+XOBJECTS = $(BOBJECTS:.cmo=.cmx)
+
+OCAMLPACKAGES = \
+	-package str,unix \
+	-I $(builddir)
+OCAMLPACKAGES_TESTS = $(MLV2V_CMA)
+
+OCAMLFLAGS = $(OCAML_FLAGS) $(OCAML_WARN_ERROR) -ccopt '$(CFLAGS)'
+
+if !HAVE_OCAMLOPT
+OBJECTS = $(BOBJECTS)
+else
+OBJECTS = $(XOBJECTS)
+endif
+
+libmlv2v_a_DEPENDENCIES = $(OBJECTS)
+
+$(MLV2V_CMA): $(OBJECTS) libmlv2v.a
+	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	    $(OBJECTS) $(libmlv2v_a_OBJECTS) -o mlv2v
+
+# OCaml dependencies.
+.depend: $(srcdir)/*.mli $(srcdir)/*.ml
+	$(top_builddir)/ocaml-dep.sh $^
+-include .depend
+
+.PHONY: docs

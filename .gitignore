@@ -60,6 +60,7 @@ Makefile.in
 /mlutils/.depend
 /mlutils/c_utils_unit_tests
 /mlutils/oUnit-*
+/mlv2v/.depend
 /mlvisit/.depend
 /mlvisit/visit_tests
 /mlxml/.depend
