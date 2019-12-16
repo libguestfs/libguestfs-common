@@ -38,8 +38,6 @@ Makefile.in
 /mlcustomize/test-firstboot-*.sh
 /mlgettext/.depend
 /mlgettext/common_gettext.ml
-/mllibvirt/.depend
-/mllibvirt/libvirt_c.c
 /mlpcre/.depend
 /mlpcre/pcre_tests
 /mlprogress/.depend
