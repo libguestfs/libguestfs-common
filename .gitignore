@@ -33,7 +33,6 @@ Makefile.in
 /errnostring/errnostring-gperf.c
 /errnostring/errnostring-gperf.gperf
 /errnostring/errnostring.h
-/mlaugeas/.depend
 /mlcustomize/.depend
 /mlcustomize/test-firstboot-*.sh
 /mlgettext/.depend
