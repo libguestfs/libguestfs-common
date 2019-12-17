@@ -25,4 +25,4 @@ set -x
 $TEST_FUNCTIONS
 skip_if_skipped
 
-$PYTHON parse_tools_messages_test.py
+$PYTHON "$srcdir/parse_tools_messages_test.py"
