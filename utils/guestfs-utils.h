@@ -36,17 +36,12 @@
 
 #include "guestfs-internal-all.h"
 #include "cleanups.h"
+#include "guestfs-stringlists-utils.h"
 
 #define _(str) dgettext(PACKAGE, (str))
 #define N_(str) dgettext(PACKAGE, (str))
 
 /* utils.c */
-extern void guestfs_int_free_string_list (char **);
-extern size_t guestfs_int_count_strings (char *const *);
-extern char *guestfs_int_concat_strings (char *const *);
-extern char **guestfs_int_copy_string_list (char *const *);
-extern char *guestfs_int_join_strings (const char *sep, char *const *);
-extern char **guestfs_int_split_string (char sep, const char *);
 extern char *guestfs_int_replace_string (const char *str, const char *s1, const char *s2);
 extern char *guestfs_int_exit_status_to_string (int status, const char *cmd_name, char *buffer, size_t buflen);
 extern int guestfs_int_random_string (char *ret, size_t len);

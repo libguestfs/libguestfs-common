@@ -23,9 +23,11 @@ libutils_la_SOURCES = \
 	cleanups.c \
 	cleanups.h \
 	gnulib-cleanups.c \
+	guestfs-stringlists-utils.h \
 	guestfs-utils.h \
 	libxml2-cleanups.c \
 	libxml2-writer-macros.h \
+	stringlists-utils.c \
 	utils.c
 libutils_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
