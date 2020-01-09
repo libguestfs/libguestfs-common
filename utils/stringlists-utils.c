@@ -23,7 +23,9 @@
  * such as C<safe_*>, C<error> or C<perrorf>, or any C<guestfs_int_*>.
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
