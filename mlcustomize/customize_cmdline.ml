@@ -481,6 +481,7 @@ let rec argspec () =
     ] in
     let lines = read_whole_file filename in
     let lines = String.lines_split lines in
+    let lines = List.map String.triml lines in
     let lines = List.filter (
       fun line ->
         String.length line > 0 && line.[0] <> '#'
