@@ -49,7 +49,8 @@
  * Handle the guestfish I<-a> option on the command line.
  */
 void
-option_a (const char *arg, const char *format, struct drv **drvsp)
+option_a (const char *arg, const char *format, int blocksize,
+          struct drv **drvsp)
 {
   struct uri uri;
   struct drv *drv;
@@ -69,6 +70,7 @@ option_a (const char *arg, const char *format, struct drv **drvsp)
     drv->type = drv_a;
     drv->a.filename = uri.path;
     drv->a.format = format;
+    drv->a.blocksize = blocksize;
 
     free (uri.protocol);
   }
@@ -82,6 +84,7 @@ option_a (const char *arg, const char *format, struct drv **drvsp)
     drv->uri.password = uri.password;
     drv->uri.format = format;
     drv->uri.orig_uri = arg;
+    drv->uri.blocksize = blocksize;
   }
 
   drv->next = *drvsp;
@@ -137,6 +140,10 @@ add_drives_handle (guestfs_h *g, struct drv *drv, size_t drive_index)
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_DISCARD_BITMASK;
         ad_optargs.discard = drv->a.discard;
       }
+      if (drv->a.blocksize) {
+        ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK;
+        ad_optargs.blocksize = drv->a.blocksize;
+      }
 
       r = guestfs_add_drive_opts_argv (g, drv->a.filename, &ad_optargs);
       if (r == -1)
@@ -169,6 +176,10 @@ add_drives_handle (guestfs_h *g, struct drv *drv, size_t drive_index)
       if (drv->uri.password) {
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_SECRET_BITMASK;
         ad_optargs.secret = drv->uri.password;
+      }
+      if (drv->uri.blocksize) {
+        ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK;
+        ad_optargs.blocksize = drv->uri.blocksize;
       }
 
       r = guestfs_add_drive_opts_argv (g, drv->uri.path, &ad_optargs);

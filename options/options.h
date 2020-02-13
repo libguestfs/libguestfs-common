@@ -65,6 +65,7 @@ struct drv {
       const char *format;   /* format (NULL == autodetect) */
       const char *cachemode;/* cachemode (NULL == default) */
       const char *discard;  /* discard (NULL == disable) */
+      int blocksize;        /* blocksize (0 == default) */
     } a;
     struct {
       char *path;           /* disk path */
@@ -74,6 +75,7 @@ struct drv {
       char *password;       /* password - can be NULL */
       const char *format;   /* format (NULL == autodetect) */
       const char *orig_uri; /* original URI (for error messages etc.) */
+      int blocksize;        /* blocksize (0 == default) */
     } uri;
     struct {
       char *guest;          /* guest name */
@@ -156,7 +158,7 @@ extern struct key_store *key_store_import_key (struct key_store *ks, const struc
 extern void free_key_store (struct key_store *ks);
 
 /* in options.c */
-extern void option_a (const char *arg, const char *format, struct drv **drvsp);
+extern void option_a (const char *arg, const char *format, int blocksize, struct drv **drvsp);
 extern void option_d (const char *arg, struct drv **drvsp);
 extern char add_drives_handle (guestfs_h *g, struct drv *drv, size_t drive_index);
 #define add_drives(drv) add_drives_handle (g, drv, 0)
@@ -164,16 +166,18 @@ extern void mount_mps (struct mp *mp);
 extern void free_drives (struct drv *drv);
 extern void free_mps (struct mp *mp);
 
-#define OPTION_a                                \
-  do {                                          \
-  option_a (optarg, format, &drvs);             \
-  format_consumed = true;                       \
+#define OPTION_a                                  \
+  do {                                            \
+    option_a (optarg, format, blocksize, &drvs);  \
+    format_consumed = true;                       \
+    blocksize_consumed = true;                    \
   } while (0)
 
-#define OPTION_A                                \
-  do {                                          \
-    option_a (optarg, format, &drvs2);          \
-    format_consumed = true;                     \
+#define OPTION_A                                  \
+  do {                                            \
+    option_a (optarg, format, blocksize, &drvs2); \
+    format_consumed = true;                       \
+    blocksize_consumed = true;                    \
   } while (0)
 
 #define OPTION_c                                \
@@ -192,6 +196,15 @@ extern void free_mps (struct mp *mp);
     else                                        \
       format = optarg;                          \
     format_consumed = false;                    \
+  } while (0)
+
+#define OPTION_blocksize                                               \
+  do {                                                                 \
+    if (!optarg || STREQ (optarg, ""))                                 \
+      blocksize = 0;                                                   \
+    else if (sscanf (optarg, "%d", &blocksize) != 1)                   \
+      error (EXIT_FAILURE, 0, _("--blocksize option is not numeric")); \
+    blocksize_consumed = false;                                        \
   } while (0)
 
 #define OPTION_i                                \
@@ -262,6 +275,16 @@ extern void free_mps (struct mp *mp);
     if (!format_consumed) {                                             \
       fprintf (stderr,                                                  \
                _("%s: --format parameter must appear before -a parameter\n"), \
+               getprogname ());                                         \
+      exit (EXIT_FAILURE);                                              \
+    }                                                                   \
+  } while (0)
+
+#define CHECK_OPTION_blocksize_consumed                                 \
+  do {                                                                  \
+    if (!blocksize_consumed) {                                          \
+      fprintf (stderr,                                                  \
+               _("%s: --blocksize parameter must appear before -a parameter\n"), \
                getprogname ());                                         \
       exit (EXIT_FAILURE);                                              \
     }                                                                   \

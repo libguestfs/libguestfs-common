@@ -18,7 +18,8 @@
 include $(top_srcdir)/subdir-rules.mk
 
 EXTRA_DIST = \
-	key-option.pod
+	key-option.pod \
+	blocksize-option.pod
 
 # liboptions.la contains guestfish code which is used in other
 # C tools for options parsing and a few other things
