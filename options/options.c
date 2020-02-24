@@ -140,10 +140,12 @@ add_drives_handle (guestfs_h *g, struct drv *drv, size_t drive_index)
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_DISCARD_BITMASK;
         ad_optargs.discard = drv->a.discard;
       }
+#ifdef GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK
       if (drv->a.blocksize) {
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK;
         ad_optargs.blocksize = drv->a.blocksize;
       }
+#endif
 
       r = guestfs_add_drive_opts_argv (g, drv->a.filename, &ad_optargs);
       if (r == -1)
@@ -177,10 +179,12 @@ add_drives_handle (guestfs_h *g, struct drv *drv, size_t drive_index)
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_SECRET_BITMASK;
         ad_optargs.secret = drv->uri.password;
       }
+#ifdef GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK
       if (drv->uri.blocksize) {
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK;
         ad_optargs.blocksize = drv->uri.blocksize;
       }
+#endif
 
       r = guestfs_add_drive_opts_argv (g, drv->uri.path, &ad_optargs);
       if (r == -1)
