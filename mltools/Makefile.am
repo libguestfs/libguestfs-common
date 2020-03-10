@@ -103,7 +103,9 @@ libmltools_a_CPPFLAGS = \
 	-I$(top_srcdir)/common/mlutils
 libmltools_a_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
-	$(LIBVIRT_CFLAGS) $(LIBXML2_CFLAGS) \
+	$(LIBVIRT_CFLAGS) \
+	$(LIBXML2_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS) \
 	$(JANSSON_CFLAGS) \
 	-fPIC
 

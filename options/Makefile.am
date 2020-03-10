@@ -45,7 +45,8 @@ liboptions_la_CPPFLAGS = \
 liboptions_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	$(LIBCONFIG_CFLAGS) \
-	$(LIBXML2_CFLAGS)
+	$(LIBXML2_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS)
 liboptions_la_LIBADD = \
 	$(top_builddir)/common/utils/libutils.la \
 	$(LIBCONFIG_LIBS) \
