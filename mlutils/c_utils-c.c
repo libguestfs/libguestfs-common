@@ -29,7 +29,6 @@
 #include <caml/mlvalues.h>
 #include <caml/unixsupport.h>
 
-#include "guestfs.h"
 #include "guestfs-utils.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"

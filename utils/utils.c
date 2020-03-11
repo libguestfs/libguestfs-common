@@ -46,7 +46,6 @@
 #include "ignore-value.h"
 
 /* NB: MUST NOT include "guestfs-internal.h". */
-#include "guestfs.h"
 #include "guestfs-utils.h"
 
 /**
