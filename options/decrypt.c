@@ -65,10 +65,8 @@ make_mapname (const char *device, char *mapname, size_t len)
 }
 
 /**
- * Simple implementation of decryption: look for any C<crypto_LUKS>
- * partitions and decrypt them, then rescan for VGs.  This only works
- * for Fedora whole-disk encryption.  WIP to make this work for other
- * encryption schemes.
+ * Simple implementation of decryption: look for any encrypted
+ * partitions and decrypt them, then rescan for VGs.
  */
 void
 inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
@@ -82,7 +80,8 @@ inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
 
   for (i = 0; partitions[i] != NULL; ++i) {
     CLEANUP_FREE char *type = guestfs_vfs_type (g, partitions[i]);
-    if (type && STREQ (type, "crypto_LUKS")) {
+    if (type &&
+        (STREQ (type, "crypto_LUKS") || STREQ (type, "BitLocker"))) {
       char mapname[32];
       make_mapname (partitions[i], mapname, sizeof mapname);
 

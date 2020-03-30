@@ -195,9 +195,8 @@ val is_btrfs_subvolume : Guestfs.guestfs -> string -> bool
 (** Checks if a filesystem is a btrfs subvolume. *)
 
 val inspect_decrypt : Guestfs.guestfs -> key_store -> unit
-(** Simple implementation of decryption: look for any [crypto_LUKS]
-    partitions and decrypt them, then rescan for VGs.  This only works
-    for Fedora whole-disk encryption. *)
+(** Simple implementation of decryption: look for any encrypted
+    partitions and decrypt them, then rescan for VGs. *)
 
 val with_timeout : string -> int -> ?sleep:int -> (unit -> 'a option) -> 'a
 (** [with_timeout op timeout ?sleep fn] implements a timeout loop.
