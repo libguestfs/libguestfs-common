@@ -97,11 +97,15 @@ inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
 
       /* Try each key in turn. */
       for (j = 0; keys[j] != NULL; ++j) {
-        /* XXX Should we call guestfs_luks_open_ro if readonly flag
+        /* XXX Should we set GUESTFS_CRYPTSETUP_OPEN_READONLY if readonly
          * is set?  This might break 'mount_ro'.
          */
         guestfs_push_error_handler (g, NULL, NULL);
+#ifdef GUESTFS_HAVE_CRYPTSETUP_OPEN
+        r = guestfs_cryptsetup_open (g, partitions[i], keys[j], mapname, -1);
+#else
         r = guestfs_luks_open (g, partitions[i], keys[j], mapname);
+#endif
         guestfs_pop_error_handler (g);
         if (r == 0)
           goto opened;
