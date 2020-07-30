@@ -19,6 +19,7 @@ include $(top_srcdir)/subdir-rules.mk
 
 EXTRA_DIST = \
 	key-option.pod \
+	keys-from-stdin-option.pod \
 	blocksize-option.pod
 
 # liboptions.la contains guestfish code which is used in other
