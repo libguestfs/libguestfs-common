@@ -21,7 +21,8 @@
 
 /* stringlists-utils.c */
 extern void guestfs_int_free_string_list (char **);
-extern size_t guestfs_int_count_strings (char *const *);
+extern size_t guestfs_int_count_strings (char *const *)
+  __attribute__((__nonnull__ (1)));
 extern char *guestfs_int_concat_strings (char *const *);
 extern char **guestfs_int_copy_string_list (char *const *);
 extern char *guestfs_int_join_strings (const char *sep, char *const *);
