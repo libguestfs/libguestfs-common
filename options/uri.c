@@ -194,6 +194,7 @@ parse (const char *arg, char **path_ret, char **protocol_ret,
   if (path && path[0] == '/' &&
       (STREQ (uri->scheme, "gluster") ||
        STREQ (uri->scheme, "iscsi") ||
+       STREQ (uri->scheme, "nbd") ||
        STREQ (uri->scheme, "rbd") ||
        STREQ (uri->scheme, "sheepdog")))
     path++;
