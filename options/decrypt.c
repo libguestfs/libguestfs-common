@@ -38,18 +38,18 @@
 
 /**
  * Make a LUKS map name from the partition name,
- * eg. C<"/dev/vda2" =E<gt> "luksvda2">
+ * eg. C<"/dev/vda2" =E<gt> "cryptvda2">
  */
 static void
 make_mapname (const char *device, char *mapname, size_t len)
 {
   size_t i = 0;
 
-  if (len < 5)
+  if (len < 6)
     abort ();
-  strcpy (mapname, "luks");
-  mapname += 4;
-  len -= 4;
+  strcpy (mapname, "crypt");
+  mapname += 5;
+  len -= 5;
 
   if (STRPREFIX (device, "/dev/"))
     i = 5;
