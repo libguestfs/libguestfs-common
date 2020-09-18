@@ -77,6 +77,7 @@ extern value guestfs_int_mllib_mkdtemp (value val_pattern);
 extern value guestfs_int_mllib_realpath (value pathv);
 extern value guestfs_int_mllib_statvfs_statvfs (value pathv);
 extern value guestfs_int_mllib_statvfs_is_network_filesystem (value pathv);
+extern value guestfs_int_mllib_sysconf_nr_processors_online (value unitv);
 
 /* NB: This is a "noalloc" call. */
 value
@@ -367,4 +368,18 @@ guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
 #else
   return Val_bool (0);
 #endif
+}
+
+/* NB: This is a "noalloc" call. */
+value
+guestfs_int_mllib_sysconf_nr_processors_online (value unitv)
+{
+#ifdef _SC_NPROCESSORS_ONLN
+  long n;
+
+  n = sysconf (_SC_NPROCESSORS_ONLN);
+  if (n > 0) return Val_int (n);
+#endif
+  /* Return a safe value so that callers don't need to deal with errors. */
+  return Val_int (1);
 }

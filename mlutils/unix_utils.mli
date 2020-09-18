@@ -121,3 +121,12 @@ module StatVFS : sig
   (** [is_network_filesystem path] returns true if [path] is located on
       a network filesystem such as NFS or CIFS. *)
 end
+
+module Sysconf : sig
+  val nr_processors_online : unit -> int
+  (** [nr_processors_online ()] returns the number of processors
+      currently online, from [sysconf (_SC_NPROCESSORS_ONLN)].
+
+      Note this never fails.  In case we cannot get the number of
+      cores it returns 1. *)
+end

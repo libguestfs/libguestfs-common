@@ -84,3 +84,8 @@ module StatVFS = struct
   external is_network_filesystem : string -> bool =
     "guestfs_int_mllib_statvfs_is_network_filesystem" "noalloc"
 end
+
+module Sysconf = struct
+  external nr_processors_online : unit -> int =
+    "guestfs_int_mllib_sysconf_nr_processors_online" "noalloc"
+end
