@@ -95,6 +95,7 @@ libmltools_a_CPPFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
 	-I$(top_srcdir)/common/utils \
 	-I$(top_srcdir)/lib \
+	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common/options \
 	-I$(top_srcdir)/common/mlgettext \
 	-I$(top_srcdir)/common/mlpcre \

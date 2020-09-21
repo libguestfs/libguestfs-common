@@ -32,13 +32,13 @@ EXTRA_DIST = \
 noinst_LTLIBRARIES = libstructs.la
 
 libstructs_la_SOURCES = \
-	../../lib/guestfs.h \
+	../../include/guestfs.h \
 	$(BUILT_SOURCES)
 libstructs_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
 	-DGUESTFS_PRIVATE=1 \
 	-I$(top_srcdir)/gnulib/lib -I$(top_builddir)/gnulib/lib \
-	-I$(top_srcdir)/lib -I$(top_builddir)/lib
+	-I$(top_srcdir)/include
 libstructs_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	$(GCC_VISIBILITY_HIDDEN)

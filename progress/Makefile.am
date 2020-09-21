@@ -27,7 +27,8 @@ libprogress_la_SOURCES = \
 libprogress_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
 	-I$(top_srcdir)/common/utils -I$(top_builddir)/common/utils \
-	-I$(top_srcdir)/lib -I$(top_builddir)/lib
+	-I$(top_srcdir)/lib -I$(top_builddir)/lib \
+	-I$(top_srcdir)/include
 libprogress_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	$(LIBTINFO_CFLAGS)

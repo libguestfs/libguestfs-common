@@ -32,9 +32,10 @@ libparallel_la_SOURCES = \
 libparallel_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
 	-I$(top_srcdir)/common/utils -I$(top_builddir)/common/utils \
+	-I$(top_srcdir)/gnulib/lib -I$(top_builddir)/gnulib/lib \
 	-I$(top_srcdir)/lib -I$(top_builddir)/lib \
-	-I$(top_srcdir)/common/options -I$(top_builddir)/common/options \
-	-I$(top_srcdir)/gnulib/lib -I$(top_builddir)/gnulib/lib
+	-I$(top_srcdir)/include \
+	-I$(top_srcdir)/common/options -I$(top_builddir)/common/options
 libparallel_la_CFLAGS = \
 	-pthread \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
