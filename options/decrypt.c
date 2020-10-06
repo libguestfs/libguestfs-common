@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <libintl.h>
 #include <error.h>
@@ -82,11 +83,19 @@ inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
     CLEANUP_FREE char *type = guestfs_vfs_type (g, partitions[i]);
     if (type &&
         (STREQ (type, "crypto_LUKS") || STREQ (type, "BitLocker"))) {
+      bool is_bitlocker = STREQ (type, "BitLocker");
       char mapname[32];
       make_mapname (partitions[i], mapname, sizeof mapname);
 
 #ifdef GUESTFS_HAVE_LUKS_UUID
-      CLEANUP_FREE char *uuid = guestfs_luks_uuid (g, partitions[i]);
+      CLEANUP_FREE char *uuid = NULL;
+
+      /* This fails for Windows BitLocker disks because cryptsetup
+       * luksUUID cannot read a UUID (unclear if this is a limitation
+       * of the format or cryptsetup).
+       */
+      if (!is_bitlocker)
+        uuid = guestfs_luks_uuid (g, partitions[i]);
 #else
       const char *uuid = NULL;
 #endif
