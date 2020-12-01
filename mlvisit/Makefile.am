@@ -56,7 +56,7 @@ libmlvisit_a_CPPFLAGS = \
 	-I$(top_builddir) \
 	-I$(top_srcdir)/gnulib/lib -I$(top_builddir)/gnulib/lib \
 	-I$(shell $(OCAMLC) -where) \
-	-I$(top_srcdir)/include \
+	$(INCLUDE_DIRECTORY) \
 	-I$(top_srcdir)/common/visit
 libmlvisit_a_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \

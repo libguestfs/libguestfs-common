@@ -38,7 +38,7 @@ libstructs_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
 	-DGUESTFS_PRIVATE=1 \
 	-I$(top_srcdir)/gnulib/lib -I$(top_builddir)/gnulib/lib \
-	-I$(top_srcdir)/include
+	$(INCLUDE_DIRECTORY)
 libstructs_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	$(GCC_VISIBILITY_HIDDEN)

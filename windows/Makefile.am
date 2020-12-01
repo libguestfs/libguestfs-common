@@ -29,7 +29,7 @@ libwindows_la_CPPFLAGS = \
 	-I$(top_srcdir)/common/utils -I$(top_builddir)/common/utils \
 	-I$(top_srcdir)/gnulib/lib -I$(top_builddir)/gnulib/lib \
 	-I$(top_srcdir)/lib -I$(top_builddir)/lib \
-	-I$(top_srcdir)/include
+	$(INCLUDE_DIRECTORY)
 libwindows_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS)
 libwindows_la_LIBADD = \
