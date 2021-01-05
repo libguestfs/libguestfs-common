@@ -58,6 +58,8 @@ is_windows (guestfs_h *g, const char *root)
   return w;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-null-argument"
 /**
  * Resolves C<path> as possible Windows path according to C<root>,
  * giving a new path that can be used in libguestfs API calls.
@@ -123,6 +125,7 @@ windows_path (guestfs_h *g, const char *root, const char *path, int readonly)
 
   return ret;
 }
+#pragma GCC diagnostic pop
 
 static void
 mount_drive_letter (guestfs_h *g, char drive_letter, const char *root,
