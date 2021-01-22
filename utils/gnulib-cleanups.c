@@ -65,17 +65,9 @@
 
 #include "guestfs-utils.h"
 
-#include "glthread/lock.h"
 #include "hash.h"
 
 /* Gnulib cleanups. */
-
-void
-guestfs_int_cleanup_gl_recursive_lock_unlock (void *ptr)
-{
-  gl_recursive_lock_t *lockp = * (gl_recursive_lock_t **) ptr;
-  gl_recursive_lock_unlock (*lockp);
-}
 
 void
 guestfs_int_cleanup_hash_free (void *ptr)

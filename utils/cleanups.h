@@ -24,8 +24,6 @@
   __attribute__((cleanup(guestfs_int_cleanup_free)))
 #define CLEANUP_HASH_FREE                                       \
   __attribute__((cleanup(guestfs_int_cleanup_hash_free)))
-#define CLEANUP_GL_RECURSIVE_LOCK_UNLOCK \
-  __attribute__((cleanup(guestfs_int_cleanup_gl_recursive_lock_unlock)))
 #define CLEANUP_UNLINK_FREE                                     \
   __attribute__((cleanup(guestfs_int_cleanup_unlink_free)))
 #define CLEANUP_CLOSE                                  \
@@ -53,7 +51,6 @@
 #else
 #define CLEANUP_FREE
 #define CLEANUP_HASH_FREE
-/* XXX no safe equivalent to CLEANUP_GL_RECURSIVE_LOCK_UNLOCK */
 #define CLEANUP_UNLINK_FREE
 #define CLEANUP_CLOSE
 #define CLEANUP_FCLOSE
@@ -73,7 +70,6 @@
  */
 extern void guestfs_int_cleanup_free (void *ptr);
 extern void guestfs_int_cleanup_hash_free (void *ptr);
-extern void guestfs_int_cleanup_gl_recursive_lock_unlock (void *ptr);
 extern void guestfs_int_cleanup_unlink_free (char **ptr);
 extern void guestfs_int_cleanup_close (void *ptr);
 extern void guestfs_int_cleanup_fclose (void *ptr);
