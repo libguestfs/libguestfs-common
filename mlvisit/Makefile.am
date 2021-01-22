@@ -128,13 +128,8 @@ visit_tests_LINK = \
 
 TESTS_ENVIRONMENT = $(top_builddir)/run --test
 
-check_PROGRAMS =
-TESTS =
-
-if ENABLE_APPLIANCE
-check_PROGRAMS += visit_tests
-TESTS += visit_tests
-endif
+check_PROGRAMS = visit_tests
+TESTS = visit_tests
 
 check-valgrind:
 	$(MAKE) VG="@VG@" check

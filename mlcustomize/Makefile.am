@@ -123,12 +123,7 @@ $(MLCUSTOMIZE_CMA): $(OBJECTS) libmlcustomize.a
 
 TESTS_ENVIRONMENT = $(top_builddir)/run --test
 
-TESTS =
-
-if ENABLE_APPLIANCE
-TESTS += \
-	$(SLOW_TESTS)
-endif
+TESTS = $(SLOW_TESTS)
 
 check-valgrind:
 	$(MAKE) VG="@VG@" check
