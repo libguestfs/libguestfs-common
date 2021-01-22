@@ -65,7 +65,3 @@ Makefile.in
 /protocol/guestfs_protocol.h
 /protocol/guestfs_protocol.x
 /qemuopts/qemuopts-tests
-/structs/structs-cleanups.c
-/structs/structs-cleanups.h
-/structs/structs-print.c
-/structs/structs-print.h
