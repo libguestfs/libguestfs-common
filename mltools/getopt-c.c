@@ -203,6 +203,9 @@ strtoint (const char *arg)
   return (int) num;
 }
 
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99193
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-mismatching-deallocation"
 value
 guestfs_int_mllib_getopt_parse (value argsv, value specsv, value anon_funv, value usage_msgv)
 {
@@ -433,3 +436,4 @@ guestfs_int_mllib_getopt_parse (value argsv, value specsv, value anon_funv, valu
 
   CAMLreturn (Val_unit);
 }
+#pragma GCC diagnostic pop
