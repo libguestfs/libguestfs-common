@@ -23,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include <pcre.h>
 
@@ -34,8 +35,6 @@
 #include <caml/mlvalues.h>
 
 #include "cleanups.h"
-
-#include "glthread/tls.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 
@@ -56,7 +55,7 @@ caml_alloc_initialized_string (mlsize_t len, const char *p)
  * variable.  It is freed either by the next call to PCRE.matches or
  * by (clean) thread exit.
  */
-static gl_tls_key_t last_match;
+static pthread_key_t last_match;
 
 struct last_match {
   char *subject;                /* subject string */
@@ -74,12 +73,22 @@ free_last_match (struct last_match *data)
   }
 }
 
-static void init (void) __attribute__((constructor));
+static void lm_init (void) __attribute__((constructor));
+static void lm_free (void) __attribute__((destructor));
 
 static void
-init (void)
+lm_init (void)
 {
-  gl_tls_key_init (last_match, (void (*) (void *))free_last_match);
+  int err;
+
+  err = pthread_key_create (&last_match, (void (*) (void *))free_last_match);
+  if (err != 0) abort ();
+}
+
+static void
+lm_free (void)
+{
+  pthread_key_delete (last_match);
 }
 
 /* Raises PCRE.error (msg, errcode). */
@@ -246,9 +255,9 @@ guestfs_int_pcre_matches (value offsetv, value rev, value strv)
    * to return a match.
    */
   if (r) {
-    oldm = gl_tls_get (last_match);
+    oldm = pthread_getspecific (last_match);
     free_last_match (oldm);
-    gl_tls_set (last_match, m);
+    pthread_setspecific (last_match, m);
   }
   else
     free_last_match (m);
@@ -264,7 +273,7 @@ guestfs_int_pcre_sub (value nv)
   CAMLlocal1 (strv);
   int len;
   CLEANUP_FREE char *str = NULL;
-  const struct last_match *m = gl_tls_get (last_match);
+  const struct last_match *m = pthread_getspecific (last_match);
 
   if (m == NULL)
     raise_pcre_error ("PCRE.sub called without calling PCRE.matches", 0);
@@ -290,7 +299,7 @@ guestfs_int_pcre_subi (value nv)
   CAMLparam1 (nv);
   const int n = Int_val (nv);
   CAMLlocal1 (rv);
-  const struct last_match *m = gl_tls_get (last_match);
+  const struct last_match *m = pthread_getspecific (last_match);
 
   if (m == NULL)
     raise_pcre_error ("PCRE.subi called without calling PCRE.matches", 0);

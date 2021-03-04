@@ -56,6 +56,7 @@ libmlpcre_a_CPPFLAGS = \
 	-I$(top_srcdir)/common/utils -I$(top_builddir)/common/utils \
 	-I$(shell $(OCAMLC) -where)
 libmlpcre_a_CFLAGS = \
+	-pthread \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	-fPIC
 
