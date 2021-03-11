@@ -116,7 +116,7 @@ visit_tests_DEPENDENCIES = \
 	$(top_srcdir)/ocaml-link.sh
 visit_tests_LINK = \
 	$(top_srcdir)/ocaml-link.sh \
-	  -cclib '-lvisit -lstructs -lutils $(LIBXML2_LIBS) -lgnu' -- \
+	  -cclib '-pthread -lpthread -lvisit -lstructs -lutils $(LIBXML2_LIBS)' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(visit_tests_THEOBJECTS) -o $@

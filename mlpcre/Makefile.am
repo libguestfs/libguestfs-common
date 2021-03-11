@@ -109,7 +109,7 @@ pcre_tests_DEPENDENCIES = \
 	$(top_srcdir)/ocaml-link.sh
 pcre_tests_LINK = \
 	$(top_srcdir)/ocaml-link.sh \
-	  -cclib '-lutils -lpcre -lgnu' -- \
+	  -cclib '-pthread -lpthread -lutils -lpcre -lgnu' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(pcre_tests_THEOBJECTS) -o $@

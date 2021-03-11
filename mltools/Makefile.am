@@ -276,7 +276,8 @@ getopt_tests_DEPENDENCIES = \
 	$(MLTOOLS_CMA) \
 	$(top_srcdir)/ocaml-link.sh
 getopt_tests_LINK = \
-	$(top_srcdir)/ocaml-link.sh -cclib '-lutils $(LIBXML2_LIBS) -lgnu' -- \
+	$(top_srcdir)/ocaml-link.sh \
+	  -cclib '-pthread -lpthread -lutils $(LIBXML2_LIBS) -lgnu' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(getopt_tests_THEOBJECTS) -o $@
@@ -315,7 +316,8 @@ machine_readable_tests_DEPENDENCIES = \
 	$(MLTOOLS_CMA) \
 	$(top_srcdir)/ocaml-link.sh
 machine_readable_tests_LINK = \
-	$(top_srcdir)/ocaml-link.sh -cclib '-lutils -lgnu' -- \
+	$(top_srcdir)/ocaml-link.sh \
+	  -cclib '-pthread -lpthread -lutils -lgnu' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(machine_readable_tests_THEOBJECTS) -o $@
@@ -328,7 +330,8 @@ tools_messages_tests_DEPENDENCIES = \
 	$(MLTOOLS_CMA) \
 	$(top_srcdir)/ocaml-link.sh
 tools_messages_tests_LINK = \
-	$(top_srcdir)/ocaml-link.sh -cclib '-lutils -lgnu' -- \
+	$(top_srcdir)/ocaml-link.sh \
+	  -cclib '-pthread -lpthread -lutils -lgnu' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(tools_messages_tests_THEOBJECTS) -o $@
