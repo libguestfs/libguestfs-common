@@ -32,7 +32,6 @@ EXTRA_DIST = \
 noinst_LTLIBRARIES = libstructs.la
 
 libstructs_la_SOURCES = \
-	../../include/guestfs.h \
 	$(BUILT_SOURCES)
 libstructs_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
