@@ -138,6 +138,8 @@ let () =
   with
   | Not_found ->
      failwith "one of the PCRE.sub functions unexpectedly raised Not_found"
+  | PCRE.Error (msg, 0) ->
+     failwith (sprintf "PCRE error: %s" msg)
   | PCRE.Error (msg, code) ->
      failwith (sprintf "PCRE error: %s (PCRE error code %d)" msg code)
 

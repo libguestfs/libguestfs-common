@@ -27,6 +27,7 @@ libutils_la_SOURCES = \
 	guestfs-utils.h \
 	libxml2-cleanups.c \
 	libxml2-writer-macros.h \
+	pcre2-cleanups.c \
 	stringlists-utils.c \
 	utils.c
 libutils_la_CPPFLAGS = \
@@ -37,4 +38,5 @@ libutils_la_CPPFLAGS = \
 libutils_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	$(GCC_VISIBILITY_HIDDEN) \
-	$(LIBXML2_CFLAGS)
+	$(LIBXML2_CFLAGS) \
+	$(PCRE2_CFLAGS)

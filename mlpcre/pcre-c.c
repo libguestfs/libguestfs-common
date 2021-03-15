@@ -25,7 +25,8 @@
 #include <assert.h>
 #include <pthread.h>
 
-#include <pcre.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 
 #include <caml/alloc.h>
 #include <caml/callback.h>
@@ -59,8 +60,8 @@ static pthread_key_t last_match;
 
 struct last_match {
   char *subject;                /* subject string */
-  int *vec;                     /* vector containing match offsets */
-  int r;                        /* value returned by pcre_exec */
+  pcre2_match_data *match_data; /* match offsets */
+  int r;                        /* value returned by pcre2_match */
 };
 
 static void
@@ -68,7 +69,7 @@ free_last_match (struct last_match *data)
 {
   if (data) {
     free (data->subject);
-    free (data->vec);
+    pcre2_match_data_free (data->match_data);
     free (data);
   }
 }
@@ -91,25 +92,39 @@ lm_free (void)
   pthread_key_delete (last_match);
 }
 
-/* Raises PCRE.error (msg, errcode). */
+/* Raises PCRE.error (errnum). */
 static void
-raise_pcre_error (const char *msg, int errcode)
+raise_pcre_error (int errnum)
+{
+  PCRE2_UCHAR err[256];
+  value args[2];
+
+  pcre2_get_error_message (errnum, err, sizeof err);
+
+  args[0] = caml_copy_string ((char *) err);
+  args[1] = Val_int (errnum);
+  caml_raise_with_args (*caml_named_value ("PCRE.Error"), 2, args);
+}
+
+/* Raises PCRE.error with a non-library error.  The code field will be 0. */
+static void
+raise_pcre_other_error (const char *msg)
 {
   value args[2];
 
   args[0] = caml_copy_string (msg);
-  args[1] = Val_int (errcode);
+  args[1] = Val_int (0);
   caml_raise_with_args (*caml_named_value ("PCRE.Error"), 2, args);
 }
 
 /* Wrap and unwrap pcre regular expression handles, with a finalizer. */
-#define Regexp_val(rv) (*(pcre **)Data_custom_val(rv))
+#define Regexp_val(rv) (*(pcre2_code **)Data_custom_val(rv))
 
 static void
 regexp_finalize (value rev)
 {
-  pcre *re = Regexp_val (rev);
-  if (re) pcre_free (re);
+  pcre2_code *re = Regexp_val (rev);
+  if (re) pcre2_code_free (re);
 }
 
 static struct custom_operations custom_operations = {
@@ -123,12 +138,12 @@ static struct custom_operations custom_operations = {
 };
 
 static value
-Val_regexp (pcre *re)
+Val_regexp (pcre2_code *re)
 {
   CAMLparam0 ();
   CAMLlocal1 (rv);
 
-  rv = caml_alloc_custom (&custom_operations, sizeof (pcre *), 0, 1);
+  rv = caml_alloc_custom (&custom_operations, sizeof (pcre2_code *), 0, 1);
   Regexp_val (rv) = re;
 
   CAMLreturn (rv);
@@ -158,28 +173,30 @@ guestfs_int_pcre_compile (value anchoredv, value caselessv, value dotallv,
 {
   CAMLparam5 (anchoredv, caselessv, dotallv, extendedv, multilinev);
   CAMLxparam1 (pattv);
+  const char *patt;
   int options = 0;
-  pcre *re;
+  pcre2_code *re;
   int errcode = 0;
-  const char *err;
-  int offset;
+  PCRE2_SIZE errnum;
 
   /* Flag parameters are all ‘bool option’, defaulting to false. */
   if (is_Some_true (anchoredv))
-    options |= PCRE_ANCHORED;
+    options |= PCRE2_ANCHORED;
   if (is_Some_true (caselessv))
-    options |= PCRE_CASELESS;
+    options |= PCRE2_CASELESS;
   if (is_Some_true (dotallv))
-    options |= PCRE_DOTALL;
+    options |= PCRE2_DOTALL;
   if (is_Some_true (extendedv))
-    options |= PCRE_EXTENDED;
+    options |= PCRE2_EXTENDED;
   if (is_Some_true (multilinev))
-    options |= PCRE_MULTILINE;
+    options |= PCRE2_MULTILINE;
 
-  re = pcre_compile2 (String_val (pattv), options,
-                      &errcode, &err, &offset, NULL);
+  patt = String_val (pattv);
+
+  re = pcre2_compile ((PCRE2_SPTR) patt, strlen (patt),
+                      options, &errcode, &errnum, NULL);
   if (re == NULL)
-    raise_pcre_error (err, errcode);
+    raise_pcre_error (errcode);
 
   CAMLreturn (Val_regexp (re));
 }
@@ -198,22 +215,10 @@ value
 guestfs_int_pcre_matches (value offsetv, value rev, value strv)
 {
   CAMLparam3 (offsetv, rev, strv);
-  pcre *re = Regexp_val (rev);
+  pcre2_code *re = Regexp_val (rev);
   struct last_match *m, *oldm;
   size_t len = caml_string_length (strv);
-  int capcount, r;
-  int veclen;
-
-  /* Calculate maximum number of substrings, and hence the vector
-   * length required.
-   */
-  r = pcre_fullinfo (re, NULL, PCRE_INFO_CAPTURECOUNT, (int *) &capcount);
-  /* I believe that errors should never occur because of OCaml
-   * type safety, so we should abort here.  If this ever happens
-   * we will need to look at it again.
-   */
-  assert (r == 0);
-  veclen = 3 * (1 + capcount);
+  int r;
 
   m = calloc (1, sizeof *m);
   if (m == NULL)
@@ -229,18 +234,20 @@ guestfs_int_pcre_matches (value offsetv, value rev, value strv)
   }
   memcpy (m->subject, String_val (strv), len+1);
 
-  m->vec = malloc (veclen * sizeof (int));
-  if (m->vec == NULL) {
+  /* Allocate the match_data. */
+  m->match_data = pcre2_match_data_create_from_pattern (re, NULL);
+  if (m->match_data == NULL) {
     free_last_match (m);
     caml_raise_out_of_memory ();
   }
 
-  m->r = pcre_exec (re, NULL, m->subject, len, Optint_val (offsetv, 0), 0,
-                    m->vec, veclen);
-  if (m->r < 0 && m->r != PCRE_ERROR_NOMATCH) {
+  m->r = pcre2_match (re, (PCRE2_SPTR) m->subject, len,
+                      Optint_val (offsetv, 0), 0,
+                      m->match_data, NULL);
+  if (m->r < 0 && m->r != PCRE2_ERROR_NOMATCH) {
     int ret = m->r;
     free_last_match (m);
-    raise_pcre_error ("pcre_exec", ret);
+    raise_pcre_error (ret);
   }
 
   /* This error would indicate that pcre_exec ran out of space in the
@@ -249,7 +256,7 @@ guestfs_int_pcre_matches (value offsetv, value rev, value strv)
    */
   assert (m->r != 0);
 
-  r = m->r != PCRE_ERROR_NOMATCH;
+  r = m->r != PCRE2_ERROR_NOMATCH;
 
   /* Replace the old TLS match data, but only if we're going
    * to return a match.
@@ -271,25 +278,37 @@ guestfs_int_pcre_sub (value nv)
   CAMLparam1 (nv);
   const int n = Int_val (nv);
   CAMLlocal1 (strv);
-  int len;
   CLEANUP_FREE char *str = NULL;
   const struct last_match *m = pthread_getspecific (last_match);
+  PCRE2_SIZE len;
+  int r;
 
   if (m == NULL)
-    raise_pcre_error ("PCRE.sub called without calling PCRE.matches", 0);
+    raise_pcre_other_error ("PCRE.sub called without calling PCRE.matches");
 
   if (n < 0)
     caml_invalid_argument ("PCRE.sub: n must be >= 0");
 
-  len = pcre_get_substring (m->subject, m->vec, m->r, n, (const char **) &str);
-
-  if (len == PCRE_ERROR_NOSUBSTRING)
+  r = pcre2_substring_length_bynumber (m->match_data, n, &len);
+  if (r == PCRE2_ERROR_NOSUBSTRING)
     caml_raise_not_found ();
+  if (r < 0)
+    raise_pcre_error (r);
 
-  if (len < 0)
-    raise_pcre_error ("pcre_get_substring", len);
+  strv = caml_alloc_string (len);
 
-  strv = caml_alloc_initialized_string (len, str);
+  /* This is fine.  OCaml allocates space for the trailing \0
+   * and pcre expects that the buffer will be large enough to
+   * store it.
+   */
+  len++;
+
+  r = pcre2_substring_copy_bynumber (m->match_data, n,
+                                     (PCRE2_UCHAR *) String_val (strv),
+                                     &len);
+  if (r < 0)
+    raise_pcre_error (r);
+
   CAMLreturn (strv);
 }
 
@@ -300,9 +319,10 @@ guestfs_int_pcre_subi (value nv)
   const int n = Int_val (nv);
   CAMLlocal1 (rv);
   const struct last_match *m = pthread_getspecific (last_match);
+  PCRE2_SIZE *vec;
 
   if (m == NULL)
-    raise_pcre_error ("PCRE.subi called without calling PCRE.matches", 0);
+    raise_pcre_other_error ("PCRE.subi called without calling PCRE.matches");
 
   if (n < 0)
     caml_invalid_argument ("PCRE.subi: n must be >= 0");
@@ -313,9 +333,11 @@ guestfs_int_pcre_subi (value nv)
   if (n >= m->r)
     caml_raise_not_found ();
 
+  vec = pcre2_get_ovector_pointer (m->match_data);
+
   rv = caml_alloc (2, 0);
-  Store_field (rv, 0, Val_int (m->vec[n*2]));
-  Store_field (rv, 1, Val_int (m->vec[n*2+1]));
+  Store_field (rv, 0, Val_int (vec[n*2]));
+  Store_field (rv, 1, Val_int (vec[n*2+1]));
 
   CAMLreturn (rv);
 }

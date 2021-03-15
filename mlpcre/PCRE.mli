@@ -45,9 +45,8 @@ exception Error of string * int
 
     The string is the printable error message.
 
-    The integer is one of the negative [PCRE_*] error codes
-    (see pcreapi(3) for a full list), {i or} one of the positive
-    error codes from [pcre_compile2].  It may also be 0 if there
+    The integer is one of the negative [PCRE2_*] error codes
+    (see pcre2api(3) for a full list).  It may also be 0 if there
     was no error code information. *)
 
 type regexp

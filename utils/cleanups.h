@@ -48,6 +48,8 @@
   __attribute__((cleanup(guestfs_int_cleanup_xmlXPathFreeContext)))
 #define CLEANUP_XMLXPATHFREEOBJECT                                      \
   __attribute__((cleanup(guestfs_int_cleanup_xmlXPathFreeObject)))
+#define CLEANUP_PCRE2_MATCH_DATA_FREE                                   \
+  __attribute__((cleanup(guestfs_int_cleanup_pcre2_match_data_free)))
 #else
 #define CLEANUP_FREE
 #define CLEANUP_HASH_FREE
@@ -63,6 +65,7 @@
 #define CLEANUP_XMLFREETEXTWRITER
 #define CLEANUP_XMLXPATHFREECONTEXT
 #define CLEANUP_XMLXPATHFREEOBJECT
+#define CLEANUP_PCRE2_MATCH_DATA_FREE
 #endif
 
 /* These functions are used internally by the CLEANUP_* macros.
@@ -82,5 +85,6 @@ extern void guestfs_int_cleanup_xmlFreeURI (void *ptr);
 extern void guestfs_int_cleanup_xmlFreeTextWriter (void *ptr);
 extern void guestfs_int_cleanup_xmlXPathFreeContext (void *ptr);
 extern void guestfs_int_cleanup_xmlXPathFreeObject (void *ptr);
+extern void guestfs_int_cleanup_pcre2_match_data_free (void *ptr);
 
 #endif /* GUESTFS_CLEANUPS_H_ */
