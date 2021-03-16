@@ -290,7 +290,7 @@ guestfs_int_pcre_sub (value nv)
     caml_invalid_argument ("PCRE.sub: n must be >= 0");
 
   r = pcre2_substring_length_bynumber (m->match_data, n, &len);
-  if (r == PCRE2_ERROR_NOSUBSTRING)
+  if (r == PCRE2_ERROR_NOSUBSTRING || r == PCRE2_ERROR_UNSET)
     caml_raise_not_found ();
   if (r < 0)
     raise_pcre_error (r);
