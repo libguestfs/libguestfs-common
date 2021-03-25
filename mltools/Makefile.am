@@ -129,7 +129,7 @@ if HAVE_OCAML_PKG_GETTEXT
 OCAMLPACKAGES += -package gettext-stub
 endif
 if HAVE_OCAML_PKG_OUNIT
-OCAMLPACKAGES_TESTS += -package oUnit
+OCAMLPACKAGES_TESTS += -package ounit2
 endif
 
 OCAMLCLIBS = \
@@ -263,7 +263,8 @@ tools_utils_tests_DEPENDENCIES = \
 	$(MLTOOLS_CMA) \
 	$(top_srcdir)/ocaml-link.sh
 tools_utils_tests_LINK = \
-	$(top_srcdir)/ocaml-link.sh -cclib '-lutils $(LIBXML2_LIBS) -lgnu' -- \
+	$(top_srcdir)/ocaml-link.sh \
+	  -cclib '-pthread -lpthread -lutils $(LIBXML2_LIBS) -lgnu' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(tools_utils_tests_THEOBJECTS) -o $@
@@ -290,7 +291,8 @@ JSON_tests_DEPENDENCIES = \
 	$(MLTOOLS_CMA) \
 	$(top_srcdir)/ocaml-link.sh
 JSON_tests_LINK = \
-	$(top_srcdir)/ocaml-link.sh -- \
+	$(top_srcdir)/ocaml-link.sh \
+	  -cclib '-pthread -lpthread' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(JSON_tests_THEOBJECTS) -o $@
@@ -303,7 +305,8 @@ JSON_parser_tests_DEPENDENCIES = \
 	$(MLTOOLS_CMA) \
 	$(top_srcdir)/ocaml-link.sh
 JSON_parser_tests_LINK = \
-	$(top_srcdir)/ocaml-link.sh -cclib '$(OCAMLCLIBS)' -- \
+	$(top_srcdir)/ocaml-link.sh \
+	  -cclib '-pthread -lpthread $(OCAMLCLIBS)' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) $(OCAMLLINKFLAGS) \
 	  $(OCAMLPACKAGES) $(OCAMLPACKAGES_TESTS) \
 	  $(JSON_parser_tests_THEOBJECTS) -o $@

@@ -112,10 +112,10 @@ c_utils_unit_tests_CFLAGS = $(libmlcutils_a_CFLAGS)
 if !HAVE_OCAMLOPT
 # Can't call this c_utils_unit_tests_OBJECTS because automake gets confused.
 c_utils_unit_tests_THEOBJECTS = $(c_utils_unit_tests_BOBJECTS)
-c_utils_unit_tests.cmo: OCAMLPACKAGES += -package oUnit
+c_utils_unit_tests.cmo: OCAMLPACKAGES += -package ounit2
 else
 c_utils_unit_tests_THEOBJECTS = $(c_utils_unit_tests_XOBJECTS)
-c_utils_unit_tests.cmx: OCAMLPACKAGES += -package oUnit
+c_utils_unit_tests.cmx: OCAMLPACKAGES += -package ounit2
 endif
 
 OCAMLLINKFLAGS = \
@@ -131,7 +131,7 @@ c_utils_unit_tests_DEPENDENCIES = \
 c_utils_unit_tests_LINK = \
 	$(top_srcdir)/ocaml-link.sh -cclib '-lutils -lgnu' -- \
 	  $(OCAMLFIND) $(BEST) $(OCAMLFLAGS) \
-	  $(OCAMLPACKAGES) -package oUnit \
+	  $(OCAMLPACKAGES) -package ounit2 \
 	  $(OCAMLLINKFLAGS) \
 	  $(c_utils_unit_tests_THEOBJECTS) -o $@
 
