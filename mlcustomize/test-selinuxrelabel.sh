@@ -29,6 +29,10 @@ disk="selinuxrelabel.img"
 disk_overlay="selinuxrelabel-overlay.qcow2"
 rm -f "$disk"
 
+# Undefine this which is set by ./run script, since we want to use the
+# public virt-builder templates.
+unset VIRT_BUILDER_DIRS
+
 skip_unless_virt_builder_guest "$guestname"
 
 # Build a guest (using virt-builder).
