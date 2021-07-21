@@ -55,7 +55,7 @@ $t --help | grep -- '-x'
 $t --help | grep -F -- '-o, --optstr[=string]'
 
 # --version
-$t --version | grep '^getopt_tests 1\.'
+$t --version | grep '^getopt_tests [12]\.'
 
 # --short-options
 $t --short-options | grep '^-a'
