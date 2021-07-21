@@ -295,10 +295,11 @@ type cmdline_options = {
   ks : key_store;
 }
 
-let create_standard_options argspec ?anon_fun ?(key_opts = false) ?(machine_readable = false) usage_msg =
-  (** Install an exit hook to check gc consistency for --debug-gc *)
-  let set_debug_gc () =
-    at_exit (fun () -> Gc.compact()) in
+let create_standard_options argspec ?anon_fun ?(key_opts = false)
+      ?(machine_readable = false) usage_msg =
+  (* Install an exit hook to check gc consistency for --debug-gc *)
+  let set_debug_gc () = at_exit Gc.compact in
+
   let parse_machine_readable = function
     | None ->
       machine_readable_output := Channel stdout
@@ -328,43 +329,42 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false) ?(machine_read
   let ks = {
     keys = Hashtbl.create 13;
   } in
-  let argspec = [
-    [ S 'V'; L"version" ], Getopt.Unit print_version_and_exit, s_"Display version and exit";
-    [ S 'v'; L"verbose" ], Getopt.Unit set_verbose,  s_"Enable libguestfs debugging messages";
-    [ S 'x' ],             Getopt.Unit set_trace,    s_"Enable tracing of libguestfs calls";
-    [ L"debug-gc" ],       Getopt.Unit set_debug_gc, Getopt.hidden_option_description;
-    [ S 'q'; L"quiet" ],   Getopt.Unit set_quiet,    s_"Don’t print progress messages";
-    [ L"color"; L"colors";
-      L"colour"; L"colours" ], Getopt.Unit set_colours, s_"Use ANSI colour sequences even if not tty";
-  ] @ argspec in
-  let argspec =
-    argspec @
-      (if key_opts then
-      let parse_key_selector arg =
-        let parts = String.nsplit ~max:3 ":" arg in
-        match parts with
-        | [ device; "key"; key ] ->
-          Hashtbl.replace ks.keys device (KeyString key)
-        | [ device; "file"; file ] ->
-          Hashtbl.replace ks.keys device (KeyFileName file)
-        | _ ->
-          error (f_"invalid selector string for --key: %s") arg
-      in
-      [
-        [ L"echo-keys" ],       Getopt.Unit c_set_echo_keys,       s_"Don’t turn off echo for passphrases";
-        [ L"keys-from-stdin" ], Getopt.Unit c_set_keys_from_stdin, s_"Read passphrases from stdin";
-        [ L"key" ], Getopt.String (s_"SELECTOR", parse_key_selector), s_"Specify a LUKS key";
-      ]
-      else []) @
-      (if machine_readable then
-      [
-        [ L"machine-readable" ], Getopt.OptString ("format", parse_machine_readable), s_"Make output machine readable";
-      ]
-      else []) in
+  let argspec = ref argspec in
+  let add_argspec = List.push_back argspec in
+
+  add_argspec ([ S 'V'; L"version" ], Getopt.Unit print_version_and_exit, s_"Display version and exit");
+  add_argspec ([ S 'v'; L"verbose" ], Getopt.Unit set_verbose,  s_"Enable libguestfs debugging messages");
+  add_argspec ([ S 'x' ],             Getopt.Unit set_trace,    s_"Enable tracing of libguestfs calls");
+  add_argspec ([ L"debug-gc" ],       Getopt.Unit set_debug_gc, Getopt.hidden_option_description);
+  add_argspec ([ S 'q'; L"quiet" ],   Getopt.Unit set_quiet,    s_"Don’t print progress messages");
+  add_argspec ([ L"color"; L"colors";
+                 L"colour"; L"colours" ], Getopt.Unit set_colours, s_"Use ANSI colour sequences even if not tty");
+
+  if key_opts then (
+    let parse_key_selector arg =
+      let parts = String.nsplit ~max:3 ":" arg in
+      match parts with
+      | [ device; "key"; key ] ->
+         Hashtbl.replace ks.keys device (KeyString key)
+      | [ device; "file"; file ] ->
+         Hashtbl.replace ks.keys device (KeyFileName file)
+      | _ ->
+         error (f_"invalid selector string for --key: %s") arg
+    in
+
+    add_argspec ([ L"echo-keys" ],       Getopt.Unit c_set_echo_keys,       s_"Don’t turn off echo for passphrases");
+    add_argspec ([ L"keys-from-stdin" ], Getopt.Unit c_set_keys_from_stdin, s_"Read passphrases from stdin");
+    add_argspec ([ L"key" ], Getopt.String (s_"SELECTOR", parse_key_selector), s_"Specify a LUKS key");
+  );
+
+  if machine_readable then (
+    add_argspec ([ L"machine-readable" ], Getopt.OptString ("format", parse_machine_readable), s_"Make output machine readable");
+  );
+
+  let argspec = !argspec in
+
   let getopt = Getopt.create argspec ?anon_fun usage_msg in
-  {
-    getopt; ks;
-  }
+  { getopt; ks }
 
 (* Run an external command, slurp up the output as a list of lines. *)
 let external_command ?(echo_cmd = true) cmd =
