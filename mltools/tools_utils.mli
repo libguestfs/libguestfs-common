@@ -83,7 +83,7 @@ type cmdline_options = {
 (** Structure representing all the data needed for handling command
     line options. *)
 
-val create_standard_options : Getopt.speclist -> ?anon_fun:Getopt.anon_fun -> ?key_opts:bool -> ?machine_readable:bool -> Getopt.usage_msg -> cmdline_options
+val create_standard_options : Getopt.speclist -> ?anon_fun:Getopt.anon_fun -> ?key_opts:bool -> ?machine_readable:bool -> ?program_name:bool -> Getopt.usage_msg -> cmdline_options
 (** Adds the standard libguestfs command line options to the specified ones,
     sorting them, and setting [long_options] to them.
 
@@ -95,6 +95,10 @@ val create_standard_options : Getopt.speclist -> ?anon_fun:Getopt.anon_fun -> ?k
 
     [machine_readable] specifies whether add the [--machine-readable]
     option.
+
+    [program_name] specifies whether to add the [--program-name] option
+    which allows another tool to run this tool and change the program
+    name used in error messages.
 
     Returns a new {!cmdline_options} structure. *)
 
