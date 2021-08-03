@@ -41,6 +41,11 @@ let object_get_string key yv =
   | JSON.String s -> s
   | _ -> error (f_"the value for the key ‘%s’ is not a string") key
 
+let object_get_bool key yv =
+  match object_find key yv with
+  | JSON.Bool b -> b
+  | _ -> error (f_"the value for the key ‘%s’ is not a bool") key
+
 let object_find_object key yv =
   match object_find key yv with
   | JSON.Dict _ as o -> o

@@ -26,6 +26,10 @@ val object_get_string : string -> JSON.json_t -> string
 (** [object_get_string key yv] gets the value of the [key] field as a string
     in the [yv] structure *)
 
+val object_get_bool : string -> JSON.json_t -> bool
+(** [object_get_bool key yv] gets the value of the [key] field as a bool
+    in the [yv] structure *)
+
 val object_find_object : string -> JSON.json_t -> JSON.json_t
 (** [object_get_object key yv] gets the value of the [key] field as a JSON
     value in the [yv] structure.
