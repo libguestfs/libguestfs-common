@@ -60,6 +60,7 @@ libmlvisit_a_CPPFLAGS = \
 	-I$(top_srcdir)/common/visit
 libmlvisit_a_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS) \
 	$(LIBVIRT_CFLAGS) $(LIBXML2_CFLAGS) \
 	-fPIC
 

@@ -31,7 +31,8 @@ libwindows_la_CPPFLAGS = \
 	-I$(top_srcdir)/lib -I$(top_builddir)/lib \
 	$(INCLUDE_DIRECTORY)
 libwindows_la_CFLAGS = \
-	$(WARN_CFLAGS) $(WERROR_CFLAGS)
+	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS)
 libwindows_la_LIBADD = \
 	$(top_builddir)/common/utils/libutils.la \
 	$(LTLIBINTL)

@@ -31,6 +31,7 @@ libprogress_la_CPPFLAGS = \
 	$(INCLUDE_DIRECTORY)
 libprogress_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS) \
 	$(LIBTINFO_CFLAGS)
 libprogress_la_LIBADD = \
 	$(top_builddir)/common/utils/libutils.la \

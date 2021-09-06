@@ -32,4 +32,5 @@ libvisit_la_CPPFLAGS = \
 	-I$(top_srcdir)/common/structs -I$(top_builddir)/common/structs
 libvisit_la_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS) \
 	$(GCC_VISIBILITY_HIDDEN)

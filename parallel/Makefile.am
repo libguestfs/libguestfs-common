@@ -39,6 +39,7 @@ libparallel_la_CPPFLAGS = \
 libparallel_la_CFLAGS = \
 	-pthread \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
+	$(LIBGUESTFS_CFLAGS) \
 	$(LIBXML2_CFLAGS) \
 	$(LIBVIRT_CFLAGS)
 libparallel_la_LIBADD = \
