@@ -103,6 +103,14 @@ val create_standard_options : Getopt.speclist -> ?anon_fun:Getopt.anon_fun -> ?k
 
     Returns a new {!cmdline_options} structure. *)
 
+val key_store_to_cli : key_store -> string list
+(** Convert a {!key_store} object back to a list of command line
+    options, essentially undoing the effect of Getopt parsing.
+    This is used in virt-v2v to pass the keystore to helpers.
+    It is not particularly secure, especially if you use the
+    [:key:] selector, although not any less secure than passing
+    them via the command line in the first place. *)
+
 val external_command : ?echo_cmd:bool -> string -> string list
 (** Run an external command, slurp up the output as a list of lines.
 
