@@ -79,6 +79,7 @@ type key_store
 type cmdline_options = {
   getopt : Getopt.t;              (** The actual {!Getopt} handle. *)
   ks : key_store;                 (** Container for keys read via [--key]. *)
+  debug_gc : bool ref;            (** True if [--debug-gc] was used. *)
 }
 (** Structure representing all the data needed for handling command
     line options. *)

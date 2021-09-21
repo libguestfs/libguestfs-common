@@ -299,12 +299,14 @@ let human_size i =
 type cmdline_options = {
   getopt : Getopt.t;
   ks : key_store;
+  debug_gc : bool ref;
 }
 
 let create_standard_options argspec ?anon_fun ?(key_opts = false)
       ?(machine_readable = false) ?(program_name = false) usage_msg =
   (* Install an exit hook to check gc consistency for --debug-gc *)
-  let set_debug_gc () = at_exit Gc.compact in
+  let debug_gc = ref false in
+  let set_debug_gc () = at_exit Gc.compact; debug_gc := true in
 
   let parse_machine_readable = function
     | None ->
@@ -374,7 +376,7 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
   let argspec = !argspec in
 
   let getopt = Getopt.create argspec ?anon_fun usage_msg in
-  { getopt; ks }
+  { getopt; ks; debug_gc }
 
 (* Run an external command, slurp up the output as a list of lines. *)
 let external_command ?(echo_cmd = true) cmd =
