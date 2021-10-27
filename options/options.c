@@ -78,6 +78,7 @@ option_a (const char *arg, const char *format, int blocksize,
     /* Remote storage. */
     drv->type = drv_uri;
     drv->uri.path = uri.path;
+    drv->uri.query = uri.query;
     drv->uri.protocol = uri.protocol;
     drv->uri.server = uri.server;
     drv->uri.username = uri.username;
@@ -178,6 +179,10 @@ add_drives_handle (guestfs_h *g, struct drv *drv, size_t drive_index)
       if (drv->uri.password) {
         ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_SECRET_BITMASK;
         ad_optargs.secret = drv->uri.password;
+      }
+      if (drv->uri.query) {
+        ad_optargs.bitmask |= GUESTFS_ADD_DRIVE_OPTS_QUERY_BITMASK;
+        ad_optargs.query = drv->uri.query;
       }
 #ifdef GUESTFS_ADD_DRIVE_OPTS_BLOCKSIZE_BITMASK
       if (drv->uri.blocksize) {

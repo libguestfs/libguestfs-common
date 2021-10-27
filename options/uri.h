@@ -23,6 +23,7 @@
 
 struct uri {
   char *path;                   /* disk path */
+  char *query;                  /* query string */
   char *protocol;               /* protocol (eg. "file", "nbd") */
   char **server;                /* server(s) - can be NULL */
   char *username;               /* username - can be NULL */
