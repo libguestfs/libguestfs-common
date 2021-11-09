@@ -182,6 +182,7 @@ module List : sig
     val sort : ('a -> 'a -> int) -> 'a list -> 'a list
     val stable_sort : ('a -> 'a -> int) -> 'a list -> 'a list
     val fast_sort : ('a -> 'a -> int) -> 'a list -> 'a list
+    val sort_uniq : ('a -> 'a -> int) -> 'a list -> 'a list
     val merge : ('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 
     val dropwhile : ('a -> bool) -> 'a list -> 'a list
@@ -211,9 +212,6 @@ module List : sig
 
     val uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
     (** Uniquify a list (the list must be sorted first). *)
-
-    val sort_uniq : ?cmp:('a -> 'a -> int) -> 'a list -> 'a list
-    (** Sort and uniquify a list. *)
 
     val remove_duplicates : 'a list -> 'a list
     (** Remove duplicates from an unsorted list; useful when the order
@@ -342,7 +340,7 @@ val protect : f:(unit -> 'a) -> finally:(unit -> unit) -> 'a
     case, but requires a lot more work by the caller.  Perhaps we
     will change this in future.) *)
 
-type 'a return = { return: 'b. 'a -> 'b } (* OCaml >= 4.03: [@@unboxed] *)
+type 'a return = { return: 'b. 'a -> 'b } [@@unboxed]
 val with_return : ('a return -> 'a) -> 'a
 (** {v
     with_return (fun {return} ->

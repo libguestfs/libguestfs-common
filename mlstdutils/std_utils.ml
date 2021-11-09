@@ -323,14 +323,6 @@ module List = struct
       in
       List.rev (loop [] xs)
 
-    (* This is present in OCaml 4.04, so we can remove it when
-     * we depend on OCaml >= 4.04.
-     *)
-    let sort_uniq ?(cmp = Pervasives.compare) xs =
-      let xs = List.sort cmp xs in
-      let xs = uniq ~cmp xs in
-      xs
-
     let remove_duplicates xs =
       let h = Hashtbl.create (List.length xs) in
       let rec loop = function
@@ -591,21 +583,10 @@ let protect ~f ~finally =
   finally ();
   match r with Either ret -> ret | Or exn -> raise exn
 
-type 'a return = { return: 'b. 'a -> 'b } (* OCaml >= 4.03: [@@unboxed] *)
-(* This requires features in OCaml >= 4.04:
+type 'a return = { return: 'b. 'a -> 'b } [@@unboxed]
 let with_return (type a) f =
   let exception Return of a in
   try f {return = fun ret -> raise (Return ret)} with Return ret -> ret
-*)
-
-(* This should work for any version of OCaml, but it doesn't work
- * properly for nested with_return statements.  When we can assume
- * OCaml >= 4.04 we should use the above definition instead.
- *)
-let with_return f =
-  let ret = ref None in
-  try f {return = fun r -> ret := Some r; raise Exit}
-  with Exit -> match !ret with None -> assert false | Some r -> r
 
 let failwithf fs = ksprintf failwith fs
 
