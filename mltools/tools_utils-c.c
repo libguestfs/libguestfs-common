@@ -91,7 +91,7 @@ guestfs_int_mllib_inspect_decrypt (value gv, value gpv, value keysv)
   CAMLreturn (Val_unit);
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_set_echo_keys (value unitv)
 {
@@ -99,7 +99,7 @@ guestfs_int_mllib_set_echo_keys (value unitv)
   return Val_unit;
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_set_keys_from_stdin (value unitv)
 {

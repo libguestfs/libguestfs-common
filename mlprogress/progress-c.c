@@ -83,7 +83,7 @@ guestfs_int_mllib_progress_bar_init (value machine_readablev)
   CAMLreturn (barv);
 }
 
-/* NB: "noalloc" function. */
+/* NB: [@@noalloc] function. */
 value
 guestfs_int_mllib_progress_bar_reset (value barv)
 {
@@ -94,7 +94,7 @@ guestfs_int_mllib_progress_bar_reset (value barv)
   return Val_unit;
 }
 
-/* NB: "noalloc" function. */
+/* NB: [@@noalloc] function. */
 value
 guestfs_int_mllib_progress_bar_set (value barv,
                                     value positionv, value totalv)

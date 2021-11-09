@@ -36,8 +36,8 @@ and key_store_key =
   | KeyFileName of string
 
 external c_inspect_decrypt : Guestfs.t -> int64 -> (string * key_store_key) list -> unit = "guestfs_int_mllib_inspect_decrypt"
-external c_set_echo_keys : unit -> unit = "guestfs_int_mllib_set_echo_keys" "noalloc"
-external c_set_keys_from_stdin : unit -> unit = "guestfs_int_mllib_set_keys_from_stdin" "noalloc"
+external c_set_echo_keys : unit -> unit = "guestfs_int_mllib_set_echo_keys" [@@noalloc]
+external c_set_keys_from_stdin : unit -> unit = "guestfs_int_mllib_set_keys_from_stdin" [@@noalloc]
 external c_rfc3339_date_time_string : unit -> string = "guestfs_int_mllib_rfc3339_date_time_string"
 
 type machine_readable_fn = {

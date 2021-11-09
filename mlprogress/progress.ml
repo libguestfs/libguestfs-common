@@ -25,9 +25,9 @@ type progress_bar
 external progress_bar_init : machine_readable:bool -> progress_bar
   = "guestfs_int_mllib_progress_bar_init"
 external progress_bar_reset : progress_bar -> unit
-  = "guestfs_int_mllib_progress_bar_reset" "noalloc"
+  = "guestfs_int_mllib_progress_bar_reset" [@@noalloc]
 external progress_bar_set : progress_bar -> int64 -> int64 -> unit
-  = "guestfs_int_mllib_progress_bar_set" "noalloc"
+  = "guestfs_int_mllib_progress_bar_set" [@@noalloc]
 
 let set_up_progress_bar ?(machine_readable = false) (g : Guestfs.guestfs) =
   (* Only display progress bars if the machine_readable flag is set or

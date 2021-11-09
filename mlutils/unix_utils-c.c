@@ -79,28 +79,28 @@ extern value guestfs_int_mllib_statvfs_statvfs (value pathv);
 extern value guestfs_int_mllib_statvfs_is_network_filesystem (value pathv);
 extern value guestfs_int_mllib_sysconf_nr_processors_online (value unitv);
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_dev_t_makedev (value majv, value minv)
 {
   return Val_int (makedev (Int_val (majv), Int_val (minv)));
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_dev_t_major (value devv)
 {
   return Val_int (major (Int_val (devv)));
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_dev_t_minor (value devv)
 {
   return Val_int (minor (Int_val (devv)));
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_unsetenv (value strv)
 {
@@ -108,7 +108,7 @@ guestfs_int_mllib_unsetenv (value strv)
   return Val_unit;
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 int
 guestfs_int_mllib_exit (value rv)
 {
@@ -152,7 +152,7 @@ guestfs_int_mllib_fnmatch (value patternv, value strv, value flagsv)
 }
 
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_sync (value unitv)
 {
@@ -341,7 +341,7 @@ guestfs_int_mllib_statvfs_statvfs (value pathv)
   CAMLreturn (rv);
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
 {
@@ -370,7 +370,7 @@ guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
 #endif
 }
 
-/* NB: This is a "noalloc" call. */
+/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_sysconf_nr_processors_online (value unitv)
 {

@@ -19,17 +19,17 @@
 open Std_utils
 
 module Dev_t = struct
-  external makedev : int -> int -> int = "guestfs_int_mllib_dev_t_makedev" "noalloc"
-  external major : int -> int = "guestfs_int_mllib_dev_t_major" "noalloc"
-  external minor : int -> int = "guestfs_int_mllib_dev_t_minor" "noalloc"
+  external makedev : int -> int -> int = "guestfs_int_mllib_dev_t_makedev" [@@noalloc]
+  external major : int -> int = "guestfs_int_mllib_dev_t_major" [@@noalloc]
+  external minor : int -> int = "guestfs_int_mllib_dev_t_minor" [@@noalloc]
 end
 
 module Env = struct
-  external unsetenv : string -> unit = "guestfs_int_mllib_unsetenv" "noalloc"
+  external unsetenv : string -> unit = "guestfs_int_mllib_unsetenv" [@@noalloc]
 end
 
 module Exit = struct
-  external _exit : int -> 'a = "guestfs_int_mllib_exit" "noalloc"
+  external _exit : int -> 'a = "guestfs_int_mllib_exit" [@@noalloc]
 end
 
 module Fnmatch = struct
@@ -47,7 +47,7 @@ module Fnmatch = struct
 end
 
 module Fsync = struct
-  external sync : unit -> unit = "guestfs_int_mllib_sync" "noalloc"
+  external sync : unit -> unit = "guestfs_int_mllib_sync" [@@noalloc]
   external file : string -> unit = "guestfs_int_mllib_fsync_file"
 end
 
@@ -82,10 +82,10 @@ module StatVFS = struct
   let free_space { f_bsize = bsize; f_bavail = bavail } = bsize *^ bavail
 
   external is_network_filesystem : string -> bool =
-    "guestfs_int_mllib_statvfs_is_network_filesystem" "noalloc"
+    "guestfs_int_mllib_statvfs_is_network_filesystem" [@@noalloc]
 end
 
 module Sysconf = struct
   external nr_processors_online : unit -> int =
-    "guestfs_int_mllib_sysconf_nr_processors_online" "noalloc"
+    "guestfs_int_mllib_sysconf_nr_processors_online" [@@noalloc]
 end
