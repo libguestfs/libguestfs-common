@@ -25,25 +25,13 @@ EXTRA_DIST = \
 CONFIGURE_GENERATED_ML = \
 	guestfs_config.ml
 
-SOURCES_MLI =
-
-if HAVE_BYTES_COMPAT_ML
-SOURCES_MLI += bytes.mli
-endif
-
-SOURCES_MLI += \
+SOURCES_MLI = \
 	guestfs_config.mli \
 	std_utils.mli \
 	stringMap.mli \
 	stringSet.mli
 
-SOURCES_ML =
-
-if HAVE_BYTES_COMPAT_ML
-SOURCES_ML += bytes.ml
-endif
-
-SOURCES_ML += \
+SOURCES_ML = \
 	$(CONFIGURE_GENERATED_ML) \
 	stringMap.ml \
 	stringSet.ml \
