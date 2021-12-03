@@ -38,6 +38,7 @@ SOURCES_MLI = \
 	getopt.mli \
 	JSON.mli \
 	JSON_parser.mli \
+	on_exit.mli \
 	planner.mli \
 	regedit.mli \
 	registry.mli \
@@ -50,6 +51,7 @@ SOURCES_ML = \
 	getopt.ml \
 	JSON.ml \
 	tools_utils.ml \
+	on_exit.ml \
 	URI.ml \
 	planner.ml \
 	registry.ml \

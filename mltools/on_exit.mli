@@ -1,0 +1,56 @@
+(* Common way to handle actions on exit.
+ * Copyright (C) 2010-2021 Red Hat Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *)
+
+(** This module allows you to register actions which
+    are mostly guaranteed to happen when the process
+    exits, even if it exits with a signal.  Note that
+    segfaults, kill -9, etc. will not run these actions.
+
+    The main problem with the {!Stdlib.at_exit} function
+    is that it is not called if the program exits with
+    a signal.  A lesser problem is that it's hard to
+    use for common cases such as deleting a temp file or
+    killing another process, so we provide simple
+    wrappers for those common actions here.
+
+    Note this module registers signal handlers for
+    SIGINT, SIGQUIT, SIGTERM and SIGHUP.  This means
+    that any program that links with mltools.cmxa
+    will automatically have signal handlers pointing
+    to an internal function within this module.  It
+    is OK (possibly) for a program to override these
+    signal handlers, but the cleanup action might no
+    longer run unless the program calls {!Stdlib.exit}. *)
+
+val f : (unit -> unit) -> unit
+(** Register a function [f] which runs when the program exits.
+    Similar to [Stdlib.at_exit] but also runs if the program is
+    killed with a signal that we can catch. *)
+
+val unlink : string -> unit
+(** Unlink a single temporary file on exit. *)
+
+val rmdir : string -> unit
+(** Recursively remove a temporary directory on exit (using [rm -rf]). *)
+
+val kill : ?signal:int -> int -> unit
+(** Kill [PID] on exit.  The signal sent defaults to [Sys.sigterm].
+
+    Use this with care since you can end up unintentionally killing
+    another process if [PID] goes away or doesn't exist before the
+    program exits. *)
