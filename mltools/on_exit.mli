@@ -32,10 +32,12 @@
     SIGINT, SIGQUIT, SIGTERM and SIGHUP.  This means
     that any program that links with mltools.cmxa
     will automatically have signal handlers pointing
-    to an internal function within this module.  It
-    is OK (possibly) for a program to override these
-    signal handlers, but the cleanup action might no
-    longer run unless the program calls {!Stdlib.exit}. *)
+    to an internal function within this module.  To
+    register your own signal handler function to be
+    called instead, you have to call {!register}
+    before using the ordinary {!Sys.signal} functions.
+    Your cleanup action might no longer run unless the
+    program calls {!Stdlib.exit}. *)
 
 val f : (unit -> unit) -> unit
 (** Register a function [f] which runs when the program exits.
@@ -54,3 +56,12 @@ val kill : ?signal:int -> int -> unit
     Use this with care since you can end up unintentionally killing
     another process if [PID] goes away or doesn't exist before the
     program exits. *)
+
+val register : unit -> unit
+(** Force this module to register its at_exit function and signal
+    handlers now.  You do {!i not} normally need to call this.
+    Calling the functions above implicitly calls register.  However
+    you might need to call it if you want to register your own
+    signal handler.  See above description for why and use with care.
+    Note that this is safe if at_exit and signal handlers have
+    already been registered - it does nothing in that case. *)
