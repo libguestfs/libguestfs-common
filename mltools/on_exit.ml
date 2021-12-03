@@ -17,6 +17,7 @@
  *)
 
 open Std_utils
+open Common_gettext.Gettext
 
 open Unix
 open Printf
@@ -59,10 +60,28 @@ let registered = ref false
 let register () =
   if not !registered then (
     List.iter (
-      fun signal ->
-        let handler = Sys.Signal_handle (fun _ -> do_actions ()) in
-        ignore (Sys.signal signal handler)
-    ) [ Sys.sigint; Sys.sigquit; Sys.sigterm; Sys.sighup ];
+      fun (signal, name) ->
+        let handler _ =
+          (* Try to get a final message out.  This is helpful
+           * when debugging so we can tell if a program was killed
+           * or segfaulted.
+           *)
+          eprintf (f_"%s: Exiting on signal %s\n%!") prog name;
+          (* Do the cleanup actions. *)
+          do_actions ();
+          (* Call _exit instead of exit because the OCaml exit calls
+           * C exit which is probably not safe from a signal handler
+           * especially if we forked.
+           *)
+          Unix_utils.Exit._exit 1
+        in
+        ignore (Sys.signal signal (Sys.Signal_handle handler))
+    ) [ Sys.sigint, "SIGINT";
+        Sys.sigquit, "SIGQUIT";
+        Sys.sigterm, "SIGTERM";
+        Sys.sighup, "SIGHUP" ];
+
+    (* Register the at_exit handler. *)
     at_exit do_actions
   );
   registered := true
