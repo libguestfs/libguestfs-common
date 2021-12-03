@@ -414,9 +414,6 @@ val stringify_args : string list -> string
 (** Create a "pretty-print" representation of a program invocation
     (i.e. executable and its arguments). *)
 
-val unlink_on_exit : string -> unit
-(** Unlink a temporary file on exit. *)
-
 val is_block_device : string -> bool
 val is_char_device : string -> bool
 val is_directory : string -> bool

@@ -719,27 +719,6 @@ let stringify_args args =
   | [] -> ""
   | app :: xs -> app ^ quote_args xs
 
-(* Unlink a temporary file on exit. *)
-let unlink_on_exit =
-  let files = ref [] in
-  let registered_handlers = ref false in
-
-  let rec unlink_files () =
-    List.iter (
-      fun file -> try Unix.unlink file with _ -> ()
-    ) !files
-  and register_handlers () =
-    (* Unlink on exit. *)
-    at_exit unlink_files
-  in
-
-  fun file ->
-    files := file :: !files;
-    if not !registered_handlers then (
-      register_handlers ();
-      registered_handlers := true
-    )
-
 let is_block_device file =
   try (Unix.stat file).Unix.st_kind = Unix.S_BLK
   with Unix.Unix_error _ -> false

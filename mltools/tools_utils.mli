@@ -154,6 +154,9 @@ val shell_command : ?echo_cmd:bool -> string -> int
 val uuidgen : unit -> string
 (** Run uuidgen to return a random UUID. *)
 
+val unlink_on_exit : string -> unit
+(** Unlink a single temporary file on exit. *)
+
 val rmdir_on_exit : string -> unit
 (** Remove a temporary directory on exit (using [rm -rf]). *)
 
