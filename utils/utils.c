@@ -640,3 +640,28 @@ guestfs_int_hexdump (const void *data, size_t len, FILE *fp)
     fprintf (fp, "|\n");
   }
 }
+
+/**
+ * Thread-safe strerror_r.
+ *
+ * This is a wrapper around the two variants of L<strerror_r(3)>
+ * in glibc since it is hard to use correctly (RHBZ#2030396).
+ *
+ * The buffer passed in should be large enough to store the
+ * error message (256 chars at least) and should be non-static.
+ * Note that the buffer might not be used, use the return value.
+ */
+const char *
+guestfs_int_strerror (int errnum, char *buf, size_t buflen)
+{
+#ifdef _GNU_SOURCE
+  /* GNU strerror_r */
+  return strerror_r (errnum, buf, buflen);
+#else
+  /* XSI-compliant strerror_r */
+  int err = strerror_r (errnum, buf, buflen);
+  if (err > 0)
+    snprintf (buf, buflen, "error number %d", errnum);
+  return buf;
+#endif
+}
