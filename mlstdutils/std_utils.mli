@@ -56,7 +56,6 @@ module String : sig
     val concat : string -> string list -> string
     val contains : string -> char -> bool
     val contains_from : string -> int -> char -> bool
-    val copy : string -> string
     val escaped : string -> string
     val get : string -> int -> char
     val index : string -> char -> int
