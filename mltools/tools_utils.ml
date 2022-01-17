@@ -173,7 +173,8 @@ let debug fs =
  * (e.g. debug, tracing) already set.
  *)
 let open_guestfs ?identifier () =
-  let g = new Guestfs.guestfs () in
+  let g = new Guestfs.guestfs ~environment:false () in
+  g#parse_environment ();
   if trace () then g#set_trace true;
   if verbose () then g#set_verbose true;
   Option.may g#set_identifier identifier;
