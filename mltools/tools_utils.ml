@@ -126,7 +126,7 @@ let message fs =
 type wrap_break_t = WrapEOS | WrapSpace | WrapNL
 
 let rec wrap ?(chan = stdout) ?(indent = 0) str =
-  if istty chan then
+  if Std_utils.wrap () || istty chan then
     let len = String.length str in
     _wrap chan indent 0 0 len str
   else (
@@ -388,6 +388,7 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
   add_argspec ([ S 'q'; L"quiet" ],   Getopt.Unit set_quiet,    s_"Don’t print progress messages");
   add_argspec ([ L"color"; L"colors";
                  L"colour"; L"colours" ], Getopt.Unit set_colours, s_"Use ANSI colour sequences even if not tty");
+  add_argspec ([ L"wrap" ],           Getopt.Unit set_wrap,     s_"Wrap log messages even if not tty");
 
   if key_opts then (
     let parse_key_selector arg =

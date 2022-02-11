@@ -580,8 +580,8 @@ let which executable =
 (* Program name. *)
 let prog = Filename.basename Sys.executable_name
 
-(* Stores the colours (--colours), quiet (--quiet), trace (-x) and
- * verbose (-v) flags in a global variable.
+(* Stores the colours (--colours), quiet (--quiet), trace (-x), verbose (-v)
+ * and wrap (--wrap) flags in a global variable.
  *)
 let colours = ref false
 let set_colours () = colours := true
@@ -598,6 +598,10 @@ let trace () = !trace
 let verbose = ref false
 let set_verbose () = verbose := true
 let verbose () = !verbose
+
+let wrap = ref false
+let set_wrap () = wrap := true
+let wrap () = !wrap
 
 let with_open_in filename f =
   let chan = open_in filename in

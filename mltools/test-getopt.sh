@@ -89,6 +89,7 @@ $t --long-options | grep '^--ii'
 $t --long-options | grep '^--is'
 $t --long-options | grep '^--version'
 $t --long-options | grep '^--verbose'
+$t --long-options | grep '^--wrap'
 
 # -a/--add parameter.
 $t | grep '^adds = \[\]'
