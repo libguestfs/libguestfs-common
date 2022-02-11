@@ -122,6 +122,41 @@ let message fs =
   in
   ksprintf display fs
 
+(* Wrap text. *)
+type wrap_break_t = WrapEOS | WrapSpace | WrapNL
+
+let rec wrap ?(chan = stdout) ?(indent = 0) str =
+  let len = String.length str in
+  _wrap chan indent 0 0 len str
+
+and _wrap chan indent column i len str =
+  if i < len then (
+    let (j, break) = _wrap_find_next_break i len str in
+    let next_column =
+      if column + (j-i) >= 76 then (
+        output_char chan '\n';
+        output_spaces chan indent;
+        indent + (j-i) + 1
+      )
+      else column + (j-i) + 1 in
+    output chan (Bytes.of_string str) i (j-i);
+    match break with
+    | WrapEOS -> ()
+    | WrapSpace ->
+      output_char chan ' ';
+      _wrap chan indent next_column (j+1) len str
+    | WrapNL ->
+      output_char chan '\n';
+      output_spaces chan indent;
+      _wrap chan indent indent (j+1) len str
+  )
+
+and _wrap_find_next_break i len str =
+  if i >= len then (len, WrapEOS)
+  else if String.unsafe_get str i = ' ' then (i, WrapSpace)
+  else if String.unsafe_get str i = '\n' then (i, WrapNL)
+  else _wrap_find_next_break (i+1) len str
+
 (* Error messages etc. *)
 let error ?(exit_code = 1) fs =
   let display str =

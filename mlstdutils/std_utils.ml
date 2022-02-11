@@ -536,41 +536,7 @@ let be64_of_int i =
   Bytes.unsafe_set b 7 (Char.unsafe_chr (Int64.to_int c0));
   Bytes.to_string b
 
-type wrap_break_t = WrapEOS | WrapSpace | WrapNL
-
-let rec wrap ?(chan = stdout) ?(indent = 0) str =
-  let len = String.length str in
-  _wrap chan indent 0 0 len str
-
-and _wrap chan indent column i len str =
-  if i < len then (
-    let (j, break) = _wrap_find_next_break i len str in
-    let next_column =
-      if column + (j-i) >= 76 then (
-        output_char chan '\n';
-        output_spaces chan indent;
-        indent + (j-i) + 1
-      )
-      else column + (j-i) + 1 in
-    output chan (Bytes.of_string str) i (j-i);
-    match break with
-    | WrapEOS -> ()
-    | WrapSpace ->
-      output_char chan ' ';
-      _wrap chan indent next_column (j+1) len str
-    | WrapNL ->
-      output_char chan '\n';
-      output_spaces chan indent;
-      _wrap chan indent indent (j+1) len str
-  )
-
-and _wrap_find_next_break i len str =
-  if i >= len then (len, WrapEOS)
-  else if String.unsafe_get str i = ' ' then (i, WrapSpace)
-  else if String.unsafe_get str i = '\n' then (i, WrapNL)
-  else _wrap_find_next_break (i+1) len str
-
-and output_spaces chan n = for i = 0 to n-1 do output_char chan ' ' done
+let output_spaces chan n = for i = 0 to n-1 do output_char chan ' ' done
 
 let unique = let i = ref 0 in fun () -> incr i; !i
 

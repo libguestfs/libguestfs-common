@@ -315,9 +315,6 @@ val be64_of_int : int64 -> string
     On the OCaml side, 64 bit integers are always used so that you
     can use the [.^] operators on them for bit manipulation. *)
 
-val wrap : ?chan:out_channel -> ?indent:int -> string -> unit
-(** Wrap text. *)
-
 val output_spaces : out_channel -> int -> unit
 (** Write [n] spaces to [out_channel]. *)
 
