@@ -126,8 +126,13 @@ let message fs =
 type wrap_break_t = WrapEOS | WrapSpace | WrapNL
 
 let rec wrap ?(chan = stdout) ?(indent = 0) str =
-  let len = String.length str in
-  _wrap chan indent 0 0 len str
+  if istty chan then
+    let len = String.length str in
+    _wrap chan indent 0 0 len str
+  else (
+    output_spaces chan indent;
+    output_string chan str
+  )
 
 and _wrap chan indent column i len str =
   if i < len then (
