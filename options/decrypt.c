@@ -38,8 +38,11 @@
 #include "options.h"
 
 /**
- * Make a LUKS map name from the partition name,
- * eg. C<"/dev/vda2" =E<gt> "cryptvda2">
+ * Make a LUKS map name from the partition or logical volume name, eg.
+ * C<"/dev/vda2" =E<gt> "cryptvda2">, or C<"/dev/vg-ssd/lv-root7" =E<gt>
+ * "cryptvgssdlvroot7">.  Note that, in logical volume device names,
+ * c_isalnum() eliminates the "/" separator from between the VG and the LV, so
+ * this mapping is not unique; but for our purposes, it will do.
  */
 static void
 make_mapname (const char *device, char *mapname, size_t len)
@@ -67,7 +70,7 @@ make_mapname (const char *device, char *mapname, size_t len)
 
 static bool
 decrypt_mountables (guestfs_h *g, const char * const *mountables,
-                    struct key_store *ks)
+                    struct key_store *ks, bool name_decrypted_by_uuid)
 {
   bool decrypted_some = false;
   const char * const *mnt_scan = mountables;
@@ -77,7 +80,7 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
     CLEANUP_FREE char *type = NULL;
     CLEANUP_FREE char *uuid = NULL;
     CLEANUP_FREE_STRING_LIST char **keys = NULL;
-    char mapname[32];
+    char mapname[512];
     const char * const *key_scan;
     const char *key;
 
@@ -102,7 +105,9 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
     assert (keys[0] != NULL);
 
     /* Generate a node name for the plaintext (decrypted) device node. */
-    make_mapname (mountable, mapname, sizeof mapname);
+    if (!name_decrypted_by_uuid || uuid == NULL ||
+        snprintf (mapname, sizeof mapname, "luks-%s", uuid) < 0)
+      make_mapname (mountable, mapname, sizeof mapname);
 
     /* Try each key in turn. */
     key_scan = (const char * const *)keys;
@@ -145,15 +150,22 @@ void
 inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
 {
   CLEANUP_FREE_STRING_LIST char **partitions = guestfs_list_partitions (g);
+  CLEANUP_FREE_STRING_LIST char **lvs = NULL;
   bool need_rescan;
 
   if (partitions == NULL)
     exit (EXIT_FAILURE);
 
-  need_rescan = decrypt_mountables (g, (const char * const *)partitions, ks);
+  need_rescan = decrypt_mountables (g, (const char * const *)partitions, ks,
+                                    false);
 
   if (need_rescan) {
     if (guestfs_lvm_scan (g, 1) == -1)
       exit (EXIT_FAILURE);
   }
+
+  lvs = guestfs_lvs (g);
+  if (lvs == NULL)
+    exit (EXIT_FAILURE);
+  decrypt_mountables (g, (const char * const *)lvs, ks, true);
 }
