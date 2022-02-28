@@ -30,12 +30,30 @@
 #include <libintl.h>
 #include <error.h>
 #include <assert.h>
+#include <errno.h>
 
 #include "c-ctype.h"
 
 #include "guestfs.h"
 
 #include "options.h"
+
+static void
+append_char (size_t *idx, char *buffer, char c)
+{
+  /* bail out if the size of the string (including the terminating NUL, if any
+   * cannot be expressed as a size_t
+   */
+  if (*idx == (size_t)-1)
+    error (EXIT_FAILURE, 0, _("string size overflow"));
+
+  /* if we're not just counting, then actually write the character */
+  if (buffer != NULL)
+    buffer[*idx] = c;
+
+  /* advance */
+  ++*idx;
+}
 
 /**
  * Make a LUKS map name from the partition or logical volume name, eg.
@@ -44,28 +62,55 @@
  * c_isalnum() eliminates the "/" separator from between the VG and the LV, so
  * this mapping is not unique; but for our purposes, it will do.
  */
-static void
-make_mapname (const char *device, char *mapname, size_t len)
+static char *
+make_mapname (const char *device)
 {
-  size_t i = 0;
+  bool strip_iprefix;
+  static const char iprefix[] = "/dev/";
+  char *mapname;
+  enum { COUNT, WRITE, DONE } mode;
 
-  if (len < 6)
-    abort ();
-  strcpy (mapname, "crypt");
-  mapname += 5;
-  len -= 5;
+  strip_iprefix = STRPREFIX (device, iprefix);
 
-  if (STRPREFIX (device, "/dev/"))
-    i = 5;
+  /* set to NULL in COUNT mode, flipped to non-NULL for WRITE mode */
+  mapname = NULL;
 
-  for (; device[i] != '\0' && len >= 1; ++i) {
-    if (c_isalnum (device[i])) {
-      *mapname++ = device[i];
-      len--;
+  for (mode = COUNT; mode < DONE; ++mode) {
+    size_t ipos;
+    static const size_t iprefixlen = sizeof iprefix - 1;
+    size_t opos;
+    static const char oprefix[] = "crypt";
+    static const size_t oprefixlen = sizeof oprefix - 1;
+    char ichar;
+
+    /* skip the input prefix, if any */
+    ipos = strip_iprefix ? iprefixlen : 0;
+    /* start producing characters after the output prefix */
+    opos = oprefixlen;
+
+    /* filter & copy */
+    while ((ichar = device[ipos]) != '\0') {
+      if (c_isalnum (ichar))
+        append_char (&opos, mapname, ichar);
+      ++ipos;
+    }
+
+    /* terminate */
+    append_char (&opos, mapname, '\0');
+
+    /* allocate the output buffer when flipping from COUNT to WRITE mode */
+    if (mode == COUNT) {
+      assert (opos >= sizeof oprefix);
+      mapname = malloc (opos);
+      if (mapname == NULL)
+        error (EXIT_FAILURE, errno, "malloc");
+
+      /* populate the output prefix -- note: not NUL-terminated yet */
+      memcpy (mapname, oprefix, oprefixlen);
     }
   }
 
-  *mapname = '\0';
+  return mapname;
 }
 
 static bool
@@ -80,7 +125,7 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
     CLEANUP_FREE char *type = NULL;
     CLEANUP_FREE char *uuid = NULL;
     CLEANUP_FREE_STRING_LIST char **keys = NULL;
-    char mapname[512];
+    CLEANUP_FREE char *mapname = NULL;
     const char * const *key_scan;
     const char *key;
 
@@ -104,8 +149,8 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
 
     /* Generate a node name for the plaintext (decrypted) device node. */
     if (!name_decrypted_by_uuid || uuid == NULL ||
-        snprintf (mapname, sizeof mapname, "luks-%s", uuid) < 0)
-      make_mapname (mountable, mapname, sizeof mapname);
+        asprintf (&mapname, "luks-%s", uuid) == -1)
+      mapname = make_mapname (mountable);
 
     /* Try each key in turn. */
     key_scan = (const char * const *)keys;
