@@ -113,9 +113,6 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
       int r;
 
       guestfs_push_error_handler (g, NULL, NULL);
-      /* XXX Should we set GUESTFS_CRYPTSETUP_OPEN_READONLY if readonly is
-       * set?  This might break 'mount_ro'.
-       */
       r = guestfs_cryptsetup_open (g, mountable, key, mapname, -1);
       guestfs_pop_error_handler (g);
 
