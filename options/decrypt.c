@@ -92,9 +92,7 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
      * (unclear if this is a limitation of the format or cryptsetup).
      */
     if (STREQ (type, "crypto_LUKS")) {
-#ifdef GUESTFS_HAVE_LUKS_UUID
       uuid = guestfs_luks_uuid (g, mountable);
-#endif
     } else if (STRNEQ (type, "BitLocker"))
       continue;
 
@@ -115,14 +113,10 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
       int r;
 
       guestfs_push_error_handler (g, NULL, NULL);
-#ifdef GUESTFS_HAVE_CRYPTSETUP_OPEN
       /* XXX Should we set GUESTFS_CRYPTSETUP_OPEN_READONLY if readonly is
        * set?  This might break 'mount_ro'.
        */
       r = guestfs_cryptsetup_open (g, mountable, key, mapname, -1);
-#else
-      r = guestfs_luks_open (g, mountable, key, mapname);
-#endif
       guestfs_pop_error_handler (g);
 
       if (r == 0)
