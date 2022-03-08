@@ -345,12 +345,15 @@ end
 
 let script_count = ref 0
 
-let add_firstboot_script (g : Guestfs.guestfs) root name content =
+let add_firstboot_script (g : Guestfs.guestfs) root ?(prio = 5000) name
+                         content =
+  assert (prio >= 0 && prio <= 9999);
   let typ = g#inspect_get_type root in
   let distro = g#inspect_get_distro root in
   let major = g#inspect_get_major_version root in
   incr script_count;
-  let filename = sprintf "%04d-%s" !script_count (sanitize_name name) in
+  let filename = sprintf "%04d-%04d-%s" prio !script_count
+                   (sanitize_name name) in
   match typ, distro with
   | "linux", _ ->
     Linux.install_service g root distro major;

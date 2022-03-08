@@ -16,16 +16,22 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *)
 
-val add_firstboot_script : Guestfs.guestfs -> string -> string -> string -> unit
-  (** [add_firstboot_script g root name content] adds a firstboot
-      script called [name] containing [content].
+val add_firstboot_script : Guestfs.guestfs -> string -> ?prio:int -> string ->
+                           string -> unit
+  (** [add_firstboot_script g root prio name content] adds a firstboot
+      script called [name] containing [content] with priority [prio].
 
       [content] is the contents of the script, {b not} a filename.
 
       The actual name of the script on the guest filesystem is made of [name]
       with all characters but alphanumeric replaced with dashes.
 
-      The scripts are run in the order they are registered.
+      Within a given priority, the scripts are run in the order they are
+      registered. A group of scripts with a numerically lower priority is run
+      before a group with a numerically greater priority. If [prio] is omitted,
+      it is taken as 5000. If [prio] is smaller than 0 or greater than 9999, an
+      Assert_failure is raised (the [prio] parameter is not expected to depend
+      on user input).
 
       For Linux guests using SELinux you should make sure the
       filesystem is relabelled after calling this. *)
