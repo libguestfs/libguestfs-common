@@ -115,7 +115,7 @@ make_mapname (const char *device)
 
 static bool
 decrypt_mountables (guestfs_h *g, const char * const *mountables,
-                    struct key_store *ks, bool name_decrypted_by_uuid)
+                    struct key_store *ks)
 {
   bool decrypted_some = false;
   const char * const *mnt_scan = mountables;
@@ -148,8 +148,7 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
     assert (keys[0] != NULL);
 
     /* Generate a node name for the plaintext (decrypted) device node. */
-    if (!name_decrypted_by_uuid || uuid == NULL ||
-        asprintf (&mapname, "luks-%s", uuid) == -1)
+    if (uuid == NULL || asprintf (&mapname, "luks-%s", uuid) == -1)
       mapname = make_mapname (mountable);
 
     /* Try each key in turn. */
@@ -192,8 +191,7 @@ inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
   if (partitions == NULL)
     exit (EXIT_FAILURE);
 
-  need_rescan = decrypt_mountables (g, (const char * const *)partitions, ks,
-                                    false);
+  need_rescan = decrypt_mountables (g, (const char * const *)partitions, ks);
 
   if (need_rescan) {
     if (guestfs_lvm_scan (g, 1) == -1)
@@ -203,5 +201,5 @@ inspect_do_decrypt (guestfs_h *g, struct key_store *ks)
   lvs = guestfs_lvs (g);
   if (lvs == NULL)
     exit (EXIT_FAILURE);
-  decrypt_mountables (g, (const char * const *)lvs, ks, true);
+  decrypt_mountables (g, (const char * const *)lvs, ks);
 }
