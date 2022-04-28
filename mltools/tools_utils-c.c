@@ -87,6 +87,7 @@ guestfs_int_mllib_inspect_decrypt (value gv, value gpv, value keysv)
   }
 
   inspect_do_decrypt (g, ks);
+  free_key_store (ks);
 
   CAMLreturn (Val_unit);
 }
