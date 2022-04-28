@@ -347,6 +347,7 @@ make_server (xmlURIPtr uri, const char *socket, char ***ret)
   *ret = malloc (sizeof (char *) * 2);
   if (*ret == NULL) {
     perror ("malloc");
+    free (server);
     return -1;
   }
   (*ret)[0] = server;
