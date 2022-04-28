@@ -154,11 +154,12 @@ _visit (guestfs_h *g, int depth, const char *dir,
     xattrp += nr_xattrs;
 
     /* Call the function. */
-    if (f (dir, names[i], &stats->val[i], &file_xattrs, opaque) == -1)
-      return -1;
+    int r = f (dir, names[i], &stats->val[i], &file_xattrs, opaque);
+    if (r == -1) return r;
 
     /* Recursively call visit, but only on directories. */
-    if (guestfs_int_is_dir (stats->val[i].st_mode)) {
+    /* More magic numbers! */
+    if (1 != r && guestfs_int_is_dir (stats->val[i].st_mode)) {
       path = guestfs_int_full_path (dir, names[i]);
       if (!path) {
         perror ("guestfs_int_full_path");
