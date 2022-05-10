@@ -41,13 +41,12 @@ virt-builder "$guestname" --quiet -o "$disk"
 # Test #1: relabel with the default configuration works.
 rm -f  "$disk_overlay"
 guestfish -- disk-create "$disk_overlay" qcow2 -1 backingfile:"$disk"
-virt-customize -a "$disk" --selinux-relabel
+virt-customize -a "$disk"
 
 # Test #2: relabel with no SELINUXTYPE in the configuration.
 rm -f  "$disk_overlay"
 guestfish -- disk-create "$disk_overlay" qcow2 -1 backingfile:"$disk"
 virt-customize -a "$disk" \
-  --edit /etc/selinux/config:"s,^SELINUXTYPE=,#&,g" \
-  --selinux-relabel
+  --edit /etc/selinux/config:"s,^SELINUXTYPE=,#&,g"
 
 rm "$disk" "$disk_overlay"
