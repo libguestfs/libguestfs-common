@@ -12,5 +12,5 @@
     [--truncate-recursive PATH] [--timezone TIMEZONE] [--touch FILE]
     [--uninstall PKG,PKG..] [--update] [--upload FILE:DEST]
     [--write FILE:CONTENT] [--no-logfile]
-    [--password-crypto md5|sha256|sha512] [--selinux-relabel]
+    [--password-crypto md5|sha256|sha512] [--no-selinux-relabel]
     [--sm-credentials SELECTOR]

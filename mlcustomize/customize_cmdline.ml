@@ -109,8 +109,8 @@ and flags = {
       (* --no-logfile *)
   password_crypto : Password.password_crypto option;
       (* --password-crypto md5|sha256|sha512 *)
-  selinux_relabel : bool;
-      (* --selinux-relabel *)
+  no_selinux_relabel : bool;
+      (* --no-selinux-relabel *)
   sm_credentials : Subscription_manager.sm_credentials option;
       (* --sm-credentials SELECTOR *)
 }
@@ -121,7 +121,7 @@ let rec argspec () =
   let ops = ref [] in
   let scrub_logfile = ref false in
   let password_crypto = ref None in
-  let selinux_relabel = ref false in
+  let no_selinux_relabel = ref false in
   let sm_credentials = ref None in
 
   let rec get_ops () = {
@@ -131,7 +131,7 @@ let rec argspec () =
   and get_flags () = {
     scrub_logfile = !scrub_logfile;
     password_crypto = !password_crypto;
-    selinux_relabel = !selinux_relabel;
+    no_selinux_relabel = !no_selinux_relabel;
     sm_credentials = !sm_credentials;
   }
   in
@@ -459,11 +459,11 @@ let rec argspec () =
     ),
     Some "md5|sha256|sha512", "When the virt tools change or set a password in the guest, this\noption sets the password encryption of that password to\nC<md5>, C<sha256> or C<sha512>.\n\nC<sha256> and C<sha512> require glibc E<ge> 2.7 (check crypt(3) inside\nthe guest).\n\nC<md5> will work with relatively old Linux guests (eg. RHEL 3), but\nis not secure against modern attacks.\n\nThe default is C<sha512> unless libguestfs detects an old guest that\ndidn't have support for SHA-512, in which case it will use C<md5>.\nYou can override libguestfs by specifying this option.\n\nNote this does not change the default password encryption used\nby the guest when you create new user accounts inside the guest.\nIf you want to do that, then you should use the I<--edit> option\nto modify C</etc/sysconfig/authconfig> (Fedora, RHEL) or\nC</etc/pam.d/common-password> (Debian, Ubuntu).";
     (
-      [ L"selinux-relabel" ],
-      Getopt.Set selinux_relabel,
-      s_"Relabel files with correct SELinux labels"
+      [ L"no-selinux-relabel" ],
+      Getopt.Set no_selinux_relabel,
+      s_"Do not relabel files with correct SELinux labels"
     ),
-    None, "Relabel files in the guest so that they have the correct SELinux label.\n\nThis will attempt to relabel files immediately, but if the operation fails\nthis will instead touch F</.autorelabel> on the image to schedule a\nrelabel operation for the next time the image boots.\n\nYou should only use this option for guests which support SELinux.";
+    None, "Do not attempt to correct the SELinux labels of files in the guest.\n\nIn such guests that support SELinux, customization automatically\nrelabels files so that they have the correct SELinux label.  (The\nrelabeling is performed immediately, but if the operation fails,\ncustomization will instead touch F</.autorelabel> on the image to\nschedule a relabel operation for the next time the image boots.)  This\noption disables the automatic relabeling.\n\nThe option is a no-op for guests that do not support SELinux.";
     (
       [ L"sm-credentials" ],
       Getopt.String (

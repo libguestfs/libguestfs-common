@@ -101,8 +101,8 @@ and flags = {
       (* --no-logfile *)
   password_crypto : Password.password_crypto option;
       (* --password-crypto md5|sha256|sha512 *)
-  selinux_relabel : bool;
-      (* --selinux-relabel *)
+  no_selinux_relabel : bool;
+      (* --no-selinux-relabel *)
   sm_credentials : Subscription_manager.sm_credentials option;
       (* --sm-credentials SELECTOR *)
 }
