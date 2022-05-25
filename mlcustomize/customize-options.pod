@@ -310,6 +310,10 @@ It cannot delete directories, only regular files.
 
 =back
 
+=item B<--selinux-relabel>
+
+This is a compatibility option that does nothing.
+
 =item B<--sm-attach> SELECTOR
 
 Attach to a pool using C<subscription-manager>.

@@ -103,6 +103,8 @@ and flags = {
       (* --password-crypto md5|sha256|sha512 *)
   no_selinux_relabel : bool;
       (* --no-selinux-relabel *)
+  selinux_relabel_ignored : bool;
+      (* --selinux-relabel *)
   sm_credentials : Subscription_manager.sm_credentials option;
       (* --sm-credentials SELECTOR *)
 }

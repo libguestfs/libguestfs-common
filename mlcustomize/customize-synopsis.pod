@@ -13,4 +13,4 @@
     [--uninstall PKG,PKG..] [--update] [--upload FILE:DEST]
     [--write FILE:CONTENT] [--no-logfile]
     [--password-crypto md5|sha256|sha512] [--no-selinux-relabel]
-    [--sm-credentials SELECTOR]
+    [--selinux-relabel] [--sm-credentials SELECTOR]

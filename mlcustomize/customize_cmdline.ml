@@ -111,6 +111,8 @@ and flags = {
       (* --password-crypto md5|sha256|sha512 *)
   no_selinux_relabel : bool;
       (* --no-selinux-relabel *)
+  selinux_relabel_ignored : bool;
+      (* --selinux-relabel *)
   sm_credentials : Subscription_manager.sm_credentials option;
       (* --sm-credentials SELECTOR *)
 }
@@ -122,6 +124,7 @@ let rec argspec () =
   let scrub_logfile = ref false in
   let password_crypto = ref None in
   let no_selinux_relabel = ref false in
+  let selinux_relabel_ignored = ref false in
   let sm_credentials = ref None in
 
   let rec get_ops () = {
@@ -132,6 +135,7 @@ let rec argspec () =
     scrub_logfile = !scrub_logfile;
     password_crypto = !password_crypto;
     no_selinux_relabel = !no_selinux_relabel;
+    selinux_relabel_ignored = !selinux_relabel_ignored;
     sm_credentials = !sm_credentials;
   }
   in
@@ -464,6 +468,12 @@ let rec argspec () =
       s_"Do not relabel files with correct SELinux labels"
     ),
     None, "Do not attempt to correct the SELinux labels of files in the guest.\n\nIn such guests that support SELinux, customization automatically\nrelabels files so that they have the correct SELinux label.  (The\nrelabeling is performed immediately, but if the operation fails,\ncustomization will instead touch F</.autorelabel> on the image to\nschedule a relabel operation for the next time the image boots.)  This\noption disables the automatic relabeling.\n\nThe option is a no-op for guests that do not support SELinux.";
+    (
+      [ L"selinux-relabel" ],
+      Getopt.Set selinux_relabel_ignored,
+      s_"Compatibility option doing nothing"
+    ),
+    None, "This is a compatibility option that does nothing.";
     (
       [ L"sm-credentials" ],
       Getopt.String (
