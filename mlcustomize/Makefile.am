@@ -38,10 +38,12 @@ generator_built = \
 
 SOURCES_MLI = \
 	firstboot.mli \
+	guest_packages.mli \
 	SELinux_relabel.mli
 
 SOURCES_ML = \
 	firstboot.ml \
+	guest_packages.ml \
 	SELinux_relabel.ml
 
 if HAVE_OCAML
