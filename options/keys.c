@@ -128,17 +128,23 @@ read_first_line_from_file (const char *filename)
 char **
 get_keys (struct key_store *ks, const char *device, const char *uuid)
 {
-  size_t i, j, len;
+  size_t i, j, nmemb;
   char **r;
   char *s;
 
   /* We know the returned list must have at least one element and not
    * more than ks->nr_keys.
    */
-  len = 1;
-  if (ks)
-    len = MIN (1, ks->nr_keys);
-  r = calloc (len+1, sizeof (char *));
+  nmemb = 1;
+  if (ks && ks->nr_keys > nmemb)
+    nmemb = ks->nr_keys;
+
+  /* make room for the terminating NULL */
+  if (nmemb == (size_t)-1)
+    error (EXIT_FAILURE, 0, _("size_t overflow"));
+  nmemb++;
+
+  r = calloc (nmemb, sizeof (char *));
   if (r == NULL)
     error (EXIT_FAILURE, errno, "calloc");
 
