@@ -420,16 +420,6 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
   let getopt = Getopt.create argspec ?anon_fun usage_msg in
   { getopt; ks; debug_gc }
 
-let key_store_to_cli { keys } =
-  Hashtbl.fold (
-    fun k v acc ->
-      let arg =
-        match v with
-        | KeyString s -> sprintf "%s:key:%s" k s
-        | KeyFileName f -> sprintf "%s:file:%s" k f in
-      "--key" :: arg :: acc
-  ) keys []
-
 (* Run an external command, slurp up the output as a list of lines. *)
 let external_command ?(echo_cmd = true) cmd =
   if echo_cmd then
