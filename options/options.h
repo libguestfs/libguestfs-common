@@ -138,6 +138,12 @@ struct key_store {
  * stands for the encrypted block device, or LUKS UUID).
  */
 struct matching_key {
+  /* True iff the passphrase should be reconstructed using Clevis, talking to
+   * Tang servers over the network.
+   */
+  bool clevis;
+
+  /* Explicit passphrase, otherwise. */
   char *passphrase;
 };
 

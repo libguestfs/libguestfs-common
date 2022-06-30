@@ -161,11 +161,13 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
         s = strdup (key->string.s);
         if (!s)
           error (EXIT_FAILURE, errno, "strdup");
+        match->clevis = false;
         match->passphrase = s;
         ++match;
         break;
       case key_file:
         s = read_first_line_from_file (key->file.name);
+        match->clevis = false;
         match->passphrase = s;
         ++match;
         break;
@@ -178,6 +180,7 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
     s = read_key (device);
     if (!s)
       error (EXIT_FAILURE, 0, _("could not read key from user"));
+    match->clevis = false;
     match->passphrase = s;
     ++match;
   }
@@ -194,7 +197,9 @@ free_keys (struct matching_key *keys, size_t nr_matches)
   for (i = 0; i < nr_matches; ++i) {
     struct matching_key *key = keys + i;
 
-    free (key->passphrase);
+    assert (key->clevis == (key->passphrase == NULL));
+    if (!key->clevis)
+      free (key->passphrase);
   }
   free (keys);
 }

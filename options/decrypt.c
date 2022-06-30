@@ -157,7 +157,18 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
       int r;
 
       guestfs_push_error_handler (g, NULL, NULL);
-      r = guestfs_cryptsetup_open (g, mountable, key->passphrase, mapname, -1);
+      assert (key->clevis == (key->passphrase == NULL));
+      if (key->clevis)
+#ifdef GUESTFS_HAVE_CLEVIS_LUKS_UNLOCK
+        r = guestfs_clevis_luks_unlock (g, mountable, mapname);
+#else
+        error (EXIT_FAILURE, 0,
+               _("'clevis_luks_unlock', needed for decrypting %s, is "
+                 "unavailable in this libguestfs version"), mountable);
+#endif
+      else
+        r = guestfs_cryptsetup_open (g, mountable, key->passphrase, mapname,
+                                     -1);
       guestfs_pop_error_handler (g);
 
       if (r == 0)
