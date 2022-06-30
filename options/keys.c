@@ -154,7 +154,7 @@ get_keys (struct key_store *ks, const char *device, const char *uuid)
     for (i = 0; i < ks->nr_keys; ++i) {
       struct key_store_key *key = &ks->keys[i];
 
-      if (STRNEQ (key->id, device) && (uuid && STRNEQ (key->id, uuid)))
+      if (STRNEQ (key->id, device) && (!uuid || STRNEQ (key->id, uuid)))
         continue;
 
       switch (key->type) {
