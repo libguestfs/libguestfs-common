@@ -124,10 +124,10 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
   while ((mountable = *mnt_scan++) != NULL) {
     CLEANUP_FREE char *type = NULL;
     CLEANUP_FREE char *uuid = NULL;
-    CLEANUP_FREE_STRING_LIST char **keys = NULL;
+    char **keys;
+    size_t nr_matches;
     CLEANUP_FREE char *mapname = NULL;
-    const char * const *key_scan;
-    const char *key;
+    size_t scan;
 
     type = guestfs_vfs_type (g, mountable);
     if (type == NULL)
@@ -144,16 +144,16 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
     /* Grab the keys that we should try with this device, based on device name,
      * or UUID (if any).
      */
-    keys = get_keys (ks, mountable, uuid);
-    assert (keys[0] != NULL);
+    keys = get_keys (ks, mountable, uuid, &nr_matches);
+    assert (nr_matches > 0);
 
     /* Generate a node name for the plaintext (decrypted) device node. */
     if (uuid == NULL || asprintf (&mapname, "luks-%s", uuid) == -1)
       mapname = make_mapname (mountable);
 
     /* Try each key in turn. */
-    key_scan = (const char * const *)keys;
-    while ((key = *key_scan++) != NULL) {
+    for (scan = 0; scan < nr_matches; ++scan) {
+      const char *key = keys[scan];
       int r;
 
       guestfs_push_error_handler (g, NULL, NULL);
@@ -164,13 +164,14 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
         break;
     }
 
-    if (key == NULL)
+    if (scan == nr_matches)
       error (EXIT_FAILURE, 0,
              _("could not find key to open LUKS encrypted %s.\n\n"
                "Try using --key on the command line.\n\n"
                "Original error: %s (%d)"),
              mountable, guestfs_last_error (g), guestfs_last_errno (g));
 
+    free_keys (keys, nr_matches);
     decrypted_some = true;
   }
 

@@ -126,7 +126,8 @@ read_first_line_from_file (const char *filename)
  * keystore, ask the user.
  */
 char **
-get_keys (struct key_store *ks, const char *device, const char *uuid)
+get_keys (struct key_store *ks, const char *device, const char *uuid,
+          size_t *nr_matches)
 {
   size_t i, j, nmemb;
   char **r;
@@ -139,14 +140,12 @@ get_keys (struct key_store *ks, const char *device, const char *uuid)
   if (ks && ks->nr_keys > nmemb)
     nmemb = ks->nr_keys;
 
-  /* make room for the terminating NULL */
-  if (nmemb == (size_t)-1)
+  if (nmemb > (size_t)-1 / sizeof *r)
     error (EXIT_FAILURE, 0, _("size_t overflow"));
-  nmemb++;
 
-  r = calloc (nmemb, sizeof (char *));
+  r = malloc (nmemb * sizeof *r);
   if (r == NULL)
-    error (EXIT_FAILURE, errno, "calloc");
+    error (EXIT_FAILURE, errno, "malloc");
 
   j = 0;
 
@@ -177,10 +176,21 @@ get_keys (struct key_store *ks, const char *device, const char *uuid)
     s = read_key (device);
     if (!s)
       error (EXIT_FAILURE, 0, _("could not read key from user"));
-    r[0] = s;
+    r[j++] = s;
   }
 
+  *nr_matches = j;
   return r;
+}
+
+void
+free_keys (char **keys, size_t nr_matches)
+{
+  size_t i;
+
+  for (i = 0; i < nr_matches; ++i)
+    free (keys[i]);
+  free (keys);
 }
 
 struct key_store *
