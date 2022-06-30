@@ -29,7 +29,7 @@ open Getopt.OptionName
 let prog = ref prog
 
 type key_store = {
-  keys : (string, key_store_key) Hashtbl.t;
+  keys : (string * key_store_key) list ref;
 }
 and key_store_key =
   | KeyString of string
@@ -376,7 +376,7 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
       )
   in
   let ks = {
-    keys = Hashtbl.create 13;
+    keys = ref [];
   } in
   let argspec = ref argspec in
   let add_argspec = List.push_back argspec in
@@ -395,9 +395,9 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
       let parts = String.nsplit ~max:3 ":" arg in
       match parts with
       | [ device; "key"; key ] ->
-         Hashtbl.replace ks.keys device (KeyString key)
+         List.push_back ks.keys (device, KeyString key)
       | [ device; "file"; file ] ->
-         Hashtbl.replace ks.keys device (KeyFileName file)
+         List.push_back ks.keys (device, KeyFileName file)
       | _ ->
          error (f_"invalid selector string for --key: %s") arg
     in
@@ -682,20 +682,13 @@ let is_btrfs_subvolume g fs =
     else raise exn
 
 let inspect_decrypt g ks =
-  (* Turn the keys in the key_store into a simpler struct, so it is possible
-   * to read it using the C API.
-   *)
-  let keys_as_list = Hashtbl.fold (
-    fun k v acc ->
-      (k, v) :: acc
-  ) ks.keys [] in
   (* Note we pass original 'g' even though it is not used by the
    * callee.  This is so that 'g' is kept as a root on the stack, and
    * so cannot be garbage collected while we are in the c_inspect_decrypt
    * function.
    *)
   c_inspect_decrypt g#ocaml_handle (Guestfs.c_pointer g#ocaml_handle)
-    keys_as_list
+    !(ks.keys)
 
 let with_timeout op timeout ?(sleep = 2) fn =
   let start_t = Unix.gettimeofday () in
