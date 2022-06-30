@@ -250,6 +250,10 @@ key_store_add_from_selector (struct key_store *ks, const char *selector)
     key.file.name = strdup (fields[2]);
     if (!key.file.name)
       error (EXIT_FAILURE, errno, "strdup");
+  } else if (STREQ (fields[1], "clevis")) {
+    key.type = key_clevis;
+    if (field_count != 2)
+      error (EXIT_FAILURE, 0, _("selector '%s': too many fields"), selector);
   } else
     error (EXIT_FAILURE, 0, _("selector '%s': invalid TYPE"), selector);
 

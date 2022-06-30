@@ -14,4 +14,10 @@ Use the specified C<KEY_STRING> as passphrase.
 
 Read the passphrase from F<FILENAME>.
 
+=item B<--key> C<ID>:clevis
+
+Attempt passphrase-less unlocking for C<ID> with Clevis, over the
+network.  Please refer to L<guestfs(3)/ENCRYPTED DISKS> for more
+information on network-bound disk encryption (NBDE).
+
 =back
