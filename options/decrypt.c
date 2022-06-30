@@ -124,7 +124,7 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
   while ((mountable = *mnt_scan++) != NULL) {
     CLEANUP_FREE char *type = NULL;
     CLEANUP_FREE char *uuid = NULL;
-    char **keys;
+    struct matching_key *keys;
     size_t nr_matches;
     CLEANUP_FREE char *mapname = NULL;
     size_t scan;
@@ -153,11 +153,11 @@ decrypt_mountables (guestfs_h *g, const char * const *mountables,
 
     /* Try each key in turn. */
     for (scan = 0; scan < nr_matches; ++scan) {
-      const char *key = keys[scan];
+      struct matching_key *key = keys + scan;
       int r;
 
       guestfs_push_error_handler (g, NULL, NULL);
-      r = guestfs_cryptsetup_open (g, mountable, key, mapname, -1);
+      r = guestfs_cryptsetup_open (g, mountable, key->passphrase, mapname, -1);
       guestfs_pop_error_handler (g);
 
       if (r == 0)

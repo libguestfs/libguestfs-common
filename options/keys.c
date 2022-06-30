@@ -125,12 +125,12 @@ read_first_line_from_file (const char *filename)
  * keystore.  There may be multiple.  If none are read from the
  * keystore, ask the user.
  */
-char **
+struct matching_key *
 get_keys (struct key_store *ks, const char *device, const char *uuid,
           size_t *nr_matches)
 {
-  size_t i, j, nmemb;
-  char **r;
+  size_t i, nmemb;
+  struct matching_key *r, *match;
   char *s;
 
   /* We know the returned list must have at least one element and not
@@ -147,7 +147,7 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
   if (r == NULL)
     error (EXIT_FAILURE, errno, "malloc");
 
-  j = 0;
+  match = r;
 
   if (ks) {
     for (i = 0; i < ks->nr_keys; ++i) {
@@ -161,35 +161,41 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
         s = strdup (key->string.s);
         if (!s)
           error (EXIT_FAILURE, errno, "strdup");
-        r[j++] = s;
+        match->passphrase = s;
+        ++match;
         break;
       case key_file:
         s = read_first_line_from_file (key->file.name);
-        r[j++] = s;
+        match->passphrase = s;
+        ++match;
         break;
       }
     }
   }
 
-  if (j == 0) {
+  if (match == r) {
     /* Key not found in the key store, ask the user for it. */
     s = read_key (device);
     if (!s)
       error (EXIT_FAILURE, 0, _("could not read key from user"));
-    r[j++] = s;
+    match->passphrase = s;
+    ++match;
   }
 
-  *nr_matches = j;
+  *nr_matches = (size_t)(match - r);
   return r;
 }
 
 void
-free_keys (char **keys, size_t nr_matches)
+free_keys (struct matching_key *keys, size_t nr_matches)
 {
   size_t i;
 
-  for (i = 0; i < nr_matches; ++i)
-    free (keys[i]);
+  for (i = 0; i < nr_matches; ++i) {
+    struct matching_key *key = keys + i;
+
+    free (key->passphrase);
+  }
   free (keys);
 }
 
