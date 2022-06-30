@@ -171,6 +171,11 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
         match->passphrase = s;
         ++match;
         break;
+      case key_clevis:
+        match->clevis = true;
+        match->passphrase = NULL;
+        ++match;
+        break;
       }
     }
   }
@@ -290,6 +295,9 @@ free_key_store (struct key_store *ks)
       break;
     case key_file:
       free (key->file.name);
+      break;
+    case key_clevis:
+      /* nothing */
       break;
     }
     free (key->id);

@@ -115,6 +115,7 @@ struct key_store_key {
   enum {
     key_string,             /* key specified as string */
     key_file,               /* key stored in a file */
+    key_clevis,             /* key reconstructed with Clevis+Tang */
   } type;
   union {
     struct {
