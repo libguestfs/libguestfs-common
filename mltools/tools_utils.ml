@@ -696,6 +696,11 @@ let is_btrfs_subvolume g fs =
     if g#last_errno () = Guestfs.Errno.errno_EINVAL then false
     else raise exn
 
+let key_store_requires_network ks =
+  List.exists (function
+               | _, KeyClevis -> true
+               | _ -> false) !(ks.keys)
+
 let inspect_decrypt g ks =
   (* Note we pass original 'g' even though it is not used by the
    * callee.  This is so that 'g' is kept as a root on the stack, and

@@ -196,6 +196,10 @@ val inspect_mount_root_ro : Guestfs.guestfs -> string -> unit
 val is_btrfs_subvolume : Guestfs.guestfs -> string -> bool
 (** Checks if a filesystem is a btrfs subvolume. *)
 
+val key_store_requires_network : key_store -> bool
+(** [key_store_requires_network ks] returns [true] iff [ks] contains at least
+    one "ID:clevis" selector. *)
+
 val inspect_decrypt : Guestfs.guestfs -> key_store -> unit
 (** Simple implementation of decryption: look for any encrypted
     partitions and decrypt them, then rescan for VGs. *)

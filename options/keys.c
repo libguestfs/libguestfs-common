@@ -284,6 +284,21 @@ key_store_import_key (struct key_store *ks, const struct key_store_key *key)
   return ks;
 }
 
+bool
+key_store_requires_network (const struct key_store *ks)
+{
+  size_t i;
+
+  if (ks == NULL)
+    return false;
+
+  for (i = 0; i < ks->nr_keys; ++i)
+    if (ks->keys[i].type == key_clevis)
+      return true;
+
+  return false;
+}
+
 void
 free_key_store (struct key_store *ks)
 {
