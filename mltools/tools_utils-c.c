@@ -76,9 +76,7 @@ guestfs_int_mllib_inspect_decrypt (value gv, value gpv, value keysv)
         caml_raise_out_of_memory ();
       break;
     default:
-      error (EXIT_FAILURE, 0,
-             "internal error: unhandled Tag_val (v) = %d",
-             Tag_val (v));
+      abort ();
     }
 
     ks = key_store_import_key (ks, &key);
