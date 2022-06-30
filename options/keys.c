@@ -212,44 +212,46 @@ free_keys (struct matching_key *keys, size_t nr_matches)
 struct key_store *
 key_store_add_from_selector (struct key_store *ks, const char *selector)
 {
-  CLEANUP_FREE_STRING_LIST char **fields =
-    guestfs_int_split_string (':', selector);
+  CLEANUP_FREE_STRING_LIST char **fields = NULL;
+  size_t field_count;
   struct key_store_key key;
 
+  fields = guestfs_int_split_string (':', selector);
   if (!fields)
     error (EXIT_FAILURE, errno, "guestfs_int_split_string");
+  field_count = guestfs_int_count_strings (fields);
 
-  if (guestfs_int_count_strings (fields) != 3) {
-   invalid_selector:
-    error (EXIT_FAILURE, 0, "invalid selector for --key: %s", selector);
-  }
-
-  /* 1: device */
+  /* field#0: ID */
+  if (field_count < 1)
+    error (EXIT_FAILURE, 0, _("selector '%s': missing ID"), selector);
   key.id = strdup (fields[0]);
   if (!key.id)
     error (EXIT_FAILURE, errno, "strdup");
 
-  /* 2: key type */
-  if (STREQ (fields[1], "key"))
-    key.type = key_string;
-  else if (STREQ (fields[1], "file"))
-    key.type = key_file;
-  else
-    goto invalid_selector;
+  /* field#1...: TYPE, and TYPE-specific properties */
+  if (field_count < 2)
+    error (EXIT_FAILURE, 0, _("selector '%s': missing TYPE"), selector);
 
-  /* 3: actual key */
-  switch (key.type) {
-  case key_string:
+  if (STREQ (fields[1], "key")) {
+    key.type = key_string;
+    if (field_count != 3)
+      error (EXIT_FAILURE, 0,
+             _("selector '%s': missing KEY_STRING, or too many fields"),
+             selector);
     key.string.s = strdup (fields[2]);
     if (!key.string.s)
       error (EXIT_FAILURE, errno, "strdup");
-    break;
-  case key_file:
+  } else if (STREQ (fields[1], "file")) {
+    key.type = key_file;
+    if (field_count != 3)
+      error (EXIT_FAILURE, 0,
+             _("selector '%s': missing FILENAME, or too many fields"),
+             selector);
     key.file.name = strdup (fields[2]);
     if (!key.file.name)
       error (EXIT_FAILURE, errno, "strdup");
-    break;
-  }
+  } else
+    error (EXIT_FAILURE, 0, _("selector '%s': invalid TYPE"), selector);
 
   return key_store_import_key (ks, &key);
 }
