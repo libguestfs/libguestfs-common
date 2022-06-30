@@ -392,14 +392,24 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
 
   if key_opts then (
     let parse_key_selector arg =
-      let parts = String.nsplit ~max:3 ":" arg in
+      let parts = String.nsplit ":" arg in
       match parts with
+      | [] ->
+        error (f_"selector '%s': missing ID") arg
+      | [ _ ] ->
+        error (f_"selector '%s': missing TYPE") arg
+      | [ _; "key" ]
+      |  _ :: "key" :: _ :: _ :: _ ->
+        error (f_"selector '%s': missing KEY_STRING, or too many fields") arg
       | [ device; "key"; key ] ->
          List.push_back ks.keys (device, KeyString key)
+      | [ _; "file" ]
+      |  _ :: "file" :: _ :: _ :: _ ->
+        error (f_"selector '%s': missing FILENAME, or too many fields") arg
       | [ device; "file"; file ] ->
          List.push_back ks.keys (device, KeyFileName file)
       | _ ->
-         error (f_"invalid selector string for --key: %s") arg
+         error (f_"selector '%s': invalid TYPE") arg
     in
 
     add_argspec ([ L"echo-keys" ],       Getopt.Unit c_set_echo_keys,       s_"Don’t turn off echo for passphrases");

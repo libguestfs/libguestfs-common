@@ -62,22 +62,28 @@ guestfs_int_mllib_inspect_decrypt (value gv, value gpv, value keysv)
       caml_raise_out_of_memory ();
 
     v = Field (elemv, 1);
-    switch (Tag_val (v)) {
-    case 0:  /* KeyString of string */
-      key.type = key_string;
-      key.string.s = strdup (String_val (Field (v, 0)));
-      if (!key.string.s)
-        caml_raise_out_of_memory ();
-      break;
-    case 1:  /* KeyFileName of string */
-      key.type = key_file;
-      key.file.name = strdup (String_val (Field (v, 0)));
-      if (!key.file.name)
-        caml_raise_out_of_memory ();
-      break;
-    default:
-      abort ();
-    }
+    if (Is_block (v))
+      switch (Tag_val (v)) {
+      case 0:  /* KeyString of string */
+        key.type = key_string;
+        key.string.s = strdup (String_val (Field (v, 0)));
+        if (!key.string.s)
+          caml_raise_out_of_memory ();
+        break;
+      case 1:  /* KeyFileName of string */
+        key.type = key_file;
+        key.file.name = strdup (String_val (Field (v, 0)));
+        if (!key.file.name)
+          caml_raise_out_of_memory ();
+        break;
+      default:
+        abort ();
+      }
+    else
+      switch (Int_val (v)) {
+      default:
+        abort ();
+      }
 
     ks = key_store_import_key (ks, &key);
 
