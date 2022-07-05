@@ -73,9 +73,9 @@ let install_command packages package_management =
   | "zypper" -> sprintf "zypper -n in -l %s" quoted_args
 
   | "unknown" ->
-    error_unknown_package_manager (s_"--install")
+    error_unknown_package_manager "--install"
   | pm ->
-    error_unimplemented_package_manager (s_"--install") pm
+    error_unimplemented_package_manager "--install" pm
 
 let update_command package_management =
   match package_management with
@@ -103,9 +103,9 @@ let update_command package_management =
   | "zypper" -> "zypper -n update -l"
 
   | "unknown" ->
-    error_unknown_package_manager (s_"--update")
+    error_unknown_package_manager "--update"
   | pm ->
-    error_unimplemented_package_manager (s_"--update") pm
+    error_unimplemented_package_manager "--update" pm
 
 let uninstall_command packages package_management =
   let quoted_args = String.concat " " (List.map quote packages) in
@@ -127,6 +127,6 @@ let uninstall_command packages package_management =
   | "zypper" -> sprintf "zypper -n rm %s" quoted_args
 
   | "unknown" ->
-    error_unknown_package_manager (s_"--uninstall")
+    error_unknown_package_manager "--uninstall"
   | pm ->
-    error_unimplemented_package_manager (s_"--uninstall") pm
+    error_unimplemented_package_manager "--uninstall" pm
