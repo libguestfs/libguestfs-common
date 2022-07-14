@@ -23,23 +23,29 @@ open Common_gettext.Gettext
 open Unix
 open Printf
 
-(* List of files to unlink. *)
-let files = ref []
+type action =
+  | Unlink of string     (* filename *)
+  | Rm_rf of string      (* directory *)
+  | Kill of int * int    (* signal, pid *)
+  | Fn of (unit -> unit) (* generic function *)
 
-(* List of directories to remove. *)
-let rmdirs = ref []
-
-(* List of PIDs to kill. *)
-let kills = ref []
-
-(* List of functions to call. *)
-let fns = ref []
+(* List of actions. *)
+let actions = ref []
 
 (* Perform a single exit action, printing any exception but
  * otherwise ignoring failures.
  *)
-let do_action f arg =
-  try f arg with exn -> debug "%s" (Printexc.to_string exn)
+let do_action action =
+  try
+    match action with
+    | Unlink file -> Unix.unlink file
+    | Rm_rf dir ->
+       let cmd = sprintf "rm -rf -- %s" (Filename.quote dir) in
+       ignore (Tools_utils.shell_command cmd)
+    | Kill (signal, pid) ->
+       kill pid signal
+    | Fn f -> f ()
+  with exn -> debug "%s" (Printexc.to_string exn)
 
 (* Make sure the actions are performed only once. *)
 let done_actions = ref false
@@ -47,15 +53,7 @@ let done_actions = ref false
 (* Perform the exit actions. *)
 let do_actions () =
   if not !done_actions then (
-    List.iter (do_action (fun f -> f ())) !fns;
-    List.iter (do_action (fun (signal, pid) -> kill pid signal)) !kills;
-    List.iter (do_action (fun file -> Unix.unlink file)) !files;
-    List.iter (do_action (
-      fun dir ->
-        let cmd = sprintf "rm -rf -- %s" (Filename.quote dir) in
-        ignore (Tools_utils.shell_command cmd)
-      )
-    ) !rmdirs;
+    List.iter do_action !actions
   );
   done_actions := true
 
@@ -96,16 +94,16 @@ let register () =
 
 let f fn =
   register ();
-  List.push_front fn fns
+  List.push_front (Fn fn) actions
 
 let unlink filename =
   register ();
-  List.push_front filename files
+  List.push_front (Unlink filename) actions
 
 let rm_rf dir =
   register ();
-  List.push_front dir rmdirs
+  List.push_front (Rm_rf dir) actions
 
 let kill ?(signal = Sys.sigterm) pid =
   register ();
-  List.push_front (signal, pid) kills
+  List.push_front (Kill (signal, pid)) actions
