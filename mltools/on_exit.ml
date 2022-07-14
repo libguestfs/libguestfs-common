@@ -102,7 +102,7 @@ let unlink filename =
   register ();
   List.push_front filename files
 
-let rmdir dir =
+let rm_rf dir =
   register ();
   List.push_front dir rmdirs
 

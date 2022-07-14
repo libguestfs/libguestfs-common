@@ -47,7 +47,7 @@ val f : (unit -> unit) -> unit
 val unlink : string -> unit
 (** Unlink a single temporary file on exit. *)
 
-val rmdir : string -> unit
+val rm_rf : string -> unit
 (** Recursively remove a temporary directory on exit (using [rm -rf]). *)
 
 val kill : ?signal:int -> int -> unit
