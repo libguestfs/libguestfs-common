@@ -28,6 +28,12 @@
     killing another process, so we provide simple
     wrappers for those common actions here.
 
+    Actions can be ordered by setting the optional [?prio]
+    parameter in the range 0..9999.  By default actions
+    have priority 5000.  Lower numbered actions run first.
+    Higher numbered actions run last.  So to have an action
+    run at the very end before exit you might use [~prio:9999]
+
     Note this module registers signal handlers for
     SIGINT, SIGQUIT, SIGTERM and SIGHUP.  This means
     that any program that links with mltools.cmxa
@@ -39,18 +45,20 @@
     Your cleanup action might no longer run unless the
     program calls {!Stdlib.exit}. *)
 
-val f : (unit -> unit) -> unit
+val f : ?prio:int -> (unit -> unit) -> unit
 (** Register a function [f] which runs when the program exits.
     Similar to [Stdlib.at_exit] but also runs if the program is
-    killed with a signal that we can catch. *)
+    killed with a signal that we can catch.
 
-val unlink : string -> unit
+    [?prio] is the priority, default 5000.  See the description above. *)
+
+val unlink : ?prio:int -> string -> unit
 (** Unlink a single temporary file on exit. *)
 
-val rm_rf : string -> unit
+val rm_rf : ?prio:int -> string -> unit
 (** Recursively remove a temporary directory on exit (using [rm -rf]). *)
 
-val kill : ?signal:int -> int -> unit
+val kill : ?prio:int -> ?signal:int -> int -> unit
 (** Kill [PID] on exit.  The signal sent defaults to [Sys.sigterm].
 
     Use this with care since you can end up unintentionally killing

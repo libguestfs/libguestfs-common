@@ -29,7 +29,7 @@ type action =
   | Kill of int * int    (* signal, pid *)
   | Fn of (unit -> unit) (* generic function *)
 
-(* List of actions. *)
+(* List of (priority, action). *)
 let actions = ref []
 
 (* Perform a single exit action, printing any exception but
@@ -50,10 +50,12 @@ let do_action action =
 (* Make sure the actions are performed only once. *)
 let done_actions = ref false
 
-(* Perform the exit actions. *)
+(* Perform the exit actions in priority order (lowest prio first). *)
 let do_actions () =
   if not !done_actions then (
-    List.iter do_action !actions
+    let actions = List.sort (fun (a, _) (b, _) -> compare a b) !actions in
+    let actions = List.map snd actions in
+    List.iter do_action actions
   );
   done_actions := true
 
@@ -92,18 +94,18 @@ let register () =
   );
   registered := true
 
-let f fn =
+let f ?(prio = 5000) fn =
   register ();
-  List.push_front (Fn fn) actions
+  List.push_front (prio, Fn fn) actions
 
-let unlink filename =
+let unlink ?(prio = 5000) filename =
   register ();
-  List.push_front (Unlink filename) actions
+  List.push_front (prio, Unlink filename) actions
 
-let rm_rf dir =
+let rm_rf ?(prio = 5000) dir =
   register ();
-  List.push_front (Rm_rf dir) actions
+  List.push_front (prio, Rm_rf dir) actions
 
-let kill ?(signal = Sys.sigterm) pid =
+let kill ?(prio = 5000) ?(signal = Sys.sigterm) pid =
   register ();
-  List.push_front (Kill (signal, pid)) actions
+  List.push_front (prio, Kill (signal, pid)) actions
