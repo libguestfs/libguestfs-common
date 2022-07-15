@@ -52,7 +52,7 @@ let do_actions () =
     List.iter (do_action (fun file -> Unix.unlink file)) !files;
     List.iter (do_action (
       fun dir ->
-        let cmd = sprintf "rm -rf %s" (Filename.quote dir) in
+        let cmd = sprintf "rm -rf -- %s" (Filename.quote dir) in
         ignore (Tools_utils.shell_command cmd)
       )
     ) !rmdirs;
