@@ -278,7 +278,6 @@ guestfs_int_pcre_sub (value nv)
   CAMLparam1 (nv);
   const int n = Int_val (nv);
   CAMLlocal1 (strv);
-  CLEANUP_FREE char *str = NULL;
   const struct last_match *m = pthread_getspecific (last_match);
   PCRE2_SIZE len;
   int r;
