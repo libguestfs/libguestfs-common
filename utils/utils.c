@@ -654,7 +654,8 @@ guestfs_int_hexdump (const void *data, size_t len, FILE *fp)
 const char *
 guestfs_int_strerror (int errnum, char *buf, size_t buflen)
 {
-#ifdef _GNU_SOURCE
+#ifdef HAVE_DECL_STRERROR_R
+#ifdef STRERROR_R_CHAR_P
   /* GNU strerror_r */
   return strerror_r (errnum, buf, buflen);
 #else
@@ -663,5 +664,8 @@ guestfs_int_strerror (int errnum, char *buf, size_t buflen)
   if (err > 0)
     snprintf (buf, buflen, "error number %d", errnum);
   return buf;
+#endif
+#else /* !HAVE_DECL_STRERROR_R */
+  return strerror (errnum);	/* YOLO it. */
 #endif
 }
