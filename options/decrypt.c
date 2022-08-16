@@ -38,6 +38,8 @@
 
 #include "options.h"
 
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+
 static void
 append_char (size_t *idx, char *buffer, char c)
 {
@@ -54,6 +56,8 @@ append_char (size_t *idx, char *buffer, char c)
   /* advance */
   ++*idx;
 }
+
+
 
 /**
  * Make a LUKS map name from the partition or logical volume name, eg.
