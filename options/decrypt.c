@@ -38,7 +38,9 @@
 
 #include "options.h"
 
+#ifndef __clang__
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
 
 static void
 append_char (size_t *idx, char *buffer, char c)
