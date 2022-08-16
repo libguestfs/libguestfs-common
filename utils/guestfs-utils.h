@@ -32,6 +32,7 @@
 #ifndef GUESTFS_UTILS_H_
 #define GUESTFS_UTILS_H_
 
+#include <stdio.h>
 #include <stdbool.h>
 
 #include "guestfs-internal-all.h"
