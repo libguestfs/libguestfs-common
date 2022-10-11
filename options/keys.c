@@ -323,4 +323,6 @@ free_key_store (struct key_store *ks)
     }
     free (key->id);
   }
+
+  free (ks);
 }
