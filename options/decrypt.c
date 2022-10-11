@@ -59,8 +59,6 @@ append_char (size_t *idx, char *buffer, char c)
   ++*idx;
 }
 
-
-
 /**
  * Make a LUKS map name from the partition or logical volume name, eg.
  * C<"/dev/vda2" =E<gt> "cryptvda2">, or C<"/dev/vg-ssd/lv-root7" =E<gt>
