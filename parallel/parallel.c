@@ -172,7 +172,7 @@ worker_thread (void *thread_data_vp)
   thread_data->r = 0;
 
   if (thread_data->verbose)
-    fprintf (stderr, "parallel: thread %zu starting\n",
+    fprintf (stderr, "parallel: thread %zu: starting\n",
              thread_data->thread_num);
 
   while (1) {
@@ -186,7 +186,7 @@ worker_thread (void *thread_data_vp)
 
     /* Take the next domain from the list. */
     if (thread_data->verbose)
-      fprintf (stderr, "parallel: thread %zu waiting to get work\n",
+      fprintf (stderr, "parallel: thread %zu: waiting to get work\n",
                thread_data->thread_num);
 
     err = pthread_mutex_lock (&take_mutex);
@@ -207,7 +207,7 @@ worker_thread (void *thread_data_vp)
       break;
 
     if (thread_data->verbose)
-      fprintf (stderr, "parallel: thread %zu taking domain %zu\n",
+      fprintf (stderr, "parallel: thread %zu: taking domain %zu\n",
                thread_data->thread_num, i);
 
     fp = open_memstream (&output, &output_len);
@@ -240,7 +240,7 @@ worker_thread (void *thread_data_vp)
 
       if (thread_data->verbose)
         fprintf (stderr,
-                 "parallel: thread %zu work function returned an error\n",
+                 "parallel: thread %zu: work function returned an error\n",
                  thread_data->thread_num);
     }
 
@@ -250,16 +250,20 @@ worker_thread (void *thread_data_vp)
     /* Retire this domain.  We have to retire domains in order, which
      * may mean waiting for another thread to finish here.
      */
-    if (thread_data->verbose)
-      fprintf (stderr, "parallel: thread %zu waiting to retire domain %zu\n",
-               thread_data->thread_num, i);
-
     err = pthread_mutex_lock (&retire_mutex);
     if (err != 0) {
       thread_failure ("pthread_mutex_lock", err);
       thread_data->r = -1;
       return &thread_data->r;
     }
+
+    if (thread_data->verbose)
+      fprintf (stderr, "parallel: thread %zu: "
+               "waiting to retire domain %zu "
+               "(next domain to retire %zu)"
+               "\n",
+               thread_data->thread_num, i, next_domain_to_retire);
+
     while (next_domain_to_retire != i) {
       err = pthread_cond_wait (&retire_cond, &retire_mutex);
       if (err != 0) {
@@ -271,13 +275,18 @@ worker_thread (void *thread_data_vp)
     }
 
     if (thread_data->verbose)
-      fprintf (stderr, "parallel: thread %zu retiring domain %zu\n",
+      fprintf (stderr, "parallel: thread %zu: retiring domain %zu\n",
                thread_data->thread_num, i);
 
     /* Retire domain. */
     printf ("%s", output);
 
     /* Update next_domain_to_retire and tell other threads. */
+    if (thread_data->verbose)
+      fprintf (stderr, "parallel: thread %zu: "
+               "next domain to retire %zu -> %zu\n",
+               thread_data->thread_num, next_domain_to_retire, i+1);
+
     next_domain_to_retire = i+1;
     pthread_cond_broadcast (&retire_cond);
     err = pthread_mutex_unlock (&retire_mutex);
@@ -289,7 +298,7 @@ worker_thread (void *thread_data_vp)
   }
 
   if (thread_data->verbose)
-    fprintf (stderr, "parallel: thread %zu exiting (r = %d)\n",
+    fprintf (stderr, "parallel: thread %zu: exiting (r = %d)\n",
              thread_data->thread_num, thread_data->r);
 
   return &thread_data->r;
