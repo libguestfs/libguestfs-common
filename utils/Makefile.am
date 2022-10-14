@@ -22,6 +22,7 @@ noinst_LTLIBRARIES = libutils.la
 libutils_la_SOURCES = \
 	cleanups.c \
 	cleanups.h \
+	environ.c \
 	gnulib-cleanups.c \
 	guestfs-stringlists-utils.h \
 	guestfs-utils.h \

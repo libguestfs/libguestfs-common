@@ -110,4 +110,7 @@ extern const char *guestfs_int_strerror (int errnum, char *buf, size_t buflen);
       fputs ("\033[0m", (fp));                   \
   } while (0)
 
+/* environ.c */
+extern char **guestfs_int_copy_environ (char **env, ...);
+
 #endif /* GUESTFS_UTILS_H_ */
