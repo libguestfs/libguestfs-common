@@ -37,8 +37,6 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <nbdkit-plugin.h>
-
 #include "guestfs-stringlists-utils.h"
 #include "guestfs-utils.h"
 
