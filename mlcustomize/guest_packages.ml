@@ -100,7 +100,7 @@ let update_command package_management =
   | "urpmi" ->  "urpmi --auto-select"
   | "xbps" ->   "xbps-install -Suy"
   | "yum" ->    "yum -y update"
-  | "zypper" -> "zypper -n update -l"
+  | "zypper" -> "zypper -n dup -l"
 
   | "unknown" ->
     error_unknown_package_manager "--update"
