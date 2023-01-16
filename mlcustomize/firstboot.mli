@@ -26,6 +26,10 @@ val add_firstboot_script : Guestfs.guestfs -> string -> ?prio:int -> string ->
 
       [content] is the contents of the script, {b not} a filename.
 
+      The script is running using the shell (usually [/bin/sh]) on Linux
+      or as a Windows batch file.  To use Windows Powershell, see
+      {!add_firstboot_powershell} instead.
+
       The actual name of the script on the guest filesystem is made of [name]
       with all characters but alphanumeric replaced with dashes.
 
@@ -38,3 +42,12 @@ val add_firstboot_script : Guestfs.guestfs -> string -> ?prio:int -> string ->
 
       For Linux guests using SELinux you should make sure the
       filesystem is relabelled after calling this. *)
+
+val add_firstboot_powershell : Guestfs.guestfs -> string ->
+                               ?prio:int -> string -> string list -> unit
+(** [add_firstboot_powershell] is like {!add_firstboot_script} except
+    that it adds a Windows Powershell script instead of a batch
+    file.
+
+    The parameters are: [g root prio name lines] (where the Powershell
+    script is passed in as lines of code). *)
