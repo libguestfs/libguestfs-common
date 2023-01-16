@@ -21,6 +21,9 @@ val add_firstboot_script : Guestfs.guestfs -> string -> ?prio:int -> string ->
   (** [add_firstboot_script g root prio name content] adds a firstboot
       script called [name] containing [content] with priority [prio].
 
+      [g] is the guestfs handle.  The disks must be mounted up and
+      inspection data must be available.
+
       [content] is the contents of the script, {b not} a filename.
 
       The actual name of the script on the guest filesystem is made of [name]
