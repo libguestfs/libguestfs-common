@@ -51,6 +51,10 @@ and op = [
       (* --firstboot-install PKG,PKG.. *)
   | `Hostname of string
       (* --hostname HOSTNAME *)
+  | `InjectQemuGA of string
+      (* --inject-qemu-ga METHOD *)
+  | `InjectVirtioWin of string
+      (* --inject-virtio-win METHOD *)
   | `InstallPackages of string list
       (* --install PKG,PKG.. *)
   | `Link of string * string list

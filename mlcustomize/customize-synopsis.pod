@@ -3,6 +3,7 @@
     [--copy-in LOCALPATH:REMOTEDIR] [--delete PATH] [--edit FILE:EXPR]
     [--firstboot SCRIPT] [--firstboot-command 'CMD+ARGS']
     [--firstboot-install PKG,PKG..] [--hostname HOSTNAME]
+    [--inject-qemu-ga METHOD] [--inject-virtio-win METHOD]
     [--install PKG,PKG..] [--link TARGET:LINK[:LINK..]] [--mkdir DIR]
     [--move SOURCE:DEST] [--password USER:SELECTOR]
     [--root-password SELECTOR] [--run SCRIPT]

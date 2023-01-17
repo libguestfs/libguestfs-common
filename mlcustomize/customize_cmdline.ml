@@ -59,6 +59,10 @@ and op = [
       (* --firstboot-install PKG,PKG.. *)
   | `Hostname of string
       (* --hostname HOSTNAME *)
+  | `InjectQemuGA of string
+      (* --inject-qemu-ga METHOD *)
+  | `InjectVirtioWin of string
+      (* --inject-virtio-win METHOD *)
   | `InstallPackages of string list
       (* --install PKG,PKG.. *)
   | `Link of string * string list
@@ -262,6 +266,18 @@ let rec argspec () =
       s_"Set the hostname"
     ),
     Some "HOSTNAME", "Set the hostname of the guest to C<HOSTNAME>.  You can use a\ndotted hostname.domainname (FQDN) if you want.";
+    (
+      [ L"inject-qemu-ga" ],
+      Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectQemuGA s) ops),
+      s_"Inject the QEMU Guest Agent into a Windows guest"
+    ),
+    Some "METHOD", "Inject the QEMU Guest Agent into a Windows guest.  The guest\nagent communicates with qemu through a socket in order to\nprovide enhanced features (see L<qemu-ga(8)>).  This operation\nalso injects a firstboot script so that the Guest Agent is\ninstalled when the guest boots.\n\nThe parameter is the same as used by the I<--inject-virtio-win> operation.\n\nNote that to do a full conversion of a Windows guest from a\nforeign hypervisor like VMware (which involves many other operations)\nyou should use the L<virt-v2v(1)> tool instead of this.";
+    (
+      [ L"inject-virtio-win" ],
+      Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectVirtioWin s) ops),
+      s_"Inject virtio-win drivers into a Windows guest"
+    ),
+    Some "METHOD", "Inject virtio-win drivers into a Windows guest.  These drivers\nadd virtio accelerated drivers suitable when running on top of\na hypervisor that supports virtio (such as qemu/KVM).  The\noperation also adjusts the Windows Registry so that the drivers\nare installed when the guest boots.\n\nThe parameter can be one of:\n\n=over 4\n\n=item ISO\n\nThe path to the ISO image containing the virtio-win drivers\n(eg. F</usr/share/virtio-win/virtio-win.iso>).\n\n=item DIR\n\nThe directory containing the unpacked virtio-win drivers\n(eg. F</usr/share/virtio-win>).\n\n=item B<\"osinfo\">\n\nThe literal string C<\"osinfo\"> means to use the\nlibosinfo database to locate the drivers.  (See\nL<osinfo-query(1)>.\n\n=back\n\nNote that to do a full conversion of a Windows guest from a\nforeign hypervisor like VMware (which involves many other operations)\nyou should use the L<virt-v2v(1)> tool instead of this.";
     (
       [ L"install" ],
       Getopt.String (
