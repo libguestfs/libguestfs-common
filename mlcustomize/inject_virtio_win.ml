@@ -66,7 +66,29 @@ type virtio_win_installed = {
   virtio_1_0 : bool;
 }
 
-let from_environment g root datadir =
+let rec from_environment g root datadir =
+  let t = get_inspection g root in
+
+  let virtio_win, was_set =
+    try Sys.getenv "VIRTIO_WIN", true
+    with Not_found ->
+      try Sys.getenv "VIRTIO_WIN_DIR" (* old name for VIRTIO_WIN *), true
+      with Not_found ->
+        let iso = datadir // "virtio-win" // "virtio-win.iso" in
+        (if Sys.file_exists iso then iso
+         else datadir // "virtio-win"), false in
+
+  { t with virtio_win; was_set }
+
+and from_path g root path =
+  let t = get_inspection g root in
+  { t with virtio_win = path; was_set = true }
+
+and from_libosinfo g root =
+  let t = get_inspection g root in
+  { t with virtio_win = ""; was_set = false }
+
+and get_inspection g root =
   (* Fail hard if inspection hasn't been done or it's not a Windows
    * guest.  If it happens it indicates an internal error in the
    * calling code.
@@ -82,19 +104,10 @@ let from_environment g root datadir =
     g#inspect_get_windows_current_control_set root in
   let i_windows_systemroot = g#inspect_get_windows_systemroot root in
 
-  let virtio_win, was_set =
-    try Sys.getenv "VIRTIO_WIN", true
-    with Not_found ->
-      try Sys.getenv "VIRTIO_WIN_DIR" (* old name for VIRTIO_WIN *), true
-      with Not_found ->
-        let iso = datadir // "virtio-win" // "virtio-win.iso" in
-        (if Sys.file_exists iso then iso
-         else datadir // "virtio-win"), false in
-
   { g; root;
     i_arch; i_major_version; i_minor_version; i_osinfo;
     i_product_variant; i_windows_current_control_set; i_windows_systemroot;
-    virtio_win; was_set }
+    virtio_win = ""; was_set = false }
 
 let scsi_class_guid = "{4D36E97B-E325-11CE-BFC1-08002BE10318}"
 let viostor_legacy_pciid = "VEN_1AF4&DEV_1001&SUBSYS_00021AF4&REV_00"

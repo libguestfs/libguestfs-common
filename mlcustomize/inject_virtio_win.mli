@@ -39,6 +39,22 @@ type virtio_win_installed = {
     eg. if [virtio_rng] is true then we installed the virtio RNG
     device, otherwise we didn't. *)
 
+val from_path : Guestfs.guestfs -> string -> string -> t
+(** Create a new virtio-win handle.  The parameters are [g root path].
+
+    The [path] should point to either the virtio-win ISO
+    (eg. F</usr/share/virtio-win/virtio-win.iso>) or the unpacked
+    directory (eg. F</usr/share/virtio-win>).
+
+    The libosinfo database is ignored if you use this method. *)
+
+val from_libosinfo : Guestfs.guestfs -> string -> t
+(** Create a new virtio-win handle.  The parameters are [g root].
+
+    The libosinfo database will be used as the source for drivers.
+    The virtio-win ISO or unpacked directory is ignored if you use
+    this method. *)
+
 val from_environment : Guestfs.guestfs -> string -> string -> t
 (** Using the [VIRTIO_WIN] environment variable (if present), set up
     the injection handle.
