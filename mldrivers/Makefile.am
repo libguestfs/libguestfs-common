@@ -70,7 +70,7 @@ BOBJECTS = $(SOURCES_ML:.ml=.cmo)
 XOBJECTS = $(BOBJECTS:.cmo=.cmx)
 
 OCAMLPACKAGES = \
-	-package str,unix \
+	-package str,unix,guestfs \
 	-I $(top_builddir)/common/mlgettext \
 	-I $(top_builddir)/common/mlpcre \
 	-I $(top_builddir)/common/mlstdutils \
