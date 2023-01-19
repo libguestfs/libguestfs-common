@@ -35,6 +35,7 @@ EXTRA_DIST = \
 SOURCES_MLI = \
 	checksums.mli \
 	curl.mli \
+	DOM.mli \
 	getopt.mli \
 	JSON.mli \
 	JSON_parser.mli \
@@ -53,6 +54,7 @@ SOURCES_ML = \
 	getopt.ml \
 	JSON.ml \
 	tools_utils.ml \
+	DOM.ml \
 	on_exit.ml \
 	URI.ml \
 	planner.ml \
