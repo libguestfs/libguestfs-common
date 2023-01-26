@@ -252,6 +252,18 @@ module List : sig
         If a zero-length list is passed in, this raises [Failure
         "pop_front"]. *)
 
+    val may_push_back : 'a list ref -> 'a option -> unit
+    val may_push_front : 'a option -> 'a list ref -> unit
+    (** More imperative list manipulation functions.
+
+        [may_push_back xsp None] does nothing.
+
+        [may_push_back xsp (Some x)] appends [x] to the end of the list.
+
+        [may_push_front None xsp] does nothing.
+
+        [may_push_front (Some x) xsp] prepends [x] to the head of the list. *)
+
     val push_back_list : 'a list ref -> 'a list -> unit
     val push_front_list : 'a list -> 'a list ref -> unit
     (** More imperative list manipulation functions.

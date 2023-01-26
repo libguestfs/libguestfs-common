@@ -358,6 +358,11 @@ module List = struct
       xsp := xs;
       x
 
+    let may_push_back xsp x =
+      match x with None -> () | Some x -> push_back xsp x
+    let may_push_front x xsp =
+      match x with None -> () | Some x -> push_front x xsp
+
     let push_back_list xsp xs = xsp := !xsp @ xs
     let push_front_list xs xsp = xsp := xs @ !xsp
 end
