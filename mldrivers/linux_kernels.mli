@@ -44,7 +44,7 @@ val detect_kernels : Guestfs.guestfs -> string ->
                      Linux_bootloaders.bootloader ->
                      Guestfs.application2 list ->
                      kernel_info list
-(** [detect_kernels g rot bootloader apps] detects the kernels offered
+(** [detect_kernels g root bootloader apps] detects the kernels offered
     by the Linux bootloader (eg. grub).
 
     It will only return the intersection of kernels that are
