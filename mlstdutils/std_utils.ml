@@ -301,6 +301,15 @@ module List = struct
           | Some y -> y
           | None -> find_map f xs
 
+    let rec group_by = function
+      | [] -> []
+      | (day1, x1) :: (day2, x2) :: rest when day1 = day2 ->
+         let rest = group_by ((day2, x2) :: rest) in
+         let day, xs = List.hd rest in
+         (day, x1 :: xs) :: List.tl rest
+      | (day, x) :: rest ->
+         (day, [x]) :: group_by rest
+
     let rec combine3 xs ys zs =
       match xs, ys, zs with
       | [], [], [] -> []

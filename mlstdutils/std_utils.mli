@@ -201,6 +201,12 @@ module List : sig
         [f x] returns [Some y].  It returns [y].  If we exhaust the
         list then this raises [Not_found]. *)
 
+    val group_by : ('a * 'b) list -> ('a * 'b list) list
+    (** [group_by [1, "foo"; 2, "bar"; 2, "baz"; 2, "biz"; 3, "boo"; 4, "fizz"]]
+        - : (int * string list) list
+        [(1, ["foo"]); (2, ["bar"; "baz"; "biz"]); (3, ["boo"]); (4, ["fizz"])]
+        *)
+
     val combine3 : 'a list -> 'b list -> 'c list -> ('a * 'b * 'c) list
     (** Like {!List.combine} but for triples.
         All lists must be the same length. *)
