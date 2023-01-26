@@ -26,13 +26,15 @@ SOURCES_MLI = \
 	firmware.mli \
 	linux.mli \
 	linux_bootloaders.mli \
-	linux_kernels.mli
+	linux_kernels.mli \
+	windows_drivers.mli
 
 SOURCES_ML = \
 	firmware.ml \
 	linux.ml \
 	linux_bootloaders.ml \
-	linux_kernels.ml
+	linux_kernels.ml \
+	windows_drivers.ml
 
 SOURCES_C = \
 	dummy.c
