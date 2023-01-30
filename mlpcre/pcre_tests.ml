@@ -18,17 +18,16 @@
 
 open Printf
 
-let compile ?(anchored = false) ?(caseless = false)
-            ?(dotall = false) ?(extended = false) ?(multiline = false)
+let compile ?(caseless = false) ?(dotall = false)
+            ?(extended = false) ?(multiline = false)
             patt =
-  eprintf "PCRE.compile%s%s%s%s%s %s\n%!"
-          (if anchored then " ~anchored:true" else "")
+  eprintf "PCRE.compile%s%s%s%s %s\n%!"
           (if caseless then " ~caseless:true" else "")
           (if dotall then " ~dotall:true" else "")
           (if extended then " ~extended:true" else "")
           (if multiline then " ~multiline:true" else "")
           patt;
-  PCRE.compile ~anchored ~caseless ~dotall ~extended ~multiline patt
+  PCRE.compile ~caseless ~dotall ~extended ~multiline patt
 
 let matches ?(offset = 0) re str =
   eprintf "PCRE.matches %s, %d ->%!" str offset;
