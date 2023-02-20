@@ -139,6 +139,12 @@ module String = struct
       done;
       if not !r then s else Bytes.to_string b2
 
+    let break n str =
+      let len = String.length str in
+      if n < 0 then "", str
+      else if n >= len then str, ""
+      else sub str 0 n, sub str n (len-n)
+
     let rec split sep str =
       let seplen = length sep in
       let strlen = length str in

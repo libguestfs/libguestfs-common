@@ -87,6 +87,10 @@ module String : sig
         [str] with [s2]. *)
     val replace_char : string -> char -> char -> string
     (** Replace character in string. *)
+    val break : int -> string -> string * string
+    (** [break n str] breaks a string at the nth byte, returning the
+        first and second parts.  If [n] is beyond the end of the
+        string it returns [(str, "")]. *)
     val split : string -> string -> string * string
     (** [split sep str] splits [str] at the first occurrence of the
         separator [sep], returning the part before and the part after.
