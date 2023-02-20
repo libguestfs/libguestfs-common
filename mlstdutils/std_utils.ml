@@ -368,7 +368,7 @@ module List = struct
 end
 
 module Option = struct
-    let may f = function
+    let iter f = function
       | None -> ()
       | Some x -> f x
 
@@ -376,8 +376,9 @@ module Option = struct
       | None -> None
       | Some x -> Some (f x)
 
-    let default def = function
-      | None -> def
+    let value x ~default =
+      match x with
+      | None -> default
       | Some x -> x
 end
 
