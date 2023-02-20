@@ -193,6 +193,16 @@ module List : sig
 
         For any list [xs] and function [f],
         [xs = takewhile f xs @ dropwhile f xs] *)
+
+    val take : int -> 'a list -> 'a list
+    (** [take n xs] returns the first [n] elements of [xs].  If [xs] is
+        shorter than [n], then it returns [xs].  Note it never fails
+        for any input. *)
+    val drop : int -> 'a list -> 'a list
+    (** [drop n xs] returns the suffix of [xs] after the first [n]
+        elements.  If [xs] is shorter than [n], then it returns the empty
+        list.  Note it never fails for any input. *)
+
     val filter_map : ('a -> 'b option) -> 'a list -> 'b list
     (** [filter_map f xs] applies [f] to each element of [xs].  If
         [f x] returns [Some y] then [y] is added to the returned list. *)

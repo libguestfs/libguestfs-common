@@ -287,6 +287,25 @@ module List = struct
       | x :: xs when f x -> x :: takewhile f xs
       | _ -> []
 
+    let take n xs =
+      if n <= 0 then []
+      else (
+        (* This optimisation avoids copying xs. *)
+        let len = List.length xs in
+        if len <= n then xs
+        else (
+          let rec take n = function
+            | x :: xs when n >= 1 -> x :: take (n-1) xs
+            | _ -> []
+          in
+          take n xs
+        )
+      )
+    let rec drop n xs =
+      if n <= 0 then xs
+      else if xs = [] then []
+      else drop (n-1) (List.tl xs)
+
     let rec filter_map f = function
       | [] -> []
       | x :: xs ->
