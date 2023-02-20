@@ -218,7 +218,7 @@ let open_guestfs ?identifier () =
   g#parse_environment ();
   if trace () then g#set_trace true;
   if verbose () then g#set_verbose true;
-  Option.may g#set_identifier identifier;
+  Option.iter g#set_identifier identifier;
   g
 
 (* All the OCaml virt-* programs use this wrapper to catch exceptions
@@ -523,8 +523,8 @@ and do_run ?(echo_cmd = true) ?stdout_fd ?stderr_fd args =
      Or 127
 
 and do_teardown app outfd errfd exitstat =
-  Option.may Unix.close outfd;
-  Option.may Unix.close errfd;
+  Option.iter Unix.close outfd;
+  Option.iter Unix.close errfd;
   match exitstat with
   | Unix.WEXITED i ->
     i
