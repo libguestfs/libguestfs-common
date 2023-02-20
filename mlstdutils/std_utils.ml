@@ -140,12 +140,12 @@ module String = struct
       if not !r then s else Bytes.to_string b2
 
     let rec split sep str =
-      let len = length sep in
-      let seplen = length str in
+      let seplen = length sep in
+      let strlen = length str in
       let i = find str sep in
       if i = -1 then str, ""
       else (
-        sub str 0 i, sub str (i + len) (seplen - i - len)
+        sub str 0 i, sub str (i + seplen) (strlen - i - seplen)
       )
 
     and nsplit ?(max = 0) sep str =
