@@ -194,8 +194,9 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
         IDE
 
       | Some driver_name ->
-        (* Block driver needs tweaks to allow booting; the rest is set up by PnP
-         * manager *)
+        (* Block driver needs tweaks to allow booting;
+         * the rest is set up by PnP manager.
+         *)
         let source = driverdir // (driver_name ^ ".sys") in
         let target = sprintf "%s/system32/drivers/%s.sys"
                              t.i_windows_systemroot driver_name in
