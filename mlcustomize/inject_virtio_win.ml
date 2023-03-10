@@ -110,10 +110,10 @@ and get_inspection g root =
     virtio_win = ""; was_set = false }
 
 let scsi_class_guid = "{4D36E97B-E325-11CE-BFC1-08002BE10318}"
-let viostor_legacy_pciid = "VEN_1AF4&DEV_1001&SUBSYS_00021AF4&REV_00"
-let viostor_modern_pciid = "VEN_1AF4&DEV_1042&SUBSYS_11001AF4&REV_01"
-let vioscsi_legacy_pciid = "VEN_1AF4&DEV_1004&SUBSYS_00081AF4&REV_00"
-let vioscsi_modern_pciid = "VEN_1AF4&DEV_1048&SUBSYS_11001AF4&REV_01"
+let viostor_legacy_pciid = "VEN_1AF4&DEV_1001&REV_00"
+let viostor_modern_pciid = "VEN_1AF4&DEV_1042&REV_01"
+let vioscsi_legacy_pciid = "VEN_1AF4&DEV_1004&REV_00"
+let vioscsi_modern_pciid = "VEN_1AF4&DEV_1048&REV_01"
 
 let rec inject_virtio_win_drivers ({ g } as t) reg =
   (* Copy the virtio drivers to the guest. *)
