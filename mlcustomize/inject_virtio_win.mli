@@ -64,6 +64,16 @@ val from_environment : Guestfs.guestfs -> string -> string -> t
 
     This should only be used by [virt-v2v] and is considered a legacy method. *)
 
+val get_block_driver_priority : t -> string list
+val set_block_driver_priority : t -> string list -> unit
+(** Get or set the current block driver priority list.  This is
+    a list of virtio-win block driver names (eg. ["viostor"]) that
+    we search until we come to the first [name ^ ".sys"] that
+    we find, and that is the block driver which gets installed.
+
+    This module contains a default priority list which should
+    be suitable for most use cases. *)
+
 val inject_virtio_win_drivers : t -> Registry.t -> virtio_win_installed
 (** [inject_virtio_win_drivers t reg]
     installs virtio drivers from the driver directory or driver

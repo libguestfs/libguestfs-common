@@ -49,6 +49,9 @@ type t = {
       of libosinfo.  Although this behaviour is documented, IMHO it has
       always been a bad idea.  We should change this in future to allow
       the user to select where they want to get drivers from. XXX *)
+
+  mutable block_driver_priority : string list
+  (** List of block drivers *)
 }
 
 type block_type = Virtio_blk | Virtio_SCSI | IDE
@@ -107,7 +110,11 @@ and get_inspection g root =
   { g; root;
     i_arch; i_major_version; i_minor_version; i_osinfo;
     i_product_variant; i_windows_current_control_set; i_windows_systemroot;
-    virtio_win = ""; was_set = false }
+    virtio_win = ""; was_set = false;
+    block_driver_priority = ["virtio_blk"; "vrtioblk"; "viostor"] }
+
+let get_block_driver_priority t   = t.block_driver_priority
+let set_block_driver_priority t v = t.block_driver_priority <- v
 
 let scsi_class_guid = "{4D36E97B-E325-11CE-BFC1-08002BE10318}"
 let viostor_legacy_pciid = "VEN_1AF4&DEV_1001&REV_00"
@@ -176,14 +183,13 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
   else (
     (* Can we install the block driver? *)
     let block : block_type =
-      let filenames = ["virtio_blk"; "vrtioblk"; "viostor"] in
       let viostor_driver = try (
         Some (
           List.find (
             fun driver_file ->
               let source = driverdir // driver_file ^ ".sys" in
               g#exists source
-          ) filenames
+          ) t.block_driver_priority
         )
       ) with Not_found -> None in
       match viostor_driver with
