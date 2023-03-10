@@ -51,7 +51,7 @@ type t = {
       the user to select where they want to get drivers from. XXX *)
 }
 
-type block_type = Virtio_blk | IDE
+type block_type = Virtio_blk | Virtio_SCSI | IDE
 and net_type = Virtio_net | E1000 | RTL8139
 and machine_type = I440FX | Q35 | Virt
 
