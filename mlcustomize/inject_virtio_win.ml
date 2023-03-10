@@ -207,10 +207,15 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
         let target = sprintf "%s/system32/drivers/%s.sys"
                              t.i_windows_systemroot driver_name in
         let target = g#case_sensitive_path target in
+        let installed_block_type, legacy_pciid, modern_pciid =
+          match driver_name with
+          | "vioscsi" -> Virtio_SCSI, vioscsi_legacy_pciid, vioscsi_modern_pciid
+          | _ -> Virtio_blk, viostor_legacy_pciid, viostor_modern_pciid
+        in
         g#cp source target;
-        add_guestor_to_registry t reg driver_name viostor_legacy_pciid;
-        add_guestor_to_registry t reg driver_name viostor_modern_pciid;
-        Virtio_blk in
+        add_guestor_to_registry t reg driver_name legacy_pciid;
+        add_guestor_to_registry t reg driver_name modern_pciid;
+        installed_block_type in
 
     (* Can we install the virtio-net driver? *)
     let net : net_type =
