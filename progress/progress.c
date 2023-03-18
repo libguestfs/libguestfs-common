@@ -318,7 +318,8 @@ progress_bar_set (struct progress_bar *bar,
        * (b) it's just not possible to use tputs in a sane way here.
        */
       /*tputs (UP, 2, putchar);*/
-      fprintf (fp, "%s", UP);
+      if (UP)
+        fprintf (fp, "%s", UP);
     }
     bar->count++;
 
