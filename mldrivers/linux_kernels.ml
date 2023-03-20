@@ -125,8 +125,8 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
             *)
            let modpath, version =
              let prefix = "/lib/modules/" in
+             let prefix_len = String.length prefix in
              try
-               let prefix_len = String.length prefix in
                List.find_map (
                  fun filename ->
                    let filename_len = String.length filename in
