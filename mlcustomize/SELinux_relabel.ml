@@ -35,11 +35,12 @@ let rec relabel (g : G.guestfs) =
       use_setfiles g;
       (* That worked, so we don't need to autorelabel. *)
       g#rm_f "/.autorelabel"
-    with Failure _ ->
+    with Failure _
       (* This is the fallback in case something in the setfiles
        * method didn't work.  That includes the case where a non-SELinux
        * host is processing an SELinux guest, and other things.
        *)
+    | Guestfs.Error _ -> (* this is for SFDC case 03473932 in RHEL 8 only *)
       g#touch "/.autorelabel"
   )
 
