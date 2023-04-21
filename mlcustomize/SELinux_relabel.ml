@@ -59,14 +59,24 @@ and use_setfiles g =
   g#aug_load ();
   debug_augeas_errors g;
 
+  let config_path = "/files/etc/selinux/config" in
+  let config_keys = g#aug_ls config_path in
+  (* SELinux may be disabled via a setting in config file *)
+  let selinux_disabled =
+    let selinuxmode_path = config_path ^ "/SELINUX" in
+    if array_find selinuxmode_path config_keys then
+      g#aug_get selinuxmode_path = "disabled"
+    else
+      false in
+  if selinux_disabled then
+      failwith "selinux disabled";
+
   (* Get the SELinux policy name, eg. "targeted", "minimum".
    * Use "targeted" if not specified, just like libselinux does.
    *)
   let policy =
-    let config_path = "/files/etc/selinux/config" in
     let selinuxtype_path = config_path ^ "/SELINUXTYPE" in
-    let keys = g#aug_ls config_path in
-    if array_find selinuxtype_path keys then
+    if array_find selinuxtype_path config_keys then
       g#aug_get selinuxtype_path
     else
       "targeted" in
