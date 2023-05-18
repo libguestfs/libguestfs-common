@@ -260,6 +260,105 @@ key_store_add_from_selector (struct key_store *ks, const char *selector)
   return key_store_import_key (ks, &key);
 }
 
+/* Turn /dev/mapper/VG-LV into /dev/VG/LV, in-place. */
+static void
+unescape_device_mapper_lvm (char *id)
+{
+  static const char dev[] = "/dev/", dev_mapper[] = "/dev/mapper/";
+  const char *input_start;
+  char *output;
+  enum { M_SCAN, M_FILL, M_DONE } mode;
+
+  if (!STRPREFIX (id, dev_mapper))
+    return;
+
+  /* Start parsing "VG-LV" from "id" after "/dev/mapper/". */
+  input_start = id + (sizeof dev_mapper - 1);
+
+  /* Start writing the unescaped "VG/LV" output after "/dev/". */
+  output = id + (sizeof dev - 1);
+
+  for (mode = M_SCAN; mode < M_DONE; ++mode) {
+    char c;
+    const char *input = input_start;
+    const char *hyphen_buffered = NULL;
+    bool single_hyphen_seen = false;
+
+    do {
+      c = *input;
+
+      switch (c) {
+      case '-':
+        if (hyphen_buffered == NULL)
+          /* This hyphen may start an escaped hyphen, or it could be the
+           * separator in VG-LV.
+           */
+          hyphen_buffered = input;
+        else {
+          /* This hyphen completes an escaped hyphen; unescape it. */
+          if (mode == M_FILL)
+            *output++ = '-';
+          hyphen_buffered = NULL;
+        }
+        break;
+
+      case '/':
+        /* Slash characters are forbidden in VG-LV anywhere. If there's any,
+         * we'll find it in the first (i.e., scanning) phase, before we output
+         * anything back to "id".
+         */
+        assert (mode == M_SCAN);
+        return;
+
+      default:
+        /* Encountered a non-slash, non-hyphen character -- which also may be
+         * the terminating NUL.
+         */
+        if (hyphen_buffered != NULL) {
+          /* The non-hyphen character comes after a buffered hyphen, so the
+           * buffered hyphen is supposed to be the single hyphen that separates
+           * VG from LV in VG-LV. There are three requirements for this
+           * separator: (a) it must be unique (we must not have seen another
+           * such separator earlier), (b) it must not be at the start of VG-LV
+           * (because VG would be empty that way), (c) it must not be at the end
+           * of VG-LV (because LV would be empty that way). Should any of these
+           * be violated, we'll catch that during the first (i.e., scanning)
+           * phase, before modifying "id".
+           */
+          if (single_hyphen_seen || hyphen_buffered == input_start ||
+              c == '\0') {
+            assert (mode == M_SCAN);
+            return;
+          }
+
+          /* Translate the separator hyphen to a slash character. */
+          if (mode == M_FILL)
+            *output++ = '/';
+          hyphen_buffered = NULL;
+          single_hyphen_seen = true;
+        }
+
+        /* Output the non-hyphen character (including the terminating NUL)
+         * regardless of whether there was a buffered hyphen separator (which,
+         * by now, we'll have attempted to translate and flush).
+         */
+        if (mode == M_FILL)
+          *output++ = c;
+      }
+
+      ++input;
+    } while (c != '\0');
+
+    /* We must have seen the VG-LV separator. If that's not the case, we'll
+     * catch it before modifying "id".
+     */
+    if (!single_hyphen_seen) {
+      assert (mode == M_SCAN);
+      return;
+    }
+  }
+}
+
 struct key_store *
 key_store_import_key (struct key_store *ks, struct key_store_key *key)
 {
@@ -278,6 +377,7 @@ key_store_import_key (struct key_store *ks, struct key_store_key *key)
     error (EXIT_FAILURE, errno, "realloc");
 
   ks->keys = new_keys;
+  unescape_device_mapper_lvm (key->id);
   ks->keys[ks->nr_keys] = *key;
   ++ks->nr_keys;
 
