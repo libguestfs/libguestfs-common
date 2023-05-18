@@ -261,7 +261,7 @@ key_store_add_from_selector (struct key_store *ks, const char *selector)
 }
 
 struct key_store *
-key_store_import_key (struct key_store *ks, const struct key_store_key *key)
+key_store_import_key (struct key_store *ks, struct key_store_key *key)
 {
   struct key_store_key *new_keys;
 
