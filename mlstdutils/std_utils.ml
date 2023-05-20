@@ -341,12 +341,12 @@ module List = struct
       | x::xs, y::ys, z::zs -> (x, y, z) :: combine3 xs ys zs
       | _ -> invalid_arg "combine3"
 
-    let rec assoc_lbl ?(cmp = Pervasives.compare) ~default x = function
+    let rec assoc_lbl ?(cmp = Stdlib.compare) ~default x = function
       | [] -> default
       | (y, y') :: _ when cmp x y = 0 -> y'
       | _ :: ys -> assoc_lbl ~cmp ~default x ys
 
-    let uniq ?(cmp = Pervasives.compare) xs =
+    let uniq ?(cmp = Stdlib.compare) xs =
       let rec loop acc = function
         | [] -> acc
         | [x] -> x :: acc
