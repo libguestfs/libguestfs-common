@@ -20,6 +20,7 @@ open Printf
 
 open Std_utils
 open Tools_utils
+open Common_gettext.Gettext
 
 type t = {
   curl : string;
@@ -78,7 +79,8 @@ let run { curl; args; tmpdir; url } =
   close_out chan;
 
   let cmd = sprintf "%s -q --config %s" (quote curl) (quote config_file) in
-  let lines = external_command ~echo_cmd:false cmd in
+  let help = sprintf (f_"downloading %s") url in
+  let lines = external_command ~echo_cmd:false ~help cmd in
   Unix.unlink config_file;
   lines
 
