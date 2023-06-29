@@ -25,6 +25,7 @@ type t = {
   curl : string;
   args : args;
   tmpdir : string option;
+  url : string;
 }
 and args = (string * string option) list
 
@@ -40,11 +41,17 @@ let args_of_proxy = function
   | SystemProxy ->     []
   | ForcedProxy url -> [ "proxy", Some url; "noproxy", Some "" ]
 
-let create ?(curl = "curl") ?(proxy = SystemProxy) ?tmpdir args =
-  let args = safe_args @ args_of_proxy proxy @ args in
-  { curl = curl; args = args; tmpdir = tmpdir }
+let create ?(curl = "curl") ?(proxy = SystemProxy) ?tmpdir args url =
+  (* The ["url"] key must not appear in [args].  This was how the
+   * previous version of this module worked, so lets check there
+   * are no callers still doing this.
+   *)
+  List.iter (function "url", _ -> assert false | _ -> ()) args;
 
-let run { curl; args; tmpdir } =
+  let args = safe_args @ args_of_proxy proxy @ args in
+  { curl; args; tmpdir; url }
+
+let run { curl; args; tmpdir; url } =
   let config_file, chan = Filename.open_temp_file ?temp_dir:tmpdir
     "guestfscurl" ".conf" in
   List.iter (
@@ -67,7 +74,7 @@ let run { curl; args; tmpdir } =
         | c -> output_char chan c
       done;
       fprintf chan "\"\n"
-  ) args;
+  ) (("url", Some url) :: args);
   close_out chan;
 
   let cmd = sprintf "%s -q --config %s" (quote curl) (quote config_file) in
@@ -75,7 +82,7 @@ let run { curl; args; tmpdir } =
   Unix.unlink config_file;
   lines
 
-let to_string { curl; args } =
+let to_string { curl; args; url } =
   let b = Buffer.create 128 in
   bprintf b "%s -q" (quote curl);
   List.iter (
@@ -85,7 +92,7 @@ let to_string { curl; args } =
     | "user", Some _ -> bprintf b " --user <hidden>"
     | name, Some value -> bprintf b " --%s %s" name (quote value)
   ) args;
-  bprintf b "\n";
+  bprintf b " %s\n" (quote url);
   Buffer.contents b
 
 let print chan t = output_string chan (to_string t)
