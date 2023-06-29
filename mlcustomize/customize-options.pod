@@ -63,6 +63,30 @@ Change the permissions of C<FILE> to C<PERMISSIONS>.
 I<Note>: C<PERMISSIONS> by default would be decimal, unless you prefix
 it with C<0> to get octal, ie. use C<0700> not C<700>.
 
+=item B<--chown> UID.GID:PATH
+
+Change the owner user and group ID of a file or directory in the guest.
+Note:
+
+=over 4
+
+=item *
+
+Only numeric UIDs and GIDs will work, and these may not be the same
+inside the guest as on the host.
+
+=item *
+
+This will not work with Windows guests.
+
+=back
+
+For example:
+
+ virt-customize --chown '0.0:/var/log/audit.log'
+
+See also: I<--upload>.
+
 =item B<--commands-from-file> FILENAME
 
 Read the customize commands from a file, one (and its arguments)

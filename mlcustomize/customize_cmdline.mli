@@ -33,6 +33,8 @@ and op = [
       (* --append-line FILE:LINE *)
   | `Chmod of string * string
       (* --chmod PERMISSIONS:FILE *)
+  | `Chown of string * string
+      (* --chown UID.GID:PATH *)
   | `CommandsFromFile of string
       (* --commands-from-file FILENAME *)
   | `Copy of string * string

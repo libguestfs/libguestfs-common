@@ -41,6 +41,8 @@ and op = [
       (* --append-line FILE:LINE *)
   | `Chmod of string * string
       (* --chmod PERMISSIONS:FILE *)
+  | `Chown of string * string
+      (* --chown UID.GID:PATH *)
   | `CommandsFromFile of string
       (* --commands-from-file FILENAME *)
   | `Copy of string * string
@@ -187,6 +189,17 @@ let rec argspec () =
       s_"Change the permissions of a file"
     ),
     Some "PERMISSIONS:FILE", "Change the permissions of C<FILE> to C<PERMISSIONS>.\n\nI<Note>: C<PERMISSIONS> by default would be decimal, unless you prefix\nit with C<0> to get octal, ie. use C<0700> not C<700>.";
+    (
+      [ L"chown" ],
+      Getopt.String (
+        s_"UID.GID:PATH",
+        fun s ->
+          let p = split_string_pair "chown" s in
+          List.push_front (`Chown p) ops
+      ),
+      s_"Change the owner user and group ID of a file or directory"
+    ),
+    Some "UID.GID:PATH", "Change the owner user and group ID of a file or directory in the guest.\nNote:\n\n=over 4\n\n=item *\n\nOnly numeric UIDs and GIDs will work, and these may not be the same\ninside the guest as on the host.\n\n=item *\n\nThis will not work with Windows guests.\n\n=back\n\nFor example:\n\n virt-customize --chown '0.0:/var/log/audit.log'\n\nSee also: I<--upload>.";
     (
       [ L"commands-from-file" ],
       Getopt.String (
