@@ -435,8 +435,12 @@ let create_standard_options argspec ?anon_fun ?(key_opts = false)
   let getopt = Getopt.create argspec ?anon_fun usage_msg in
   { getopt; ks; debug_gc }
 
+let external_command_failed help cmd reason =
+  let help_prefix = match help with None -> "" | Some str -> str ^ ": " in
+  error "%s%s ‘%s’: %s" help_prefix (s_"external command") cmd reason
+
 (* Run an external command, slurp up the output as a list of lines. *)
-let external_command ?(echo_cmd = true) cmd =
+let external_command ?(echo_cmd = true) ?help cmd =
   if echo_cmd then
     debug "%s" cmd;
   let chan = Unix.open_process_in cmd in
@@ -448,15 +452,18 @@ let external_command ?(echo_cmd = true) cmd =
   (match stat with
   | Unix.WEXITED 0 -> ()
   | Unix.WEXITED i ->
-    error (f_"external command ‘%s’ exited with error %d") cmd i
+     let reason = sprintf (f_"exited with error %d") i in
+     external_command_failed help cmd reason
   | Unix.WSIGNALED i ->
-    error (f_"external command ‘%s’ killed by signal %d") cmd i
+     let reason = sprintf (f_"killed by signal %d") i in
+     external_command_failed help cmd reason
   | Unix.WSTOPPED i ->
-    error (f_"external command ‘%s’ stopped by signal %d") cmd i
+     let reason = sprintf (f_"stopped by signal %d") i in
+     external_command_failed help cmd reason
   );
   lines
 
-let rec run_commands ?(echo_cmd = true) cmds =
+let rec run_commands ?(echo_cmd = true) ?help cmds =
   let res = Array.make (List.length cmds) 0 in
   let pids =
     List.mapi (
@@ -482,21 +489,21 @@ let rec run_commands ?(echo_cmd = true) cmds =
       let matching_pair = List.hd matching_pair in
       let idx, _, app, outfd, errfd = matching_pair in
       pids := new_pids;
-      res.(idx) <- do_teardown app outfd errfd stat
+      res.(idx) <- do_teardown help app outfd errfd stat
     );
   done;
   Array.to_list res
 
-and run_command ?(echo_cmd = true) ?stdout_fd ?stderr_fd args =
+and run_command ?(echo_cmd = true) ?help ?stdout_fd ?stderr_fd args =
   let run_res = do_run args ~echo_cmd ?stdout_fd ?stderr_fd in
   match run_res with
   | Either (pid, app, outfd, errfd) ->
     let _, stat = Unix.waitpid [] pid in
-    do_teardown app outfd errfd stat
+    do_teardown help app outfd errfd stat
   | Or code ->
     code
 
-and do_run ?(echo_cmd = true) ?stdout_fd ?stderr_fd args =
+and do_run ?(echo_cmd = true) ?help ?stdout_fd ?stderr_fd args =
   let app = List.hd args in
   let get_fd default = function
     | None ->
@@ -522,16 +529,18 @@ and do_run ?(echo_cmd = true) ?stdout_fd ?stderr_fd args =
      debug "%s: %s: executable not found" app fn;
      Or 127
 
-and do_teardown app outfd errfd exitstat =
+and do_teardown help app outfd errfd exitstat =
   Option.iter Unix.close outfd;
   Option.iter Unix.close errfd;
   match exitstat with
   | Unix.WEXITED i ->
-    i
+     i
   | Unix.WSIGNALED i ->
-    error (f_"external command ‘%s’ killed by signal %d") app i
+     let reason = sprintf (f_"killed by signal %d") i in
+     external_command_failed help app reason
   | Unix.WSTOPPED i ->
-    error (f_"external command ‘%s’ stopped by signal %d") app i
+     let reason = sprintf (f_"stopped by signal %d") i in
+     external_command_failed help app reason
 
 let shell_command ?(echo_cmd = true) cmd =
   if echo_cmd then

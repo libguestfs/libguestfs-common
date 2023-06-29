@@ -103,13 +103,17 @@ val create_standard_options : Getopt.speclist -> ?anon_fun:Getopt.anon_fun -> ?k
 
     Returns a new {!cmdline_options} structure. *)
 
-val external_command : ?echo_cmd:bool -> string -> string list
+val external_command : ?echo_cmd:bool -> ?help:string -> string -> string list
 (** Run an external command, slurp up the output as a list of lines.
 
     [echo_cmd] specifies whether to output the full command on verbose
-    mode, and it's on by default. *)
+    mode, and it's on by default.
 
-val run_commands : ?echo_cmd:bool -> (string list * Unix.file_descr option * Unix.file_descr option) list -> int list
+    [help] is an optional string which is printed as a prefix in
+    case the external command fails, eg as a hint to the user about
+    what we were trying to do. *)
+
+val run_commands : ?echo_cmd:bool -> ?help:string -> (string list * Unix.file_descr option * Unix.file_descr option) list -> int list
 (** Run external commands in parallel without using a shell,
     and return a list with their exit codes.
 
@@ -126,16 +130,24 @@ val run_commands : ?echo_cmd:bool -> (string list * Unix.file_descr option * Uni
     end of the execution of the command for which it was specified.
 
     [echo_cmd] specifies whether output the full command on verbose
-    mode, and it's on by default. *)
+    mode, and it's on by default.
 
-val run_command : ?echo_cmd:bool -> ?stdout_fd:Unix.file_descr -> ?stderr_fd:Unix.file_descr -> string list -> int
+    [help] is an optional string which is printed as a prefix in
+    case the external command fails, eg as a hint to the user about
+    what we were trying to do. *)
+
+val run_command : ?echo_cmd:bool -> ?help:string -> ?stdout_fd:Unix.file_descr -> ?stderr_fd:Unix.file_descr -> string list -> int
 (** Run an external command without using a shell, and return its exit code.
 
     If [stdout_fd] or [stderr_fd] is specified, the file descriptor
     is automatically closed after executing the command.
 
     [echo_cmd] specifies whether output the full command on verbose
-    mode, and it's on by default. *)
+    mode, and it's on by default.
+
+    [help] is an optional string which is printed as a prefix in
+    case the external command fails, eg as a hint to the user about
+    what we were trying to do. *)
 
 val shell_command : ?echo_cmd:bool -> string -> int
 (** Run an external shell command, and return its exit code.
