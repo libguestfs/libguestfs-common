@@ -1,5 +1,5 @@
     [--append-line FILE:LINE] [--chmod PERMISSIONS:FILE]
-    [--chown UID.GID:PATH] [--commands-from-file FILENAME]
+    [--chown UID:GID:PATH] [--commands-from-file FILENAME]
     [--copy SOURCE:DEST] [--copy-in LOCALPATH:REMOTEDIR]
     [--delete PATH] [--edit FILE:EXPR] [--firstboot SCRIPT]
     [--firstboot-command 'CMD+ARGS'] [--firstboot-install PKG,PKG..]

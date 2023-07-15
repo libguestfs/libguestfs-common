@@ -63,7 +63,7 @@ Change the permissions of C<FILE> to C<PERMISSIONS>.
 I<Note>: C<PERMISSIONS> by default would be decimal, unless you prefix
 it with C<0> to get octal, ie. use C<0700> not C<700>.
 
-=item B<--chown> UID.GID:PATH
+=item B<--chown> UID:GID:PATH
 
 Change the owner user and group ID of a file or directory in the guest.
 Note:
@@ -83,7 +83,7 @@ This will not work with Windows guests.
 
 For example:
 
- virt-customize --chown '0.0:/var/log/audit.log'
+ virt-customize --chown '0:0:/var/log/audit.log'
 
 See also: I<--upload>.
 

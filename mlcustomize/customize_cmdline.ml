@@ -41,8 +41,8 @@ and op = [
       (* --append-line FILE:LINE *)
   | `Chmod of string * string
       (* --chmod PERMISSIONS:FILE *)
-  | `Chown of string * string
-      (* --chown UID.GID:PATH *)
+  | `Chown of string * string * string
+      (* --chown UID:GID:PATH *)
   | `CommandsFromFile of string
       (* --commands-from-file FILENAME *)
   | `Copy of string * string
@@ -154,8 +154,13 @@ let rec argspec () =
           option_name in
     let len = String.length arg in
     String.sub arg 0 i, String.sub arg (i+1) (len-(i+1))
-  in
-  let split_string_list arg =
+  and split_string_triplet option_name arg =
+    match String.nsplit ~max:3 "," arg with
+    | [a; b; c] -> a, b, c
+    | _ ->
+        error (f_"invalid format for '--%s' parameter, see the man page")
+          option_name
+  and split_string_list arg =
     String.nsplit "," arg
   in
   let split_links_list option_name arg =
@@ -192,14 +197,14 @@ let rec argspec () =
     (
       [ L"chown" ],
       Getopt.String (
-        s_"UID.GID:PATH",
+        s_"UID:GID:PATH",
         fun s ->
-          let p = split_string_pair "chown" s in
+          let p = split_string_triplet "chown" s in
           List.push_front (`Chown p) ops
       ),
       s_"Change the owner user and group ID of a file or directory"
     ),
-    Some "UID.GID:PATH", "Change the owner user and group ID of a file or directory in the guest.\nNote:\n\n=over 4\n\n=item *\n\nOnly numeric UIDs and GIDs will work, and these may not be the same\ninside the guest as on the host.\n\n=item *\n\nThis will not work with Windows guests.\n\n=back\n\nFor example:\n\n virt-customize --chown '0.0:/var/log/audit.log'\n\nSee also: I<--upload>.";
+    Some "UID:GID:PATH", "Change the owner user and group ID of a file or directory in the guest.\nNote:\n\n=over 4\n\n=item *\n\nOnly numeric UIDs and GIDs will work, and these may not be the same\ninside the guest as on the host.\n\n=item *\n\nThis will not work with Windows guests.\n\n=back\n\nFor example:\n\n virt-customize --chown '0:0:/var/log/audit.log'\n\nSee also: I<--upload>.";
     (
       [ L"commands-from-file" ],
       Getopt.String (
