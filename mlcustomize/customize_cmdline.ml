@@ -93,14 +93,16 @@ and op = [
       (* --sm-unregister *)
   | `SSHInject of string * Ssh_key.ssh_key_selector
       (* --ssh-inject USER[:SELECTOR] *)
-  | `Truncate of string
-      (* --truncate FILE *)
-  | `TruncateRecursive of string
-      (* --truncate-recursive PATH *)
+  | `TarIn of string * string
+      (* --tar-in TARFILE:REMOTEDIR *)
   | `Timezone of string
       (* --timezone TIMEZONE *)
   | `Touch of string
       (* --touch FILE *)
+  | `Truncate of string
+      (* --truncate FILE *)
+  | `TruncateRecursive of string
+      (* --truncate-recursive PATH *)
   | `UninstallPackages of string list
       (* --uninstall PKG,PKG.. *)
   | `Update
@@ -418,17 +420,16 @@ let rec argspec () =
     ),
     Some "USER[:SELECTOR]", "Inject an ssh key so the given C<USER> will be able to log in over\nssh without supplying a password.  The C<USER> must exist already\nin the guest.\n\nSee L<virt-builder(1)/SSH KEYS> for the format of\nthe C<SELECTOR> field.\n\nYou can have multiple I<--ssh-inject> options, for different users\nand also for more keys for each user.";
     (
-      [ L"truncate" ],
-      Getopt.String (s_"FILE", fun s -> List.push_front (`Truncate s) ops),
-      s_"Truncate a file to zero size"
+      [ L"tar-in" ],
+      Getopt.String (
+        s_"TARFILE:REMOTEDIR",
+        fun s ->
+          let p = split_string_pair "tar-in" s in
+          List.push_front (`TarIn p) ops
+      ),
+      s_"Copy local files or directories from a tarball into image"
     ),
-    Some "FILE", "This command truncates C<FILE> to a zero-length file. The file must exist\nalready.";
-    (
-      [ L"truncate-recursive" ],
-      Getopt.String (s_"PATH", fun s -> List.push_front (`TruncateRecursive s) ops),
-      s_"Recursively truncate all files in directory"
-    ),
-    Some "PATH", "This command recursively truncates all files under C<PATH> to zero-length.";
+    Some "TARFILE:REMOTEDIR", "Copy local files or directories from a local tar file\ncalled C<TARFILE> into the disk image, placing them in the\ndirectory C<REMOTEDIR> (which must exist).  Note that\nthe tar file must be uncompressed (F<.tar.gz> files will not work\nhere)";
     (
       [ L"timezone" ],
       Getopt.String (s_"TIMEZONE", fun s -> List.push_front (`Timezone s) ops),
@@ -441,6 +442,18 @@ let rec argspec () =
       s_"Run touch on a file"
     ),
     Some "FILE", "This command performs a L<touch(1)>-like operation on C<FILE>.";
+    (
+      [ L"truncate" ],
+      Getopt.String (s_"FILE", fun s -> List.push_front (`Truncate s) ops),
+      s_"Truncate a file to zero size"
+    ),
+    Some "FILE", "This command truncates C<FILE> to a zero-length file. The file must exist\nalready.";
+    (
+      [ L"truncate-recursive" ],
+      Getopt.String (s_"PATH", fun s -> List.push_front (`TruncateRecursive s) ops),
+      s_"Recursively truncate all files in directory"
+    ),
+    Some "PATH", "This command recursively truncates all files under C<PATH> to zero-length.";
     (
       [ L"uninstall" ],
       Getopt.String (

@@ -85,14 +85,16 @@ and op = [
       (* --sm-unregister *)
   | `SSHInject of string * Ssh_key.ssh_key_selector
       (* --ssh-inject USER[:SELECTOR] *)
-  | `Truncate of string
-      (* --truncate FILE *)
-  | `TruncateRecursive of string
-      (* --truncate-recursive PATH *)
+  | `TarIn of string * string
+      (* --tar-in TARFILE:REMOTEDIR *)
   | `Timezone of string
       (* --timezone TIMEZONE *)
   | `Touch of string
       (* --touch FILE *)
+  | `Truncate of string
+      (* --truncate FILE *)
+  | `TruncateRecursive of string
+      (* --truncate-recursive PATH *)
   | `UninstallPackages of string list
       (* --uninstall PKG,PKG.. *)
   | `Update

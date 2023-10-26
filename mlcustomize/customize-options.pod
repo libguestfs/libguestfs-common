@@ -427,6 +427,14 @@ the C<SELECTOR> field.
 You can have multiple I<--ssh-inject> options, for different users
 and also for more keys for each user.
 
+=item B<--tar-in> TARFILE:REMOTEDIR
+
+Copy local files or directories from a local tar file
+called C<TARFILE> into the disk image, placing them in the
+directory C<REMOTEDIR> (which must exist).  Note that
+the tar file must be uncompressed (F<.tar.gz> files will not work
+here)
+
 =item B<--timezone> TIMEZONE
 
 Set the default timezone of the guest to C<TIMEZONE>.  Use a location
