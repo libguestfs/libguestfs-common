@@ -375,6 +375,18 @@ let detect_bootloader (g : G.guestfs) root i_firmware =
     with G.Error msg ->
       error (f_"could not find bootloader mount point (%s): %s") mp msg in
 
+  (*
+   * Workaround for older UEFI-based Debian which may not have
+   * /boot/efi/EFI/debian/grub.cfg.
+   *)
+  let paths =
+    if g#exists "/boot/grub/grub.cfg" then
+      match i_firmware with
+      | Firmware.I_BIOS -> paths
+      | I_UEFI _ -> paths @ ["/boot/grub/grub.cfg"]
+    else paths
+  in
+
   (* We can determine if the bootloader config file is grub 1 or
    * grub 2 just by looking at the filename.
    *)
