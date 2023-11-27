@@ -34,6 +34,7 @@
 #include <caml/memory.h>
 #include <caml/mlvalues.h>
 
+#include <libxml/parser.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 #include <libxml/uri.h>
