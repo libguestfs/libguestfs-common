@@ -109,6 +109,8 @@ struct key_store_key {
    * device name, or the UUID.
    *
    * There may be multiple matching devices in the list.
+   *
+   * This may be the special string "all" which matches any device.
    */
   char *id;
 

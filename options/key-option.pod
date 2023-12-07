@@ -9,8 +9,11 @@ the inspection.
 
 =item B<--key> UUIDB<:key:>KEY_STRING
 
+=item B<--key> B<all:key:>KEY_STRING
+
 C<NAME> is the libguestfs device name (eg. C</dev/sda1>).  C<UUID> is
-the device UUID.
+the device UUID.  C<all> means try the key against any encrypted
+device.
 
 Use the specified C<KEY_STRING> as passphrase.
 
@@ -18,11 +21,15 @@ Use the specified C<KEY_STRING> as passphrase.
 
 =item B<--key> UUIDB<:file:>FILENAME
 
+=item B<--key> B<all:file:>FILENAME
+
 Read the passphrase from F<FILENAME>.
 
 =item B<--key> NAMEB<:clevis>
 
 =item B<--key> UUIDB<:clevis>
+
+=item B<--key> B<all:clevis>
 
 Attempt passphrase-less unlocking for the device with Clevis, over the
 network.  Please refer to L<guestfs(3)/ENCRYPTED DISKS> for more

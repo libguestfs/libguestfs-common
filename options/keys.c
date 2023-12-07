@@ -156,6 +156,7 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
       bool key_id_matches_this_device;
 
       key_id_matches_this_device =
+	STREQ (key->id, "all") || /* special string "all" matches any device */
 	STREQ (key->id, device) ||
 	(uuid && STREQ (key->id, uuid));
       if (!key_id_matches_this_device) continue;
