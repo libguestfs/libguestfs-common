@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <termios.h>
 #include <string.h>
@@ -152,9 +153,12 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
   if (ks) {
     for (i = 0; i < ks->nr_keys; ++i) {
       struct key_store_key *key = &ks->keys[i];
+      bool key_id_matches_this_device;
 
-      if (STRNEQ (key->id, device) && (!uuid || STRNEQ (key->id, uuid)))
-        continue;
+      key_id_matches_this_device =
+	STREQ (key->id, device) ||
+	(uuid && STREQ (key->id, uuid));
+      if (!key_id_matches_this_device) continue;
 
       switch (key->type) {
       case key_string:
