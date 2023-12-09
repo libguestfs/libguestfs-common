@@ -296,7 +296,7 @@ v2v_osinfo_os_get_device_drivers (value osv)
 
     driver = OSINFO_DEVICE_DRIVER(osinfo_list_get_nth (OSINFO_LIST(list), i));
 
-    vi = caml_alloc (6, 0);
+    vi = caml_alloc (7, 0);
     str = osinfo_device_driver_get_architecture (driver);
     copyv = caml_copy_string (str);
     Store_field (vi, 0, copyv);
