@@ -123,6 +123,7 @@ progress_bar_init (unsigned flags)
     bar->machine_readable = 1;
     bar->utf8_mode = 0;
     bar->have_terminfo = 0;
+    bar->fp = NULL;
   } else {
     bar->machine_readable = 0;
 
