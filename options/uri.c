@@ -99,7 +99,7 @@ is_uri (const char *arg)
     return 0;
 
   for (p--; p >= arg; p--) {
-    if (!c_islower (*p))
+    if (! (c_islower (*p) || *p == '+'))
       return 0;
   }
 
@@ -148,7 +148,10 @@ parse (const char *arg, char **path_ret, char **protocol_ret,
   }
   */
 
-  *protocol_ret = strdup (uri->scheme);
+  if (STREQ (uri->scheme, "nbd+unix"))
+    *protocol_ret = strdup ("nbd");
+  else
+    *protocol_ret = strdup (uri->scheme);
   if (*protocol_ret == NULL) {
     perror ("strdup: protocol");
     return -1;
@@ -194,7 +197,7 @@ parse (const char *arg, char **path_ret, char **protocol_ret,
   if (path && path[0] == '/' &&
       (STREQ (uri->scheme, "gluster") ||
        STREQ (uri->scheme, "iscsi") ||
-       STREQ (uri->scheme, "nbd") ||
+       STRPREFIX (uri->scheme, "nbd") ||
        STREQ (uri->scheme, "rbd") ||
        STREQ (uri->scheme, "sheepdog")))
     path++;
