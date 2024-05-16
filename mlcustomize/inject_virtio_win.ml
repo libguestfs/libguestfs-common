@@ -24,6 +24,8 @@ open Common_gettext.Gettext
 
 open Regedit
 
+let re_blnsvr = PCRE.compile ~caseless:true "\\bblnsvr\\.exe$"
+
 type t = {
   g : Guestfs.guestfs; (** guestfs handle *)
 
@@ -267,6 +269,18 @@ and inject_qemu_ga t =
     configure_qemu_ga t msi_files;
   msi_files <> [] (* return true if we found some qemu-ga MSI files *)
 
+and inject_blnsvr t =
+  let files = copy_blnsvr t in
+  match files with
+  | [] -> false (* Didn't find or install anything. *)
+
+  (* We usually find blnsvr.exe in two locations (drivers/by-os and
+   * drivers/by-driver).  Pick the first.
+   *)
+  | blnsvr :: _ ->
+     configure_blnsvr t blnsvr;
+     true
+
 and add_guestor_to_registry t ((g, root) as reg) drv_name drv_pciid =
   let ddb_node = g#hivex_node_get_child root "DriverDatabase" in
 
@@ -348,6 +362,11 @@ and copy_drivers t driverdir =
 
 and copy_qemu_ga t =
   copy_from_virtio_win t "/" "/" (virtio_iso_path_matches_qemu_ga t)
+    (fun () ->
+      error (f_"root directory ‘/’ is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log."))
+
+and copy_blnsvr t =
+  copy_from_virtio_win t "/" "/" (virtio_iso_path_matches_blnsvr t)
     (fun () ->
       error (f_"root directory ‘/’ is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log."))
 
@@ -513,6 +532,10 @@ and virtio_iso_path_matches_qemu_ga t path =
   | ("x86_64", "rhev-qga64.msi") -> true
   | _ -> false
 
+(* Find blnsvr for the current Windows version. *)
+and virtio_iso_path_matches_blnsvr t path =
+  virtio_iso_path_matches_guest_os t path && PCRE.matches re_blnsvr path
+
 (* Look up in libosinfo for the OS, and copy all the locally
  * available files specified as drivers for that OS to the [destdir].
  *
@@ -586,3 +609,10 @@ and configure_qemu_ga t files =
       Firstboot.add_firstboot_powershell t.g t.root
         (sprintf "install-%s.ps1" msi_path) !psh_script;
   ) files
+
+and configure_blnsvr t blnsvr =
+  let cmd = sprintf "\
+                     @echo off\n\
+                     echo Installing %s\n\
+                     c:\\%s -i\n" blnsvr blnsvr in
+  Firstboot.add_firstboot_script t.g t.root (sprintf "install-%s" blnsvr) cmd

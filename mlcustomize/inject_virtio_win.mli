@@ -93,3 +93,11 @@ val inject_qemu_ga : t -> bool
     the MSI(s).
 
     Returns [true] iff we were able to inject qemu-ga. *)
+
+val inject_blnsvr : t -> bool
+(** Inject the Balloon Server ([blnsvr.exe]) into a Windows guest.
+
+    A firstboot script is also injected which should install
+    the server by running [blnsvr -i].
+
+    Returns [true] iff we were able to inject the Balloon Server. *)
