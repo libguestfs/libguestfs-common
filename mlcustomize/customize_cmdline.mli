@@ -53,6 +53,8 @@ and op = [
       (* --firstboot-install PKG,PKG.. *)
   | `Hostname of string
       (* --hostname HOSTNAME *)
+  | `InjectBalloonServer of string
+      (* --inject-blnsvr METHOD *)
   | `InjectQemuGA of string
       (* --inject-qemu-ga METHOD *)
   | `InjectVirtioWin of string

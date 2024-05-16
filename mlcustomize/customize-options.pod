@@ -193,6 +193,18 @@ L<virt-builder(1)/INSTALLING PACKAGES>.
 Set the hostname of the guest to C<HOSTNAME>.  You can use a
 dotted hostname.domainname (FQDN) if you want.
 
+=item B<--inject-blnsvr> METHOD
+
+Inject the Balloon Server (F<blnsvr.exe>) into a Windows guest.
+This operation also injects a firstboot script so that the Balloon
+Server is installed when the guest boots.
+
+The parameter is the same as used by the I<--inject-virtio-win> operation.
+
+Note that to do a full conversion of a Windows guest from a
+foreign hypervisor like VMware (which involves many other operations)
+you should use the L<virt-v2v(1)> tool instead of this.
+
 =item B<--inject-qemu-ga> METHOD
 
 Inject the QEMU Guest Agent into a Windows guest.  The guest

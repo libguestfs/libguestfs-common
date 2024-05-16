@@ -61,6 +61,8 @@ and op = [
       (* --firstboot-install PKG,PKG.. *)
   | `Hostname of string
       (* --hostname HOSTNAME *)
+  | `InjectBalloonServer of string
+      (* --inject-blnsvr METHOD *)
   | `InjectQemuGA of string
       (* --inject-qemu-ga METHOD *)
   | `InjectVirtioWin of string
@@ -286,6 +288,12 @@ let rec argspec () =
       s_"Set the hostname"
     ),
     Some "HOSTNAME", "Set the hostname of the guest to C<HOSTNAME>.  You can use a\ndotted hostname.domainname (FQDN) if you want.";
+    (
+      [ L"inject-blnsvr" ],
+      Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectBalloonServer s) ops),
+      s_"Inject the Balloon Server into a Windows guest"
+    ),
+    Some "METHOD", "Inject the Balloon Server (F<blnsvr.exe>) into a Windows guest.\nThis operation also injects a firstboot script so that the Balloon\nServer is installed when the guest boots.\n\nThe parameter is the same as used by the I<--inject-virtio-win> operation.\n\nNote that to do a full conversion of a Windows guest from a\nforeign hypervisor like VMware (which involves many other operations)\nyou should use the L<virt-v2v(1)> tool instead of this.";
     (
       [ L"inject-qemu-ga" ],
       Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectQemuGA s) ops),
