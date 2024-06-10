@@ -369,3 +369,34 @@ let add_firstboot_script (g : Guestfs.guestfs) root ?(prio = 5000) name
 
   | _ ->
     error (f_"guest type %s/%s is not supported") typ distro
+
+(* Unfortunately Powershell scripts cannot be directly executed
+ * (unless some system config changes are made which for other
+ * reasons we don't want to do) and so we have to run this via
+ * a regular batch file.
+ *)
+let add_firstboot_powershell g root ?prio name code =
+  (* Fail hard if inspection hasn't been done or it's not a Windows
+   * guest.  If it happens it indicates an internal error in the
+   * calling code.
+   *)
+  assert (g#inspect_get_type root = "windows");
+
+  let windows_systemroot = g#inspect_get_windows_systemroot root in
+
+  (* Create the temporary directory to put the Powershell file. *)
+  let tempdir = sprintf "%s/Temp" windows_systemroot in
+  g#mkdir_p tempdir;
+  let code = String.concat "\r\n" code ^ "\r\n" in
+  g#write (sprintf "%s/%s" tempdir name) code;
+
+  (* Powershell interpreter.  Should we check this exists? XXX *)
+  let ps_exe =
+    windows_systemroot ^
+    "\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" in
+
+  (* Windows path to the Powershell script. *)
+  let ps_path = windows_systemroot ^ "\\Temp\\" ^ name in
+
+  let fb = sprintf "%s -ExecutionPolicy ByPass -file %s" ps_exe ps_path in
+  add_firstboot_script g root ?prio name fb

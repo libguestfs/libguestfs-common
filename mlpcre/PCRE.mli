@@ -52,13 +52,12 @@ exception Error of string * int
 type regexp
 (** The type of a compiled regular expression. *)
 
-val compile : ?anchored:bool -> ?caseless:bool -> ?dotall:bool -> ?extended:bool -> ?multiline:bool -> string -> regexp
+val compile : ?caseless:bool -> ?dotall:bool -> ?extended:bool -> ?multiline:bool -> string -> regexp
 (** Compile a regular expression.  This can raise {!Error}.
 
-    The flags [?anchored], [?caseless], [?dotall], [?extended],
-    [?multiline]
-    correspond to the [pcre_compile] flags [PCRE_ANCHORED] etc.
-    See pcreapi(3) for details of what they do.
+    The flags [?caseless], [?dotall], [?extended], [?multiline]
+    correspond to the [pcre_compile] flags [PCRE_CASELESS] etc.
+    See pcre2api(3) for details of what they do.
     All flags default to false. *)
 
 val matches : ?offset:int -> regexp -> string -> bool
@@ -95,7 +94,7 @@ val subi : int -> int * int
     of the first character of the substring and the first
     character after the substring.
 
-    (See pcreapi(3) section "How pcre_exec() returns captured substrings"
+    (See pcre2api(3) section "How pcre_exec() returns captured substrings"
     for exact details).
 
     If there was no nth substring then this raises [Not_found]. *)

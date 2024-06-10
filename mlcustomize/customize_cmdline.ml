@@ -4,7 +4,7 @@
  *          and from the code in the generator/ subdirectory.
  * ANY CHANGES YOU MAKE TO THIS FILE WILL BE LOST.
  *
- * Copyright (C) 2009-2020 Red Hat Inc.
+ * Copyright (C) 2009-2023 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +41,8 @@ and op = [
       (* --append-line FILE:LINE *)
   | `Chmod of string * string
       (* --chmod PERMISSIONS:FILE *)
+  | `Chown of string * string * string
+      (* --chown UID:GID:PATH *)
   | `CommandsFromFile of string
       (* --commands-from-file FILENAME *)
   | `Copy of string * string
@@ -59,6 +61,12 @@ and op = [
       (* --firstboot-install PKG,PKG.. *)
   | `Hostname of string
       (* --hostname HOSTNAME *)
+  | `InjectBalloonServer of string
+      (* --inject-blnsvr METHOD *)
+  | `InjectQemuGA of string
+      (* --inject-qemu-ga METHOD *)
+  | `InjectVirtioWin of string
+      (* --inject-virtio-win METHOD *)
   | `InstallPackages of string list
       (* --install PKG,PKG.. *)
   | `Link of string * string list
@@ -87,14 +95,16 @@ and op = [
       (* --sm-unregister *)
   | `SSHInject of string * Ssh_key.ssh_key_selector
       (* --ssh-inject USER[:SELECTOR] *)
-  | `Truncate of string
-      (* --truncate FILE *)
-  | `TruncateRecursive of string
-      (* --truncate-recursive PATH *)
+  | `TarIn of string * string
+      (* --tar-in TARFILE:REMOTEDIR *)
   | `Timezone of string
       (* --timezone TIMEZONE *)
   | `Touch of string
       (* --touch FILE *)
+  | `Truncate of string
+      (* --truncate FILE *)
+  | `TruncateRecursive of string
+      (* --truncate-recursive PATH *)
   | `UninstallPackages of string list
       (* --uninstall PKG,PKG.. *)
   | `Update
@@ -148,8 +158,13 @@ let rec argspec () =
           option_name in
     let len = String.length arg in
     String.sub arg 0 i, String.sub arg (i+1) (len-(i+1))
-  in
-  let split_string_list arg =
+  and split_string_triplet option_name arg =
+    match String.nsplit ~max:3 ":" arg with
+    | [a; b; c] -> a, b, c
+    | _ ->
+        error (f_"invalid format for '--%s' parameter, see the man page")
+          option_name
+  and split_string_list arg =
     String.nsplit "," arg
   in
   let split_links_list option_name arg =
@@ -183,6 +198,17 @@ let rec argspec () =
       s_"Change the permissions of a file"
     ),
     Some "PERMISSIONS:FILE", "Change the permissions of C<FILE> to C<PERMISSIONS>.\n\nI<Note>: C<PERMISSIONS> by default would be decimal, unless you prefix\nit with C<0> to get octal, ie. use C<0700> not C<700>.";
+    (
+      [ L"chown" ],
+      Getopt.String (
+        s_"UID:GID:PATH",
+        fun s ->
+          let p = split_string_triplet "chown" s in
+          List.push_front (`Chown p) ops
+      ),
+      s_"Change the owner user and group ID of a file or directory"
+    ),
+    Some "UID:GID:PATH", "Change the owner user and group ID of a file or directory in the guest.\nNote:\n\n=over 4\n\n=item *\n\nOnly numeric UIDs and GIDs will work, and these may not be the same\ninside the guest as on the host.\n\n=item *\n\nThis will not work with Windows guests.\n\n=back\n\nFor example:\n\n virt-customize --chown '0:0:/var/log/audit.log'\n\nSee also: I<--upload>.";
     (
       [ L"commands-from-file" ],
       Getopt.String (
@@ -262,6 +288,24 @@ let rec argspec () =
       s_"Set the hostname"
     ),
     Some "HOSTNAME", "Set the hostname of the guest to C<HOSTNAME>.  You can use a\ndotted hostname.domainname (FQDN) if you want.";
+    (
+      [ L"inject-blnsvr" ],
+      Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectBalloonServer s) ops),
+      s_"Inject the Balloon Server into a Windows guest"
+    ),
+    Some "METHOD", "Inject the Balloon Server (F<blnsvr.exe>) into a Windows guest.\nThis operation also injects a firstboot script so that the Balloon\nServer is installed when the guest boots.\n\nThe parameter is the same as used by the I<--inject-virtio-win> operation.\n\nNote that to do a full conversion of a Windows guest from a\nforeign hypervisor like VMware (which involves many other operations)\nyou should use the L<virt-v2v(1)> tool instead of this.";
+    (
+      [ L"inject-qemu-ga" ],
+      Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectQemuGA s) ops),
+      s_"Inject the QEMU Guest Agent into a Windows guest"
+    ),
+    Some "METHOD", "Inject the QEMU Guest Agent into a Windows guest.  The guest\nagent communicates with qemu through a socket in order to\nprovide enhanced features (see L<qemu-ga(8)>).  This operation\nalso injects a firstboot script so that the Guest Agent is\ninstalled when the guest boots.\n\nThe parameter is the same as used by the I<--inject-virtio-win> operation.\n\nNote that to do a full conversion of a Windows guest from a\nforeign hypervisor like VMware (which involves many other operations)\nyou should use the L<virt-v2v(1)> tool instead of this.";
+    (
+      [ L"inject-virtio-win" ],
+      Getopt.String (s_"METHOD", fun s -> List.push_front (`InjectVirtioWin s) ops),
+      s_"Inject virtio-win drivers into a Windows guest"
+    ),
+    Some "METHOD", "Inject virtio-win drivers into a Windows guest.  These drivers\nadd virtio accelerated drivers suitable when running on top of\na hypervisor that supports virtio (such as qemu/KVM).  The\noperation also adjusts the Windows Registry so that the drivers\nare installed when the guest boots.\n\nThe parameter can be one of:\n\n=over 4\n\n=item ISO\n\nThe path to the ISO image containing the virtio-win drivers\n(eg. F</usr/share/virtio-win/virtio-win.iso>).\n\n=item DIR\n\nThe directory containing the unpacked virtio-win drivers\n(eg. F</usr/share/virtio-win>).\n\n=item B<\"osinfo\">\n\nThe literal string C<\"osinfo\"> means to use the\nlibosinfo database to locate the drivers.  (See\nL<osinfo-query(1)>.\n\n=back\n\nNote that to do a full conversion of a Windows guest from a\nforeign hypervisor like VMware (which involves many other operations)\nyou should use the L<virt-v2v(1)> tool instead of this.";
     (
       [ L"install" ],
       Getopt.String (
@@ -384,17 +428,16 @@ let rec argspec () =
     ),
     Some "USER[:SELECTOR]", "Inject an ssh key so the given C<USER> will be able to log in over\nssh without supplying a password.  The C<USER> must exist already\nin the guest.\n\nSee L<virt-builder(1)/SSH KEYS> for the format of\nthe C<SELECTOR> field.\n\nYou can have multiple I<--ssh-inject> options, for different users\nand also for more keys for each user.";
     (
-      [ L"truncate" ],
-      Getopt.String (s_"FILE", fun s -> List.push_front (`Truncate s) ops),
-      s_"Truncate a file to zero size"
+      [ L"tar-in" ],
+      Getopt.String (
+        s_"TARFILE:REMOTEDIR",
+        fun s ->
+          let p = split_string_pair "tar-in" s in
+          List.push_front (`TarIn p) ops
+      ),
+      s_"Copy local files or directories from a tarball into image"
     ),
-    Some "FILE", "This command truncates C<FILE> to a zero-length file. The file must exist\nalready.";
-    (
-      [ L"truncate-recursive" ],
-      Getopt.String (s_"PATH", fun s -> List.push_front (`TruncateRecursive s) ops),
-      s_"Recursively truncate all files in directory"
-    ),
-    Some "PATH", "This command recursively truncates all files under C<PATH> to zero-length.";
+    Some "TARFILE:REMOTEDIR", "Copy local files or directories from a local tar file\ncalled C<TARFILE> into the disk image, placing them in the\ndirectory C<REMOTEDIR> (which must exist).  Note that\nthe tar file must be uncompressed (F<.tar.gz> files will not work\nhere)";
     (
       [ L"timezone" ],
       Getopt.String (s_"TIMEZONE", fun s -> List.push_front (`Timezone s) ops),
@@ -407,6 +450,18 @@ let rec argspec () =
       s_"Run touch on a file"
     ),
     Some "FILE", "This command performs a L<touch(1)>-like operation on C<FILE>.";
+    (
+      [ L"truncate" ],
+      Getopt.String (s_"FILE", fun s -> List.push_front (`Truncate s) ops),
+      s_"Truncate a file to zero size"
+    ),
+    Some "FILE", "This command truncates C<FILE> to a zero-length file. The file must exist\nalready.";
+    (
+      [ L"truncate-recursive" ],
+      Getopt.String (s_"PATH", fun s -> List.push_front (`TruncateRecursive s) ops),
+      s_"Recursively truncate all files in directory"
+    ),
+    Some "PATH", "This command recursively truncates all files under C<PATH> to zero-length.";
     (
       [ L"uninstall" ],
       Getopt.String (

@@ -139,13 +139,19 @@ module String = struct
       done;
       if not !r then s else Bytes.to_string b2
 
+    let break n str =
+      let len = String.length str in
+      if n < 0 then "", str
+      else if n >= len then str, ""
+      else sub str 0 n, sub str n (len-n)
+
     let rec split sep str =
-      let len = length sep in
-      let seplen = length str in
+      let seplen = length sep in
+      let strlen = length str in
       let i = find str sep in
       if i = -1 then str, ""
       else (
-        sub str 0 i, sub str (i + len) (seplen - i - len)
+        sub str 0 i, sub str (i + seplen) (strlen - i - seplen)
       )
 
     and nsplit ?(max = 0) sep str =
@@ -287,6 +293,25 @@ module List = struct
       | x :: xs when f x -> x :: takewhile f xs
       | _ -> []
 
+    let take n xs =
+      if n <= 0 then []
+      else (
+        (* This optimisation avoids copying xs. *)
+        let len = List.length xs in
+        if len <= n then xs
+        else (
+          let rec take n = function
+            | x :: xs when n >= 1 -> x :: take (n-1) xs
+            | _ -> []
+          in
+          take n xs
+        )
+      )
+    let rec drop n xs =
+      if n <= 0 then xs
+      else if xs = [] then []
+      else drop (n-1) (List.tl xs)
+
     let rec filter_map f = function
       | [] -> []
       | x :: xs ->
@@ -301,18 +326,27 @@ module List = struct
           | Some y -> y
           | None -> find_map f xs
 
+    let rec group_by = function
+      | [] -> []
+      | (day1, x1) :: (day2, x2) :: rest when day1 = day2 ->
+         let rest = group_by ((day2, x2) :: rest) in
+         let day, xs = List.hd rest in
+         (day, x1 :: xs) :: List.tl rest
+      | (day, x) :: rest ->
+         (day, [x]) :: group_by rest
+
     let rec combine3 xs ys zs =
       match xs, ys, zs with
       | [], [], [] -> []
       | x::xs, y::ys, z::zs -> (x, y, z) :: combine3 xs ys zs
       | _ -> invalid_arg "combine3"
 
-    let rec assoc_lbl ?(cmp = Pervasives.compare) ~default x = function
+    let rec assoc_lbl ?(cmp = Stdlib.compare) ~default x = function
       | [] -> default
       | (y, y') :: _ when cmp x y = 0 -> y'
       | _ :: ys -> assoc_lbl ~cmp ~default x ys
 
-    let uniq ?(cmp = Pervasives.compare) xs =
+    let uniq ?(cmp = Stdlib.compare) xs =
       let rec loop acc = function
         | [] -> acc
         | [x] -> x :: acc
@@ -349,12 +383,17 @@ module List = struct
       xsp := xs;
       x
 
+    let may_push_back xsp x =
+      match x with None -> () | Some x -> push_back xsp x
+    let may_push_front x xsp =
+      match x with None -> () | Some x -> push_front x xsp
+
     let push_back_list xsp xs = xsp := !xsp @ xs
     let push_front_list xs xsp = xsp := xs @ !xsp
 end
 
 module Option = struct
-    let may f = function
+    let iter f = function
       | None -> ()
       | Some x -> f x
 
@@ -362,8 +401,9 @@ module Option = struct
       | None -> None
       | Some x -> Some (f x)
 
-    let default def = function
-      | None -> def
+    let value x ~default =
+      match x with
+      | None -> default
       | Some x -> x
 end
 

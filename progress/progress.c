@@ -1,5 +1,5 @@
 /* libguestfs - mini library for progress bars.
- * Copyright (C) 2010-2012 Red Hat Inc.
+ * Copyright (C) 2010-2023 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -123,6 +123,7 @@ progress_bar_init (unsigned flags)
     bar->machine_readable = 1;
     bar->utf8_mode = 0;
     bar->have_terminfo = 0;
+    bar->fp = NULL;
   } else {
     bar->machine_readable = 0;
 
@@ -318,7 +319,8 @@ progress_bar_set (struct progress_bar *bar,
        * (b) it's just not possible to use tputs in a sane way here.
        */
       /*tputs (UP, 2, putchar);*/
-      fprintf (fp, "%s", UP);
+      if (UP)
+        fprintf (fp, "%s", UP);
     }
     bar->count++;
 

@@ -6,7 +6,7 @@ libguestfs generated file
           and from the code in the generator/ subdirectory.
  ANY CHANGES YOU MAKE TO THIS FILE WILL BE LOST.
 
- Copyright (C) 2009-2020 Red Hat Inc.
+ Copyright (C) 2009-2023 Red Hat Inc.
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -62,6 +62,30 @@ Change the permissions of C<FILE> to C<PERMISSIONS>.
 
 I<Note>: C<PERMISSIONS> by default would be decimal, unless you prefix
 it with C<0> to get octal, ie. use C<0700> not C<700>.
+
+=item B<--chown> UID:GID:PATH
+
+Change the owner user and group ID of a file or directory in the guest.
+Note:
+
+=over 4
+
+=item *
+
+Only numeric UIDs and GIDs will work, and these may not be the same
+inside the guest as on the host.
+
+=item *
+
+This will not work with Windows guests.
+
+=back
+
+For example:
+
+ virt-customize --chown '0:0:/var/log/audit.log'
+
+See also: I<--upload>.
 
 =item B<--commands-from-file> FILENAME
 
@@ -168,6 +192,66 @@ L<virt-builder(1)/INSTALLING PACKAGES>.
 
 Set the hostname of the guest to C<HOSTNAME>.  You can use a
 dotted hostname.domainname (FQDN) if you want.
+
+=item B<--inject-blnsvr> METHOD
+
+Inject the Balloon Server (F<blnsvr.exe>) into a Windows guest.
+This operation also injects a firstboot script so that the Balloon
+Server is installed when the guest boots.
+
+The parameter is the same as used by the I<--inject-virtio-win> operation.
+
+Note that to do a full conversion of a Windows guest from a
+foreign hypervisor like VMware (which involves many other operations)
+you should use the L<virt-v2v(1)> tool instead of this.
+
+=item B<--inject-qemu-ga> METHOD
+
+Inject the QEMU Guest Agent into a Windows guest.  The guest
+agent communicates with qemu through a socket in order to
+provide enhanced features (see L<qemu-ga(8)>).  This operation
+also injects a firstboot script so that the Guest Agent is
+installed when the guest boots.
+
+The parameter is the same as used by the I<--inject-virtio-win> operation.
+
+Note that to do a full conversion of a Windows guest from a
+foreign hypervisor like VMware (which involves many other operations)
+you should use the L<virt-v2v(1)> tool instead of this.
+
+=item B<--inject-virtio-win> METHOD
+
+Inject virtio-win drivers into a Windows guest.  These drivers
+add virtio accelerated drivers suitable when running on top of
+a hypervisor that supports virtio (such as qemu/KVM).  The
+operation also adjusts the Windows Registry so that the drivers
+are installed when the guest boots.
+
+The parameter can be one of:
+
+=over 4
+
+=item ISO
+
+The path to the ISO image containing the virtio-win drivers
+(eg. F</usr/share/virtio-win/virtio-win.iso>).
+
+=item DIR
+
+The directory containing the unpacked virtio-win drivers
+(eg. F</usr/share/virtio-win>).
+
+=item B<"osinfo">
+
+The literal string C<"osinfo"> means to use the
+libosinfo database to locate the drivers.  (See
+L<osinfo-query(1)>.
+
+=back
+
+Note that to do a full conversion of a Windows guest from a
+foreign hypervisor like VMware (which involves many other operations)
+you should use the L<virt-v2v(1)> tool instead of this.
 
 =item B<--install> PKG,PKG..
 
@@ -354,6 +438,14 @@ the C<SELECTOR> field.
 
 You can have multiple I<--ssh-inject> options, for different users
 and also for more keys for each user.
+
+=item B<--tar-in> TARFILE:REMOTEDIR
+
+Copy local files or directories from a local tar file
+called C<TARFILE> into the disk image, placing them in the
+directory C<REMOTEDIR> (which must exist).  Note that
+the tar file must be uncompressed (F<.tar.gz> files will not work
+here)
 
 =item B<--timezone> TIMEZONE
 

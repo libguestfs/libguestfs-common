@@ -85,6 +85,18 @@ let test_string_find ctx =
   assert_equal_int (-1) (String.find "" "baz");
   assert_equal_int (-1) (String.find "foobar" "baz")
 
+(* Test Std_utils.String.break. *)
+let test_string_break ctx =
+  assert_equal_stringpair ("a", "b") (String.break 1 "ab");
+  assert_equal_stringpair ("", "ab") (String.break 0 "ab");
+  assert_equal_stringpair ("", "ab") (String.break (-1) "ab");
+  assert_equal_stringpair ("ab", "") (String.break 2 "ab");
+  assert_equal_stringpair ("ab", "") (String.break 3 "ab");
+  assert_equal_stringpair ("abc", "def") (String.break 3 "abcdef");
+  assert_equal_stringpair ("", "") (String.break 0 "");
+  assert_equal_stringpair ("", "") (String.break (-2) "");
+  assert_equal_stringpair ("", "") (String.break 2 "")
+
 (* Test Std_utils.String.split. *)
 let test_string_split ctx =
   assert_equal_stringpair ("a", "b") (String.split " " "a b");
@@ -169,6 +181,7 @@ let suite =
       "char.mem" >:: test_char_mem;
       "strings.is_prefix" >:: test_string_is_prefix;
       "strings.is_suffix" >:: test_string_is_suffix;
+      "strings.break" >:: test_string_break;
       "strings.find" >:: test_string_find;
       "strings.split" >:: test_string_split;
       "strings.nsplit" >:: test_string_nsplit;
