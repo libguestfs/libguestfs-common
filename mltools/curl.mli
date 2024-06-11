@@ -27,12 +27,15 @@ type proxy =
   | SystemProxy           (** Use the system settings. *)
   | ForcedProxy of string (** The proxy is forced to the specified URL. *)
 
-val create : ?curl:string -> ?proxy:proxy -> ?tmpdir:string -> args -> t
+val create : ?curl:string -> ?proxy:proxy -> ?tmpdir:string -> args -> string
+             -> t
 (** Create a curl command handle.
 
     The curl arguments are a list of key, value pairs corresponding
     to curl command line parameters, without leading dashes,
     eg. [("user", Some "user:password")].
+
+    The string parameter is the URL (which is required).
 
     The optional [?curl] parameter controls the name of the curl
     binary (default ["curl"]).

@@ -1,5 +1,5 @@
 /* libguestfs - guestfish and guestmount shared option parsing
- * Copyright (C) 2010-2012 Red Hat Inc.
+ * Copyright (C) 2010-2023 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,6 +110,8 @@ struct key_store_key {
    * device name, or the UUID.
    *
    * There may be multiple matching devices in the list.
+   *
+   * This may be the special string "all" which matches any device.
    */
   char *id;
 
@@ -170,7 +172,8 @@ extern struct matching_key *get_keys (struct key_store *ks, const char *device,
                                       const char *uuid, size_t *nr_matches);
 extern void free_keys (struct matching_key *keys, size_t nr_matches);
 extern struct key_store *key_store_add_from_selector (struct key_store *ks, const char *selector);
-extern struct key_store *key_store_import_key (struct key_store *ks, const struct key_store_key *key);
+extern struct key_store *key_store_import_key (struct key_store *ks,
+                                               struct key_store_key *key);
 extern bool key_store_requires_network (const struct key_store *ks);
 extern void free_key_store (struct key_store *ks);
 

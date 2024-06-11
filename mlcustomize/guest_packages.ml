@@ -1,5 +1,5 @@
 (* virt-customize
- * Copyright (C) 2012-2021 Red Hat Inc.
+ * Copyright (C) 2012-2023 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ let update_command package_management =
   | "urpmi" ->  "urpmi --auto-select"
   | "xbps" ->   "xbps-install -Suy"
   | "yum" ->    "yum -y update"
-  | "zypper" -> "zypper -n update -l"
+  | "zypper" -> "zypper -n dup -l"
 
   | "unknown" ->
     error_unknown_package_manager "--update"

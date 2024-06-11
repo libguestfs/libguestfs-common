@@ -87,6 +87,10 @@ module String : sig
         [str] with [s2]. *)
     val replace_char : string -> char -> char -> string
     (** Replace character in string. *)
+    val break : int -> string -> string * string
+    (** [break n str] breaks a string at the nth byte, returning the
+        first and second parts.  If [n] is beyond the end of the
+        string it returns [(str, "")]. *)
     val split : string -> string -> string * string
     (** [split sep str] splits [str] at the first occurrence of the
         separator [sep], returning the part before and the part after.
@@ -193,6 +197,16 @@ module List : sig
 
         For any list [xs] and function [f],
         [xs = takewhile f xs @ dropwhile f xs] *)
+
+    val take : int -> 'a list -> 'a list
+    (** [take n xs] returns the first [n] elements of [xs].  If [xs] is
+        shorter than [n], then it returns [xs].  Note it never fails
+        for any input. *)
+    val drop : int -> 'a list -> 'a list
+    (** [drop n xs] returns the suffix of [xs] after the first [n]
+        elements.  If [xs] is shorter than [n], then it returns the empty
+        list.  Note it never fails for any input. *)
+
     val filter_map : ('a -> 'b option) -> 'a list -> 'b list
     (** [filter_map f xs] applies [f] to each element of [xs].  If
         [f x] returns [Some y] then [y] is added to the returned list. *)
@@ -200,6 +214,12 @@ module List : sig
     (** [find_map f xs] applies [f] to each element of [xs] until
         [f x] returns [Some y].  It returns [y].  If we exhaust the
         list then this raises [Not_found]. *)
+
+    val group_by : ('a * 'b) list -> ('a * 'b list) list
+    (** [group_by [1, "foo"; 2, "bar"; 2, "baz"; 2, "biz"; 3, "boo"; 4, "fizz"]]
+        - : (int * string list) list
+        [(1, ["foo"]); (2, ["bar"; "baz"; "biz"]); (3, ["boo"]); (4, ["fizz"])]
+        *)
 
     val combine3 : 'a list -> 'b list -> 'c list -> ('a * 'b * 'c) list
     (** Like {!List.combine} but for triples.
@@ -246,6 +266,18 @@ module List : sig
         If a zero-length list is passed in, this raises [Failure
         "pop_front"]. *)
 
+    val may_push_back : 'a list ref -> 'a option -> unit
+    val may_push_front : 'a option -> 'a list ref -> unit
+    (** More imperative list manipulation functions.
+
+        [may_push_back xsp None] does nothing.
+
+        [may_push_back xsp (Some x)] appends [x] to the end of the list.
+
+        [may_push_front None xsp] does nothing.
+
+        [may_push_front (Some x) xsp] prepends [x] to the head of the list. *)
+
     val push_back_list : 'a list ref -> 'a list -> unit
     val push_front_list : 'a list -> 'a list ref -> unit
     (** More imperative list manipulation functions.
@@ -259,16 +291,19 @@ end
 (** Override the List module from stdlib. *)
 
 module Option : sig
-    val may : ('a -> unit) -> 'a option -> unit
-    (** [may f (Some x)] runs [f x].  [may f None] does nothing. *)
+    val iter : ('a -> unit) -> 'a option -> unit
+    (** [iter f o] is [f v] if [o] is [Some v] and [()] otherwise *)
 
     val map : ('a -> 'b) -> 'a option -> 'b option
     (** [map f (Some x)] returns [Some (f x)].  [map f None] returns [None]. *)
 
-    val default : 'a -> 'a option -> 'a
-    (** [default x (Some y)] returns [y].  [default x None] returns [x]. *)
+    val value : 'a option -> default:'a -> 'a
+    (** [value o ~default] is [v] if [o] is [Some v] and [default] otherwise. *)
 end
-(** Functions for dealing with option types. *)
+(** Functions for dealing with option types.
+
+    This module will be removed when we can use baseline OCaml 4.08
+    since that version introduces a compatible [Option] module. *)
 
 val ( // ) : string -> string -> string
 (** Concatenate directory and filename. *)

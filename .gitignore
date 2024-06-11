@@ -35,6 +35,7 @@ Makefile.in
 /errnostring/errnostring.h
 /mlcustomize/.depend
 /mlcustomize/test-firstboot-*.sh
+/mldrivers/.depend
 /mlgettext/.depend
 /mlgettext/common_gettext.ml
 /mlpcre/.depend

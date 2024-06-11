@@ -39,11 +39,13 @@ generator_built = \
 SOURCES_MLI = \
 	firstboot.mli \
 	guest_packages.mli \
+	inject_virtio_win.mli \
 	SELinux_relabel.mli
 
 SOURCES_ML = \
 	firstboot.ml \
 	guest_packages.ml \
+	inject_virtio_win.ml \
 	SELinux_relabel.ml
 
 if HAVE_OCAML
@@ -75,7 +77,8 @@ libmlcustomize_a_CPPFLAGS = \
 	-I$(top_srcdir)/common/mlstdutils \
 	-I$(top_srcdir)/common/mlgettext \
 	-I$(top_srcdir)/common/mlpcre \
-	-I$(top_srcdir)/common/mltools
+	-I$(top_srcdir)/common/mltools \
+	-I$(top_srcdir)/common/mlxml
 libmlcustomize_a_CFLAGS = \
 	$(WARN_CFLAGS) $(WERROR_CFLAGS) \
 	-fPIC
@@ -91,6 +94,7 @@ OCAMLPACKAGES = \
 	-I $(top_builddir)/common/mlgettext \
 	-I $(top_builddir)/common/mlpcre \
 	-I $(top_builddir)/common/mltools \
+	-I $(top_builddir)/common/mlxml \
 	-I $(builddir)
 OCAMLPACKAGES_TESTS = $(MLCUSTOMIZE_CMA)
 if HAVE_OCAML_PKG_GETTEXT

@@ -4,7 +4,7 @@
  *          and from the code in the generator/ subdirectory.
  * ANY CHANGES YOU MAKE TO THIS FILE WILL BE LOST.
  *
- * Copyright (C) 2009-2020 Red Hat Inc.
+ * Copyright (C) 2009-2023 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@ and op = [
       (* --append-line FILE:LINE *)
   | `Chmod of string * string
       (* --chmod PERMISSIONS:FILE *)
+  | `Chown of string * string * string
+      (* --chown UID:GID:PATH *)
   | `CommandsFromFile of string
       (* --commands-from-file FILENAME *)
   | `Copy of string * string
@@ -51,6 +53,12 @@ and op = [
       (* --firstboot-install PKG,PKG.. *)
   | `Hostname of string
       (* --hostname HOSTNAME *)
+  | `InjectBalloonServer of string
+      (* --inject-blnsvr METHOD *)
+  | `InjectQemuGA of string
+      (* --inject-qemu-ga METHOD *)
+  | `InjectVirtioWin of string
+      (* --inject-virtio-win METHOD *)
   | `InstallPackages of string list
       (* --install PKG,PKG.. *)
   | `Link of string * string list
@@ -79,14 +87,16 @@ and op = [
       (* --sm-unregister *)
   | `SSHInject of string * Ssh_key.ssh_key_selector
       (* --ssh-inject USER[:SELECTOR] *)
-  | `Truncate of string
-      (* --truncate FILE *)
-  | `TruncateRecursive of string
-      (* --truncate-recursive PATH *)
+  | `TarIn of string * string
+      (* --tar-in TARFILE:REMOTEDIR *)
   | `Timezone of string
       (* --timezone TIMEZONE *)
   | `Touch of string
       (* --touch FILE *)
+  | `Truncate of string
+      (* --truncate FILE *)
+  | `TruncateRecursive of string
+      (* --truncate-recursive PATH *)
   | `UninstallPackages of string list
       (* --uninstall PKG,PKG.. *)
   | `Update

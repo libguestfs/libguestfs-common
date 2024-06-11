@@ -35,9 +35,12 @@ EXTRA_DIST = \
 SOURCES_MLI = \
 	checksums.mli \
 	curl.mli \
+	DOM.mli \
 	getopt.mli \
 	JSON.mli \
 	JSON_parser.mli \
+	libosinfo.mli \
+	libosinfo_utils.mli \
 	on_exit.mli \
 	planner.mli \
 	regedit.mli \
@@ -51,6 +54,7 @@ SOURCES_ML = \
 	getopt.ml \
 	JSON.ml \
 	tools_utils.ml \
+	DOM.ml \
 	on_exit.ml \
 	URI.ml \
 	planner.ml \
@@ -60,7 +64,9 @@ SOURCES_ML = \
 	curl.ml \
 	checksums.ml \
 	xpath_helpers.ml \
-	urandom.ml
+	urandom.ml \
+	libosinfo.ml \
+	libosinfo_utils.ml
 
 SOURCES_C = \
 	../options/decrypt.c \
@@ -68,6 +74,7 @@ SOURCES_C = \
 	../options/uri.c \
 	getopt-c.c \
 	JSON_parser-c.c \
+	libosinfo-c.c \
 	tools_utils-c.c \
 	uri-c.c
 
@@ -110,6 +117,7 @@ libmltools_a_CFLAGS = \
 	$(LIBXML2_CFLAGS) \
 	$(LIBGUESTFS_CFLAGS) \
 	$(JANSSON_CFLAGS) \
+	$(LIBOSINFO_CFLAGS) \
 	-fPIC
 
 BOBJECTS = $(SOURCES_ML:.ml=.cmo)
@@ -141,6 +149,7 @@ OCAMLCLIBS = \
 	$(LIBVIRT_LIBS) \
 	$(LIBXML2_LIBS) \
 	$(JANSSON_LIBS) \
+	$(LIBOSINFO_LIBS) \
 	$(LIBINTL) \
 	-lgnu
 
