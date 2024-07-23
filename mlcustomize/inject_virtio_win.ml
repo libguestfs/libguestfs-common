@@ -552,37 +552,25 @@ and copy_from_libosinfo { g; i_osinfo; i_arch } destdir =
     ) driver.Libosinfo.files
   with Not_found -> []
 
+(* Install qemu-ga.  [files] is the non-empty list of possible qemu-ga
+ * installers we detected.
+ *)
 and configure_qemu_ga t files =
+  let script = ref [] in
+  let add = List.push_back script in
+
+  add "# Virt-v2v script which installs QEMU Guest Agent";
+  add "";
+  add "# Uncomment this line for lots of debug output.";
+  add "# Set-PSDebug -Trace 2";
+  add "";
+  add "Write-Host Installing QEMU Guest Agent";
+  add "";
+  add "# Run qemu-ga installers";
   List.iter (
     fun msi_path ->
-      (* Windows is a trashfire.
-       * https://stackoverflow.com/a/18730884
-       * https://bugzilla.redhat.com/show_bug.cgi?id=1895323
-       *)
-      let psh_script = ref [] in
-      let add = List.push_back psh_script in
+      add (sprintf "C:\\%s /norestart /qn /l+*vx C:\\%s.log"
+             msi_path msi_path)
+  ) files;
 
-      add "# Uncomment this line for lots of debug output.";
-      add "# Set-PSDebug -Trace 2";
-      add "";
-      add "Write-Host Removing any previously scheduled qemu-ga installation";
-      add "schtasks.exe /Delete /TN Firstboot-qemu-ga /F";
-      add "";
-      add (sprintf
-             "Write-Host Scheduling delayed installation of qemu-ga from %s"
-             msi_path);
-      add "$d = (get-date).AddSeconds(120)";
-      add "$dtfinfo = [System.Globalization.DateTimeFormatInfo]::CurrentInfo";
-      add "$sdp = $dtfinfo.ShortDatePattern";
-      add "$sdp = $sdp -replace 'y+', 'yyyy'";
-      add "$sdp = $sdp -replace 'M+', 'MM'";
-      add "$sdp = $sdp -replace 'd+', 'dd'";
-      add "schtasks.exe /Create /SC ONCE `";
-      add "  /ST $d.ToString('HH:mm') /SD $d.ToString($sdp) `";
-      add "  /RU SYSTEM /TN Firstboot-qemu-ga `";
-      add (sprintf "  /TR \"C:\\%s /forcerestart /qn /l+*vx C:\\%s.log\""
-             msi_path msi_path);
-
-      Firstboot.add_firstboot_powershell t.g t.root
-        (sprintf "install-%s.ps1" msi_path) !psh_script;
-  ) files
+  Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga.ps1" !script
