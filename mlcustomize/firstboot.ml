@@ -391,6 +391,6 @@ let add_firstboot_powershell g root ?prio name code =
   let code = String.concat "\r\n" code ^ "\r\n" in
   g#write ps_path code;
 
-  let fb = sprintf "powershell.exe -ExecutionPolicy ByPass -file %s"
+  let fb = sprintf "powershell.exe -ExecutionPolicy ByPass -NoProfile -file %s"
              ps_path in
   add_firstboot_script g root ?prio name fb
