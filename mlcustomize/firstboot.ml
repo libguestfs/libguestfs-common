@@ -387,16 +387,14 @@ let add_firstboot_powershell g root ?prio name code =
   (* Create the temporary directory to put the Powershell file. *)
   let tempdir = sprintf "%s/Temp" windows_systemroot in
   g#mkdir_p tempdir;
+  let ps_path = sprintf "%s/%s" tempdir name in
   let code = String.concat "\r\n" code ^ "\r\n" in
-  g#write (sprintf "%s/%s" tempdir name) code;
+  g#write ps_path code;
 
   (* Powershell interpreter.  Should we check this exists? XXX *)
   let ps_exe =
     windows_systemroot ^
     "\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" in
-
-  (* Windows path to the Powershell script. *)
-  let ps_path = windows_systemroot ^ "\\Temp\\" ^ name in
 
   let fb = sprintf "%s -ExecutionPolicy ByPass -file %s" ps_exe ps_path in
   add_firstboot_script g root ?prio name fb
