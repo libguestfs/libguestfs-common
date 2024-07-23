@@ -391,10 +391,6 @@ let add_firstboot_powershell g root ?prio name code =
   let code = String.concat "\r\n" code ^ "\r\n" in
   g#write ps_path code;
 
-  (* Powershell interpreter.  Should we check this exists? XXX *)
-  let ps_exe =
-    windows_systemroot ^
-    "\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" in
-
-  let fb = sprintf "%s -ExecutionPolicy ByPass -file %s" ps_exe ps_path in
+  let fb = sprintf "powershell.exe -ExecutionPolicy ByPass -file %s"
+             ps_path in
   add_firstboot_script g root ?prio name fb
