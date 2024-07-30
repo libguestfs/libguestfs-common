@@ -102,7 +102,7 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
     ) apps in
     if verbose () then (
       let names = List.map (fun { G.app2_name = name } -> name) kernel_pkgs in
-      eprintf "candidate kernel packages in this guest: %s%!\n"
+      eprintf "info: candidate kernel packages in this guest: %s%!\n"
         (String.concat " " names)
     );
     List.filter_map (
@@ -306,7 +306,7 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
     ) kernel_pkgs in
 
   if verbose () then (
-    eprintf "installed kernel packages in this guest:\n";
+    eprintf "info: installed kernel packages in this guest:\n";
     List.iter (print_kernel_info stderr "\t") installed_kernels;
     flush stderr
   );
@@ -343,7 +343,7 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
     ) vmlinuzes in
 
   if verbose () then (
-    eprintf "kernels offered by the bootloader in this guest (first in list is default):\n";
+    eprintf "info: kernels offered by the bootloader in this guest (first in list is default):\n";
     List.iter (print_kernel_info stderr "\t") bootloader_kernels;
     flush stderr
   );
