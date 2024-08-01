@@ -239,7 +239,22 @@ WantedBy=%s
 end
 
 module Windows = struct
-  let rec install_service (g : Guestfs.guestfs) root =
+  (* Create and return the firstboot directory. *)
+  let create_firstboot_dir (g : Guestfs.guestfs) =
+    let rec loop firstboot_dir firstboot_dir_win = function
+      | [] -> firstboot_dir, firstboot_dir_win
+      | dir :: path ->
+         let firstboot_dir =
+           if firstboot_dir = "" then "/" ^ dir else firstboot_dir // dir in
+         let firstboot_dir_win = firstboot_dir_win ^ "\\" ^ dir in
+         let firstboot_dir = g#case_sensitive_path firstboot_dir in
+         g#mkdir_p firstboot_dir;
+         loop firstboot_dir firstboot_dir_win path
+    in
+    loop "" "C:" ["Program Files"; "Guestfs"; "Firstboot"]
+
+  let rec install_service (g : Guestfs.guestfs) root
+            firstboot_dir firstboot_dir_win =
     (* Either rhsrvany.exe or pvvxsvc.exe must exist.
      *
      * (Check also that it's not a dangling symlink but a real file).
@@ -254,20 +269,7 @@ module Windows = struct
        error (f_"One of rhsrvany.exe or pvvxsvc.exe is missing in %s.  One of them is required in order to install Windows firstboot scripts.  You can get one by building rhsrvany (https://github.com/rwmjones/rhsrvany)")
              (virt_tools_data_dir ()) in
 
-    (* Create a directory for firstboot files in the guest. *)
-    let firstboot_dir, firstboot_dir_win =
-      let rec loop firstboot_dir firstboot_dir_win = function
-        | [] -> firstboot_dir, firstboot_dir_win
-        | dir :: path ->
-          let firstboot_dir =
-            if firstboot_dir = "" then "/" ^ dir else firstboot_dir // dir in
-          let firstboot_dir_win = firstboot_dir_win ^ "\\" ^ dir in
-          let firstboot_dir = g#case_sensitive_path firstboot_dir in
-          g#mkdir_p firstboot_dir;
-          loop firstboot_dir firstboot_dir_win path
-      in
-      loop "" "C:" ["Program Files"; "Guestfs"; "Firstboot"] in
-
+    (* Create a directory for firstboot scripts in the guest. *)
     g#mkdir_p (firstboot_dir // "scripts");
 
     (* Copy pvvxsvc or rhsrvany to the guest. *)
@@ -339,10 +341,24 @@ echo uninstalling firstboot service
             "PWD", REG_SZ firstboot_dir_win ];
         ] in
         reg_import reg regedits
-      );
-
-    firstboot_dir
+      )
 end
+
+let firstboot_dir (g : Guestfs.guestfs) root =
+  let typ = g#inspect_get_type root in
+
+  match typ with
+  | "linux" ->
+     let dir = Linux.firstboot_dir in
+     g#mkdir_p dir;
+     dir, None
+
+  | "windows" ->
+     let dir, dir_win = Windows.create_firstboot_dir g in
+     dir, Some dir_win
+
+  | _ ->
+    error (f_"guest type %s is not supported") typ
 
 let script_count = ref 0
 
@@ -363,7 +379,8 @@ let add_firstboot_script (g : Guestfs.guestfs) root ?(prio = 5000) name
     g#chmod 0o755 filename
 
   | "windows", _ ->
-    let firstboot_dir = Windows.install_service g root in
+    let firstboot_dir, firstboot_dir_win = Windows.create_firstboot_dir g in
+    Windows.install_service g root firstboot_dir firstboot_dir_win;
     let filename = firstboot_dir // "scripts" // filename ^ ".bat" in
     g#write filename (String.unix2dos content)
 
