@@ -569,7 +569,7 @@ and configure_qemu_ga t files =
   add "# Run qemu-ga installers";
   List.iter (
     fun msi_path ->
-      add (sprintf "C:\\%s /norestart /qn /l+*vx C:\\%s.log"
+      add (sprintf "Start-Process -Wait -FilePath \"C:\\%s\" -ArgumentList \"/norestart\",\"/qn\",\"/l+*vx\",\"C:\\%s.log\""
              msi_path msi_path)
   ) files;
 
