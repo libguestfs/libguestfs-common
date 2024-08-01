@@ -399,15 +399,18 @@ let add_firstboot_powershell g root ?prio name code =
    *)
   assert (g#inspect_get_type root = "windows");
 
-  let windows_systemroot = g#inspect_get_windows_systemroot root in
-
-  (* Create the temporary directory to put the Powershell file. *)
-  let tempdir = sprintf "%s/Temp" windows_systemroot in
+  (* Place the Powershell script into firstboot_dir/Temp *)
+  let firstboot_dir, firstboot_dir_win = Windows.create_firstboot_dir g in
+  let tempdir = sprintf "%s/Temp" firstboot_dir in
   g#mkdir_p tempdir;
-  let ps_path = sprintf "%s/%s" tempdir name in
+
+  let ps_path = sprintf "%s/%s.ps1" tempdir name in
+  let ps_path_win = sprintf "%s\\Temp\\%s.ps1" firstboot_dir_win name in
   let code = String.concat "\r\n" code ^ "\r\n" in
   g#write ps_path code;
 
-  let fb = sprintf "powershell.exe -ExecutionPolicy ByPass -NoProfile -file %s"
-             ps_path in
+  (* Create a regular firstboot bat that just invokes powershell *)
+  let fb =
+    sprintf "powershell.exe -ExecutionPolicy ByPass -NoProfile -file \"%s\""
+      ps_path_win in
   add_firstboot_script g root ?prio name fb

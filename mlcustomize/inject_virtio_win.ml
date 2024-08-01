@@ -573,4 +573,4 @@ and configure_qemu_ga t files =
              msi_path msi_path)
   ) files;
 
-  Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga.ps1" !script
+  Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga" !script
