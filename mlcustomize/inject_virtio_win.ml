@@ -261,10 +261,17 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
     }
   )
 
-and inject_qemu_ga t =
-  let msi_files = copy_qemu_ga t in
+and inject_qemu_ga ({ g; root } as t) =
+  (* Copy the qemu-ga MSI(s) to the guest. *)
+  let dir, dir_win = Firstboot.firstboot_dir g root in
+  let dir_win = Option.value dir_win ~default:dir in
+  let tempdir = sprintf "%s/Temp" dir in
+  let tempdir_win = sprintf "%s\\Temp" dir_win in
+  g#mkdir_p tempdir;
+
+  let msi_files = copy_qemu_ga t tempdir in
   if msi_files <> [] then
-    configure_qemu_ga t msi_files;
+    configure_qemu_ga t tempdir_win msi_files;
   msi_files <> [] (* return true if we found some qemu-ga MSI files *)
 
 and add_guestor_to_registry t ((g, root) as reg) drv_name drv_pciid =
@@ -346,8 +353,8 @@ and copy_drivers t driverdir =
       (fun () ->
         error (f_"root directory ‘/’ is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log."))
 
-and copy_qemu_ga t =
-  copy_from_virtio_win t "/" "/" (virtio_iso_path_matches_qemu_ga t)
+and copy_qemu_ga t tempdir =
+  copy_from_virtio_win t "/" tempdir (virtio_iso_path_matches_qemu_ga t)
     (fun () ->
       error (f_"root directory ‘/’ is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log."))
 
@@ -555,7 +562,7 @@ and copy_from_libosinfo { g; i_osinfo; i_arch } destdir =
 (* Install qemu-ga.  [files] is the non-empty list of possible qemu-ga
  * installers we detected.
  *)
-and configure_qemu_ga t files =
+and configure_qemu_ga t tempdir_win files =
   let script = ref [] in
   let add = List.push_back script in
 
@@ -568,9 +575,10 @@ and configure_qemu_ga t files =
   add "";
   add "# Run qemu-ga installers";
   List.iter (
-    fun msi_path ->
-      add (sprintf "Start-Process -Wait -FilePath \"C:\\%s\" -ArgumentList \"/norestart\",\"/qn\",\"/l+*vx\",\"C:\\%s.log\""
-             msi_path msi_path)
+    fun msi ->
+      (* [`] is an escape char for quotes *)
+      add (sprintf "Start-Process -Wait -FilePath \"%s\\%s\" -ArgumentList \"/norestart\",\"/qn\",\"/l+*vx\",\"`\"%s\\%s.log`\"\""
+             tempdir_win msi tempdir_win msi)
   ) files;
 
   Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga" !script
