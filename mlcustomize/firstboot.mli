@@ -16,6 +16,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *)
 
+val firstboot_dir : Guestfs.guestfs -> string -> string * string option
+(** [firstboot_dir g root]
+    returns the path of the firstboot directory, creating it in
+    the guest if necessary.
+
+    This returns the name of the directory as a guestfs path, and
+    optionally the name as a Windows path (only for Windows guests).
+
+    For Linux this could be [/usr/lib/virt-sysprep, None]
+
+    For Windows this could be ["/Program Files/Guestfs/Firstboot",
+    Some "C:\Program Files\Guestfs\Firstboot"]
+
+    Additional files that are used during firstboot can be placed
+    in this directory, but be careful not to conflict with files
+    and scripts added by the firstboot process itself. *)
+
 val add_firstboot_script : Guestfs.guestfs -> string -> ?prio:int -> string ->
                            string -> unit
   (** [add_firstboot_script g root prio name content] adds a firstboot
