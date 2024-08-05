@@ -606,6 +606,8 @@ and configure_qemu_ga t tempdir_win files =
   add "# Run qemu-ga installers";
   List.iter (
     fun msi ->
+      add (sprintf "Write-Host \"Writing log to %s\\%s.log\""
+             tempdir_win msi);
       (* [`] is an escape char for quotes *)
       add (sprintf "Start-Process -Wait -FilePath \"%s\\%s\" -ArgumentList \"/norestart\",\"/qn\",\"/l+*vx\",\"`\"%s\\%s.log`\"\""
              tempdir_win msi tempdir_win msi)
