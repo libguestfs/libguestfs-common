@@ -278,6 +278,9 @@ module Windows = struct
     (* Write a firstboot.bat control script which just runs the other
      * scripts in the directory.  Note we need to use CRLF line endings
      * in this script.
+     *
+     * XXX It would be better to use powershell here.  For some ideas see
+     * https://github.com/HCK-CI/HLK-Setup-Scripts/
      *)
     let firstboot_script = sprintf "\
 @echo off
@@ -299,6 +302,7 @@ if not exist \"%%scripts_done%%\" (
   mkdir \"%%scripts_done%%\"
 )
 
+:: Pick the next script to run.
 for %%%%f in (\"%%scripts%%\"\\*.bat) do (
   echo running \"%%%%f\"
   move \"%%%%f\" \"%%scripts_done%%\"
@@ -309,6 +313,7 @@ for %%%%f in (\"%%scripts%%\"\\*.bat) do (
   popd
 )
 
+:: Fallthrough here if there are no scripts.
 echo uninstalling firstboot service
 \"%%firstboot%%\\%s\" -s firstboot uninstall
 " firstboot_dir_win srvany in
