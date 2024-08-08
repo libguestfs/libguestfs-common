@@ -311,6 +311,14 @@ for %%%%f in (\"%%scripts%%\"\\*.bat) do (
   set elvl=!errorlevel!
   echo .... exit code !elvl!
   popd
+
+  :: Reboot the computer.  This is necessary to free any locked
+  :: files which may prevent later scripts from running.
+  shutdown /r /t 0 /y
+
+  :: Exit the script (in case shutdown returns before rebooting).
+  :: On next boot, the whole firstboot service will be called again.
+  exit /b
 )
 
 :: Fallthrough here if there are no scripts.
