@@ -25,11 +25,6 @@ EXTRA_DIST = \
 	test-firstboot.sh \
 	test-selinuxrelabel.sh
 
-# Note: So that I don't have to move many modules from virt-customize
-# to here, we don't compile customize_cmdline.ml into the mlcustomize
-# library.  Instead virt-customize links to these files.  They are
-# only located here because they have to be placed in common/ because
-# they are generated (since the repository split).
 generator_built = \
 	customize_cmdline.mli \
 	customize_cmdline.ml \
@@ -37,16 +32,45 @@ generator_built = \
 	customize-synopsis.pod
 
 SOURCES_MLI = \
+	append_line.mli \
+	crypt.mli \
+	customize_cmdline.mli \
+	customize_run.mli \
 	firstboot.mli \
 	guest_packages.mli \
+	hostname.mli \
 	inject_virtio_win.mli \
-	SELinux_relabel.mli
+	password.mli \
+	perl_edit.mli \
+	random_seed.mli \
+	SELinux_relabel.mli \
+	ssh_key.mli \
+	subscription_manager.mli \
+	timezone.mli
 
+# This list must be in dependency order.
 SOURCES_ML = \
 	firstboot.ml \
+	append_line.ml \
+	hostname.ml \
+	perl_edit.ml \
+	random_seed.ml \
+	ssh_key.ml \
+	subscription_manager.ml \
+	timezone.ml \
+	crypt.ml \
+	password.ml \
 	guest_packages.ml \
 	inject_virtio_win.ml \
-	SELinux_relabel.ml
+	SELinux_relabel.ml \
+	customize_cmdline.ml \
+	customize_run.ml
+
+SOURCES_C = \
+	../edit/file-edit.c \
+	../edit/file-edit.h \
+	crypt-c.c \
+	perl_edit-c.c
 
 if HAVE_OCAML
 
@@ -65,7 +89,7 @@ endif
 
 noinst_DATA = $(MLCUSTOMIZE_CMA)
 
-libmlcustomize_a_SOURCES = dummy.c
+libmlcustomize_a_SOURCES = $(SOURCES_C)
 libmlcustomize_a_CPPFLAGS = \
 	-DCAML_NAME_SPACE \
 	-I. \
@@ -74,6 +98,7 @@ libmlcustomize_a_CPPFLAGS = \
 	-I$(shell $(OCAMLC) -where) \
 	-I$(top_srcdir)/common/utils \
 	-I$(top_srcdir)/lib \
+	-I$(top_srcdir)/common/edit \
 	-I$(top_srcdir)/common/mlstdutils \
 	-I$(top_srcdir)/common/mlgettext \
 	-I$(top_srcdir)/common/mlpcre \
