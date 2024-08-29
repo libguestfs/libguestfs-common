@@ -478,7 +478,10 @@ and virtio_iso_path_matches_guest_os t path =
      * "./drivers/amd64/Win2012R2/netkvm.sys".
      * Note we check lowercase paths.
      *)
-    let pathelem elem = String.find lc_path ("/" ^ elem ^ "/") >= 0 in
+    let pathelem elem =
+      String.find lc_path ("/" ^ elem ^ "/") >= 0 ||
+      String.is_prefix lc_path (elem ^ "/")
+    in
     let p_arch =
       if pathelem "x86" || pathelem "i386" then "i386"
       else if pathelem "amd64" then "x86_64"
@@ -522,7 +525,11 @@ and virtio_iso_path_matches_guest_os t path =
       else
         raise Not_found in
 
-    arch = p_arch && os_major = p_os_major && os_minor = p_os_minor &&
+    let p_sriov = pathelem "sriov" in
+
+    arch = p_arch &&
+    not p_sriov && (* always ignored, see RHEL-56383 *)
+    os_major = p_os_major && os_minor = p_os_minor &&
     match_os_variant os_variant &&
     match_osinfo osinfo
 
