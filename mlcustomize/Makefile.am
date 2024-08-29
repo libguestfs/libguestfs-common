@@ -29,7 +29,9 @@ generator_built = \
 	customize_cmdline.mli \
 	customize_cmdline.ml \
 	customize-options.pod \
-	customize-synopsis.pod
+	customize-synopsis.pod \
+	v2v-customize-options.pod \
+	v2v-customize-synopsis.pod
 
 SOURCES_MLI = \
 	append_line.mli \
