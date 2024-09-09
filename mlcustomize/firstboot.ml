@@ -152,7 +152,7 @@ WantedBy=%s
   and install_sysvinit_service g root distro major =
     match distro with
     | "fedora"|"rhel"|"centos"|"scientificlinux"|"oraclelinux"|"rocky"|
-        "redhat-based" ->
+        "redhat-based"|"openeuler" ->
       install_sysvinit_redhat g
     | "opensuse"|"sles"|"suse-based" ->
       install_sysvinit_suse g

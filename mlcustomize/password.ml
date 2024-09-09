@@ -189,7 +189,7 @@ and default_crypto g root =
 
   (* Rolling distributions, which hopefully should be updated enough. *)
   | ("archlinux"|"kalilinux"), _ -> `YESCRYPT
-  | ("voidlinux"), _ -> `SHA512
+  | ("voidlinux"|"openeuler"), _ -> `SHA512
 
   | _, _ ->
     let minor = g#inspect_get_minor_version root in
