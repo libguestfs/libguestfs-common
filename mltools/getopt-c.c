@@ -46,7 +46,6 @@ extern value guestfs_int_mllib_getopt_parse (value argsv, value specsv, value an
 
 #define Val_none Val_int(0)
 
-#ifdef HAVE_ATTRIBUTE_CLEANUP
 #define CLEANUP_FREE_OPTION_LIST __attribute__((cleanup(cleanup_option_list)))
 
 static void
@@ -62,10 +61,6 @@ cleanup_option_list (void *ptr)
   }
   free (opts);
 }
-
-#else
-#define CLEANUP_FREE_OPTION_LIST
-#endif
 
 static void __attribute__((noreturn))
 show_error (int status)

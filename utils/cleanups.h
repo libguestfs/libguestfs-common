@@ -19,7 +19,6 @@
 #ifndef GUESTFS_CLEANUPS_H_
 #define GUESTFS_CLEANUPS_H_
 
-#ifdef HAVE_ATTRIBUTE_CLEANUP
 #define CLEANUP_FREE                                    \
   __attribute__((cleanup(guestfs_int_cleanup_free)))
 #define CLEANUP_HASH_FREE                                       \
@@ -50,23 +49,6 @@
   __attribute__((cleanup(guestfs_int_cleanup_xmlXPathFreeObject)))
 #define CLEANUP_PCRE2_MATCH_DATA_FREE                                   \
   __attribute__((cleanup(guestfs_int_cleanup_pcre2_match_data_free)))
-#else
-#define CLEANUP_FREE
-#define CLEANUP_HASH_FREE
-#define CLEANUP_UNLINK_FREE
-#define CLEANUP_CLOSE
-#define CLEANUP_FCLOSE
-#define CLEANUP_PCLOSE
-#define CLEANUP_FREE_STRING_LIST
-#define CLEANUP_XMLFREE
-#define CLEANUP_XMLBUFFERFREE
-#define CLEANUP_XMLFREEDOC
-#define CLEANUP_XMLFREEURI
-#define CLEANUP_XMLFREETEXTWRITER
-#define CLEANUP_XMLXPATHFREECONTEXT
-#define CLEANUP_XMLXPATHFREEOBJECT
-#define CLEANUP_PCRE2_MATCH_DATA_FREE
-#endif
 
 /* These functions are used internally by the CLEANUP_* macros.
  * Don't call them directly.
