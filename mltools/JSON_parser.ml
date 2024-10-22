@@ -21,7 +21,10 @@ open Tools_utils
 open Common_gettext.Gettext
 
 external json_parser_tree_parse : string -> JSON.json_t = "virt_builder_json_parser_tree_parse"
-external json_parser_tree_parse_file : string -> JSON.json_t = "virt_builder_json_parser_tree_parse_file"
+
+let json_parser_tree_parse_file filename =
+  let content = read_whole_file filename in
+  json_parser_tree_parse content
 
 let object_find_optional key = function
   | JSON.Dict fields ->
