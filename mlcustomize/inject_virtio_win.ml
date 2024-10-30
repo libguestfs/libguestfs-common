@@ -522,6 +522,8 @@ and virtio_iso_path_matches_guest_os t path =
         (10, 0, not_client, ((=) "win2k19"))
       else if pathelem "2k22" || pathelem "win2022" then
         (10, 0, not_client, ((=) "win2k22"))
+      else if pathelem "2k25" || pathelem "win2025" then
+        (10, 0, not_client, ((=) "win2k25"))
       else
         raise Not_found in
 
