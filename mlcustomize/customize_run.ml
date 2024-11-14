@@ -44,7 +44,8 @@ let run (g : G.guestfs) root (ops : ops) =
   let debug_logfile () =
     try g#download logfile "/dev/stderr"
     with exn ->
-      warning (f_"log file %s: %s (ignored)") logfile (Printexc.to_string exn) in
+      warning (f_"log file %s: %s (ignored)") logfile (Printexc.to_string exn)
+  in
 
   (* Useful wrapper for scripts. *)
   let do_run ~display ?(warn_failed_no_network = false) cmd =
