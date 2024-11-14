@@ -31,5 +31,8 @@ val prefix : string
 val datadir : string
 (** The configure value [@datadir@] *)
 
+val host_os : string
+(** The configure value [@host_os@] *)
+
 val host_cpu : string
 (** The configure value [@host_cpu@] *)
