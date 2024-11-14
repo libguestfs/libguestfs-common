@@ -49,17 +49,8 @@ let run (g : G.guestfs) root (ops : ops) =
 
   (* Useful wrapper for scripts. *)
   let do_run ~display ?(warn_failed_no_network = false) cmd =
-    let incompatible_fn () =
-      let guest_arch = g#inspect_get_arch root in
-      error (f_"host cpu (%s) and guest arch (%s) are not compatible, \
-                so you cannot use command line options that involve \
-                running commands in the guest.  Use --firstboot scripts \
-                instead.")
-            Guestfs_config.host_cpu guest_arch
-    in
-
     try
-      run_in_guest_command g root ~logfile ~incompatible_fn cmd
+      run_in_guest_command g root ~logfile cmd
     with
       G.Error msg ->
         debug_logfile ();

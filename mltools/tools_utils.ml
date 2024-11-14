@@ -737,11 +737,21 @@ let run_in_guest_command g root ?logfile ?incompatible_fn cmd =
   (* Is the host_cpu compatible with the guest arch?  ie. Can we
    * run commands in this guest?
    *)
+  let guest_os = g#inspect_get_type root in
+  let guest_os_compatible =
+    String.is_prefix Guestfs_config.host_os "linux" &&
+    guest_os = "linux" in
   let guest_arch = g#inspect_get_arch root in
   let guest_arch_compatible = guest_arch_compatible guest_arch in
-  if not guest_arch_compatible then (
+  if not guest_os_compatible || not guest_arch_compatible then (
     match incompatible_fn with
-    | None -> ()
+    | None ->
+       error (f_"host (%s/%s) and guest (%s/%s) are not compatible, \
+                 so you cannot use command line options that involve \
+                 running commands in the guest.  Use --firstboot scripts \
+                 instead.")
+         Guestfs_config.host_os Guestfs_config.host_cpu
+         guest_os guest_arch
     | Some fn -> fn ()
   )
   else (

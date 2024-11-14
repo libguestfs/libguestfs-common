@@ -233,9 +233,15 @@ val with_timeout : string -> int -> ?sleep:int -> (unit -> 'a option) -> 'a
 val run_in_guest_command : Guestfs.guestfs -> string -> ?logfile:string -> ?incompatible_fn:(unit -> unit) -> string -> unit
 (** [run_in_guest_command g root ?incompatible_archs_fn cmd]
     runs a command in the guest, which is already mounted for the
-    specified [root].  The command is run directly in case the
-    architecture of the host and the guest are compatible, optionally
-    calling [?incompatible_fn] in case they are not.
+    specified [root].
+
+    The command is run directly in the case that the host and guest
+    are compatible.
+
+    If they are not compatible, the command is not run and an error
+    is printed.  However you can override the error by setting
+    [?incompatible_fn], which is called so you can do something else
+    (like install a firstboot script).
 
     [?logfile] is an optional file in the guest to where redirect
     stdout and stderr of the command. *)
