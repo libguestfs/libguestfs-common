@@ -31,6 +31,7 @@ extern int qemuopts_add_flag (struct qemuopts *qopts, const char *flag);
 extern int qemuopts_add_arg (struct qemuopts *qopts, const char *flag, const char *value);
 extern int qemuopts_add_arg_format (struct qemuopts *qopts, const char *flag, const char *fs, ...) __attribute__((format (printf,3,4)));
 extern int qemuopts_add_arg_noquote (struct qemuopts *qopts, const char *flag, const char *value);
+extern int qemuopts_add_raw (struct qemuopts *qopts, const char *str);
 extern int qemuopts_start_arg_list (struct qemuopts *qopts, const char *flag);
 extern int qemuopts_append_arg_list (struct qemuopts *qopts, const char *value);
 extern int qemuopts_append_arg_list_format (struct qemuopts *qopts, const char *fs, ...) __attribute__((format (printf,2,3)));

@@ -76,13 +76,14 @@ enum qopt_type {
   QOPT_FLAG,
   QOPT_ARG,
   QOPT_ARG_NOQUOTE,
+  QOPT_RAW,
   QOPT_ARG_LIST,
 };
 
 struct qopt {
   enum qopt_type type;
   char *flag;             /* eg. "-m" */
-  char *value;            /* Value, for QOPT_ARG, QOPT_ARG_NOQUOTE. */
+  char *value;            /* Value, for QOPT_ARG, QOPT_ARG_NOQUOTE, QOPT_RAW */
   char **values;          /* List of values, for QOPT_ARG_LIST. */
 };
 
@@ -350,6 +351,27 @@ qemuopts_add_arg_noquote (struct qemuopts *qopts, const char *flag,
   qopt->type = QOPT_ARG_NOQUOTE;
   qopt->flag = flag_copy;
   qopt->value = value_copy;
+  return 0;
+}
+
+int
+qemuopts_add_raw (struct qemuopts *qopts, const char *str)
+{
+  struct qopt *qopt;
+  char *value_copy;
+
+  value_copy = strdup (str);
+  if (value_copy == NULL)
+    return -1;
+
+  if ((qopt = extend_options (qopts)) == NULL) {
+    free (value_copy);
+    return -1;
+  }
+
+  qopt->type = QOPT_RAW;
+  qopt->value = value_copy;
+
   return 0;
 }
 
@@ -724,6 +746,12 @@ qemuopts_to_channel (struct qemuopts *qopts, FILE *fp)
         shell_and_comma_quote (qopts->options[i].values[j], fp);
       }
       break;
+
+    case QOPT_RAW:
+      fprintf (fp, "%s%s",
+               nl, qopts->options[i].value);
+      break;
+
     }
   }
   fputc ('\n', fp);
@@ -769,6 +797,11 @@ qemuopts_to_argv (struct qemuopts *qopts)
     case QOPT_ARG:
     case QOPT_ARG_LIST:
       n += 2;
+
+      /* Raw is incompatible with using argv. */
+    case QOPT_RAW:
+      errno = EINVAL;
+      return NULL;
     }
   }
 
@@ -845,6 +878,10 @@ qemuopts_to_argv (struct qemuopts *qopts)
       }
       ret[n][len] = '\0';
       n++;
+      break;
+
+    case QOPT_RAW:
+      abort ();
     }
   }
 
@@ -924,7 +961,8 @@ qemuopts_to_config_channel (struct qemuopts *qopts, FILE *fp)
       return -1;
 
     case QOPT_ARG_NOQUOTE:
-      /* arg_noquote is incompatible with this function. */
+    case QOPT_RAW:
+      /* arg_noquote and raw are incompatible with this function. */
       errno = EINVAL;
       return -1;
 
@@ -960,6 +998,7 @@ qemuopts_to_config_channel (struct qemuopts *qopts, FILE *fp)
     case QOPT_FLAG:
     case QOPT_ARG_NOQUOTE:
     case QOPT_ARG:
+    case QOPT_RAW:
       abort ();
 
     case QOPT_ARG_LIST:
