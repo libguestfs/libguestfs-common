@@ -797,6 +797,7 @@ qemuopts_to_argv (struct qemuopts *qopts)
     case QOPT_ARG:
     case QOPT_ARG_LIST:
       n += 2;
+      break;
 
       /* Raw is incompatible with using argv. */
     case QOPT_RAW:
