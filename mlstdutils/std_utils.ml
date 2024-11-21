@@ -392,21 +392,6 @@ module List = struct
     let push_front_list xs xsp = xsp := xs @ !xsp
 end
 
-module Option = struct
-    let iter f = function
-      | None -> ()
-      | Some x -> f x
-
-    let map f = function
-      | None -> None
-      | Some x -> Some (f x)
-
-    let value x ~default =
-      match x with
-      | None -> default
-      | Some x -> x
-end
-
 let (//) = Filename.concat
 let quote = Filename.quote
 

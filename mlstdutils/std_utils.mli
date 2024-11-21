@@ -290,21 +290,6 @@ module List : sig
 end
 (** Override the List module from stdlib. *)
 
-module Option : sig
-    val iter : ('a -> unit) -> 'a option -> unit
-    (** [iter f o] is [f v] if [o] is [Some v] and [()] otherwise *)
-
-    val map : ('a -> 'b) -> 'a option -> 'b option
-    (** [map f (Some x)] returns [Some (f x)].  [map f None] returns [None]. *)
-
-    val value : 'a option -> default:'a -> 'a
-    (** [value o ~default] is [v] if [o] is [Some v] and [default] otherwise. *)
-end
-(** Functions for dealing with option types.
-
-    This module will be removed when we can use baseline OCaml 4.08
-    since that version introduces a compatible [Option] module. *)
-
 val ( // ) : string -> string -> string
 (** Concatenate directory and filename. *)
 
