@@ -375,8 +375,7 @@ let detect_bootloader (g : G.guestfs) root i_firmware =
     with G.Error msg ->
       error (f_"could not find bootloader mount point (%s): %s") mp msg in
 
-  (*
-   * Workaround for older UEFI-based Debian which may not have
+  (* Workaround for older UEFI-based Debian which may not have
    * /boot/efi/EFI/debian/grub.cfg.
    *)
   let paths =
