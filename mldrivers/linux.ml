@@ -30,32 +30,6 @@ let augeas_reload g =
   g#aug_load ();
   debug_augeas_errors g
 
-let rec remove g root packages =
-  if packages <> [] then (
-    do_remove g root packages;
-    (* Reload Augeas in case anything changed. *)
-    augeas_reload g
-  )
-
-and do_remove g root packages =
-  assert (List.length packages > 0);
-
-  let package_format = g#inspect_get_package_format root in
-  match package_format with
-  | "deb" ->
-    let cmd = [ "dpkg"; "--purge" ] @ packages in
-    let cmd = Array.of_list cmd in
-    ignore (g#command cmd);
-
-  | "rpm" ->
-    let cmd = [ "rpm"; "-e"; "--allmatches" ] @ packages in
-    let cmd = Array.of_list cmd in
-    ignore (g#command cmd)
-
-  | format ->
-    error (f_"don’t know how to remove packages using %s: packages: %s")
-      format (String.concat " " packages)
-
 let file_list_of_package (g : Guestfs.guestfs) root app =
   let package_format = g#inspect_get_package_format root in
   match package_format with

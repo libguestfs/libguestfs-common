@@ -23,9 +23,6 @@ val augeas_reload : Guestfs.guestfs -> unit
     additional debugging information about parsing problems
     that augeas found. *)
 
-val remove : Guestfs.guestfs -> string -> string list -> unit
-(** [remove g root pkgs] uninstalls the package(s). *)
-
 val file_list_of_package : Guestfs.guestfs -> string ->
                            Guestfs.application2 -> string list
 (** [file_list_of_package g root app] returns the list of files
