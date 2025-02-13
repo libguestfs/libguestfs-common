@@ -18,9 +18,11 @@
 
 # This slow test checks that SELinux relabel works.
 
+source ../../tests/functions.sh
 set -e
+set -x
 
-$TEST_FUNCTIONS
+skip_if_skipped
 slow_test
 
 guestname="fedora-27"

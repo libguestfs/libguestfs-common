@@ -19,10 +19,10 @@
 # Test the --machine-readable functionality of the module Tools_utils.
 # See also: machine_readable_tests.ml
 
+source ../../tests/functions.sh
 set -e
 set -x
 
-$TEST_FUNCTIONS
 skip_if_skipped
 
 t=./machine_readable_tests

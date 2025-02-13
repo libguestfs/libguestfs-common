@@ -21,12 +21,12 @@
 # NB. 'test-firstboot.sh' runs the tests, but the various tests are
 # run via the 'test-firstboot-GUESTNAME.sh' wrappers.
 
+source ../../tests/functions.sh
 set -e
 set -x
 
-$TEST_FUNCTIONS
-slow_test
 skip_if_skipped "$script"
+slow_test
 
 guestname="$1"
 if [ -z "$guestname" ]; then

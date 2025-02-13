@@ -19,10 +19,10 @@
 # Test the Getopt module.
 # See also: getopt_tests.ml
 
+source ../../tests/functions.sh
 set -e
 set -x
 
-$TEST_FUNCTIONS
 skip_if_skipped
 
 t=./getopt_tests
