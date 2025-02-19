@@ -32,76 +32,84 @@ let augeas_reload g =
 
 let file_list_of_package (g : Guestfs.guestfs) root app =
   let package_format = g#inspect_get_package_format root in
-  match package_format with
-  | "deb" ->
-    let cmd = [| "dpkg"; "-L"; app.G.app2_name |] in
-    debug "%s" (String.concat " " (Array.to_list cmd));
-    let files = g#command_lines cmd in
-    let files = Array.to_list files in
+
+  let cmd =
+    match package_format with
+    | "deb" -> sprintf "dpkg -L %s" (quote app.G.app2_name)
+
+    | "rpm" ->
+       (* Since RPM allows multiple packages installed with the same
+        * name, always check the full NEVR here (RHBZ#1161250).
+        *
+        * In RPM < 4.11 query commands that use the epoch number in the
+        * package name did not work.
+        *
+        * For example:
+        * RHEL 6 (rpm 4.8.0):
+        *   $ rpm -q tar-2:1.23-11.el6.x86_64
+        *   package tar-2:1.23-11.el6.x86_64 is not installed
+        * Fedora 20 (rpm 4.11.2):
+        *   $ rpm -q tar-2:1.26-30.fc20.x86_64
+        *   tar-1.26-30.fc20.x86_64
+        *)
+       let is_rpm_lt_4_11 () =
+         let ver =
+           try
+             (* Since we're going to run 'rpm' below anyway, seems safe
+              * to run it here and assume the binary works.
+              *)
+             let cmd = [| "rpm"; "--version" |] in
+             debug "%s" (String.concat " " (Array.to_list cmd));
+             let ver = g#command_lines cmd in
+             let ver =
+               if Array.length ver > 0 then ver.(0) else raise Not_found in
+             debug "%s" ver;
+             let ver = String.nsplit " " ver in
+             let ver =
+               match ver with
+               | [ "RPM"; "version"; ver ] -> ver
+               | _ -> raise Not_found in
+             if not (PCRE.matches re_version ver) then raise Not_found;
+             (int_of_string (PCRE.sub 1), int_of_string (PCRE.sub 2))
+           with Not_found ->
+             (* 'rpm' not installed? Hmm... *)
+             (0, 0) in
+         ver < (4, 11)
+       in
+       let pkg_name =
+         if app.G.app2_epoch = Int32.zero || is_rpm_lt_4_11 () then
+           sprintf "%s-%s-%s" app.G.app2_name app.G.app2_version
+             app.G.app2_release
+         else
+           sprintf "%s-%ld:%s-%s" app.G.app2_name app.G.app2_epoch
+             app.G.app2_version app.G.app2_release in
+       sprintf "rpm -ql %s" (quote pkg_name)
+
+    | format ->
+       error (f_"don’t know how to get list of files from package using %s")
+         format in
+
+  debug "file_list_of_package: running: %s" cmd;
+
+  (* Some packages have a lot of files, too many to list without
+   * breaking the maximum message size assumption in libguestfs.
+   * To cope with this, use guestfs_sh_out, added in 1.55.6.
+   * https://issues.redhat.com/browse/RHEL-80080
+   *)
+  let tmpfile = Filename.temp_file "v2vcmd" ".out" in
+  On_exit.unlink tmpfile;
+  g#sh_out cmd tmpfile;
+  let files = read_whole_file tmpfile in
+
+  (* RPM prints "(contains no files)" on stdout when a package
+   * has no files in it:
+   * https://github.com/rpm-software-management/rpm/issues/962
+   *)
+  if String.is_prefix files "(contains no files)" then []
+  else (
+    let files = String.nsplit "\n" files in
     List.sort compare files
-
-  | "rpm" ->
-    (* Since RPM allows multiple packages installed with the same
-     * name, always check the full NEVR here (RHBZ#1161250).
-     *
-     * In RPM < 4.11 query commands that use the epoch number in the
-     * package name did not work.
-     *
-     * For example:
-     * RHEL 6 (rpm 4.8.0):
-     *   $ rpm -q tar-2:1.23-11.el6.x86_64
-     *   package tar-2:1.23-11.el6.x86_64 is not installed
-     * Fedora 20 (rpm 4.11.2):
-     *   $ rpm -q tar-2:1.26-30.fc20.x86_64
-     *   tar-1.26-30.fc20.x86_64
-     *)
-    let is_rpm_lt_4_11 () =
-      let ver =
-        try
-          (* Since we're going to run 'rpm' below anyway, seems safe
-           * to run it here and assume the binary works.
-           *)
-          let cmd = [| "rpm"; "--version" |] in
-          debug "%s" (String.concat " " (Array.to_list cmd));
-          let ver = g#command_lines cmd in
-          let ver = if Array.length ver > 0 then ver.(0) else raise Not_found in
-          debug "%s" ver;
-          let ver = String.nsplit " " ver in
-          let ver =
-            match ver with
-            | [ "RPM"; "version"; ver ] -> ver
-            | _ -> raise Not_found in
-          if not (PCRE.matches re_version ver) then raise Not_found;
-          (int_of_string (PCRE.sub 1), int_of_string (PCRE.sub 2))
-        with Not_found ->
-          (* 'rpm' not installed? Hmm... *)
-          (0, 0) in
-      ver < (4, 11)
-    in
-    let pkg_name =
-      if app.G.app2_epoch = Int32.zero || is_rpm_lt_4_11 () then
-        sprintf "%s-%s-%s" app.G.app2_name app.G.app2_version
-          app.G.app2_release
-      else
-        sprintf "%s-%ld:%s-%s" app.G.app2_name app.G.app2_epoch
-          app.G.app2_version app.G.app2_release in
-    let cmd = [| "rpm"; "-ql"; pkg_name |] in
-    debug "%s" (String.concat " " (Array.to_list cmd));
-    let files = g#command_lines cmd in
-    (* RPM prints "(contains no files)" on stdout when a package
-     * has no files in it:
-     * https://github.com/rpm-software-management/rpm/issues/962
-     *)
-    if files = [| "(contains no files)" |] then
-      []
-    else (
-      let files = Array.to_list files in
-      List.sort compare files
-    )
-
-  | format ->
-    error (f_"don’t know how to get list of files from package using %s")
-      format
+  )
 
 let is_file_owned (g : G.guestfs) root path =
   let package_format = g#inspect_get_package_format root in
