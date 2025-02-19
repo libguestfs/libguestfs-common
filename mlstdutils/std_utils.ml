@@ -98,24 +98,27 @@ module String = struct
       and len = length str in
       len >= sufflen && sub str (len - sufflen) sufflen = suffix
 
-    let rec find s sub =
-      let len = length s in
+    let find_from str pos sub =
       let sublen = length sub in
-      let rec loop i =
-        if i <= len-sublen then (
-          let rec loop2 j =
-            if j < sublen then (
-              if s.[i+j] = sub.[j] then loop2 (j+1)
-              else -1
-            ) else
-              i (* found *)
-          in
-          let r = loop2 0 in
-          if r = -1 then loop (i+1) else r
-        ) else
-          -1 (* not found *)
-      in
-      loop 0
+      if sublen = 0 then
+        0
+      else (
+        let found = ref 0 in
+        let len = length str in
+        try
+          for i = pos to len - sublen do
+            let j = ref 0 in
+            while unsafe_get str (i + !j) = unsafe_get sub !j do
+              incr j;
+              if !j = sublen then begin found := i; raise Exit; end;
+            done;
+          done;
+          -1
+        with
+          Exit -> !found
+      )
+
+    let find str sub = find_from str 0 sub
 
     let rec replace s s1 s2 =
       let len = length s in
