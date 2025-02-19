@@ -82,6 +82,10 @@ module String : sig
     val find : string -> string -> int
     (** [find str sub] searches for [sub] as a substring of [str].  If
         found it returns the index.  If not found, it returns [-1]. *)
+    val find_from : string -> int -> string -> int
+    (** [find_from str start sub] searches for [sub] as a substring of [str],
+        starting at index [start].  If found it returns the index.
+        If not found, it returns [-1]. *)
     val replace : string -> string -> string -> string
     (** [replace str s1 s2] replaces all instances of [s1] appearing in
         [str] with [s2]. *)
