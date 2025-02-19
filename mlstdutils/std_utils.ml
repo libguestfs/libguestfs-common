@@ -148,7 +148,7 @@ module String = struct
       else if n >= len then str, ""
       else sub str 0 n, sub str n (len-n)
 
-    let rec split sep str =
+    let split sep str =
       let seplen = length sep in
       let strlen = length str in
       let i = find str sep in
@@ -157,20 +157,36 @@ module String = struct
         sub str 0 i, sub str (i + seplen) (strlen - i - seplen)
       )
 
-    and nsplit ?(max = 0) sep str =
+    let nsplit ?(max = 0) sep str =
       if max < 0 then
         invalid_arg "String.nsplit: max parameter should not be negative";
 
-      (* If we reached the limit, OR if the pattern does not match the string
-       * at all, return the rest of the string as a single element list.
-       *)
-      if max = 1 || find str sep = -1 then
-        [str]
-      else (
-        let s1, s2 = split sep str in
-        let max = if max = 0 then 0 else max - 1 in
-        s1 :: nsplit ~max sep s2
-      )
+      let len = String.length str in
+      let seplen = String.length sep in
+
+      let rec loop iters posn acc =
+        (* If we reached the limit, OR if the pattern does not match
+         * the string at all, return the rest of the string.
+         *)
+        if max > 0 && iters = max then (
+          let rest =
+            if posn = 0 then str else String.sub str posn (len-posn) in
+          List.rev (rest :: acc)
+        )
+        else (
+          let end_ = find_from str posn sep in
+          if end_ = -1 then (
+            let rest =
+              if posn = 0 then str else String.sub str posn (len-posn) in
+            List.rev (rest :: acc)
+          )
+          else (
+            let acc = String.sub str posn (end_-posn) :: acc in
+            loop (iters+1) (end_+seplen) acc
+          )
+        )
+      in
+      loop 1 0 []
 
     let rec lines_split str =
       let buf = Buffer.create 16 in
