@@ -113,13 +113,19 @@ let test_string_nsplit ctx =
   assert_equal_stringlist [""] (String.nsplit " " "");
   assert_equal_stringlist ["abc"] (String.nsplit " " "abc");
   assert_equal_stringlist ["a"; "b"; "c"] (String.nsplit " " "a b c");
+  assert_equal_stringlist ["abc"; "d"; "e"] (String.nsplit " " "abc d e");
   assert_equal_stringlist ["a"; "b"; "c"; ""] (String.nsplit " " "a b c ");
   assert_equal_stringlist [""; "a"; "b"; "c"] (String.nsplit " " " a b c");
   assert_equal_stringlist [""; "a"; "b"; "c"; ""] (String.nsplit " " " a b c ");
   assert_equal_stringlist ["a b c d"] (String.nsplit ~max:1 " " "a b c d");
   assert_equal_stringlist ["a"; "b c d"] (String.nsplit ~max:2 " " "a b c d");
   assert_equal_stringlist ["a"; "b"; "c d"] (String.nsplit ~max:3 " " "a b c d");
-  assert_equal_stringlist ["a"; "b"; "c"; "d"] (String.nsplit ~max:10 " " "a b c d")
+  assert_equal_stringlist ["a"; "b"; "c"; "d"] (String.nsplit ~max:10 " " "a b c d");
+
+  (* Test that nsplit can handle large strings. *)
+  let xs = Array.to_list (Array.make 10_000_000 "xyz") in
+  let xs_concat = String.concat " " xs in
+  assert_equal_stringlist xs (String.nsplit " " xs_concat)
 
 (* Test Std_utils.String.lines_split. *)
 let test_string_lines_split ctx =
