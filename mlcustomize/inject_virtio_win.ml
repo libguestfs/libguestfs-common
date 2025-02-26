@@ -474,8 +474,8 @@ and virtio_iso_path_matches_guest_os t path =
 
     (* Using the full path, work out what version of Windows
      * this driver is for.  Paths can be things like:
-     * "NetKVM/2k12R2/amd64/netkvm.sys" or
-     * "./drivers/amd64/Win2012R2/netkvm.sys".
+     * "./NetKVM/2k12R2/amd64/netkvm.sys" (on the ISO) or
+     * "./drivers/by-os/amd64/2k12R2/netkvm.sys" (in /usr/share/virtio-win).
      * Note we check lowercase paths.
      *)
     let pathelem elem =
@@ -492,37 +492,37 @@ and virtio_iso_path_matches_guest_os t path =
     and any_variant os_variant = true
     and any_osinfo osinfo = true in
     let p_os_major, p_os_minor, match_os_variant, match_osinfo =
-      if pathelem "xp" || pathelem "winxp" then
+      if pathelem "xp" then
         (5, 1, any_variant, any_osinfo)
-      else if pathelem "2k3" || pathelem "win2003" then
+      else if pathelem "2k3" then
         (5, 2, any_variant, any_osinfo)
       else if pathelem "vista" then
         (6, 0, is_client, any_osinfo)
-      else if pathelem "2k8" || pathelem "win2008" then
+      else if pathelem "2k8" then
         (6, 0, not_client, any_osinfo)
-      else if pathelem "w7" || pathelem "win7" then
+      else if pathelem "w7" then
         (6, 1, is_client, any_osinfo)
-      else if pathelem "2k8r2" || pathelem "win2008r2" then
+      else if pathelem "2k8r2" then
         (6, 1, not_client, any_osinfo)
-      else if pathelem "w8" || pathelem "win8" then
+      else if pathelem "w8" then
         (6, 2, is_client, any_osinfo)
-      else if pathelem "2k12" || pathelem "win2012" then
+      else if pathelem "2k12" then
         (6, 2, not_client, any_osinfo)
-      else if pathelem "w8.1" || pathelem "win8.1" then
+      else if pathelem "w8.1" then
         (6, 3, is_client, any_osinfo)
-      else if pathelem "2k12r2" || pathelem "win2012r2" then
+      else if pathelem "2k12r2" then
         (6, 3, not_client, any_osinfo)
-      else if pathelem "w10" || pathelem "win10" then
+      else if pathelem "w10" then
         (10, 0, is_client, ((=) "win10"))
-      else if pathelem "w11" || pathelem "win11" then
+      else if pathelem "w11" then
         (10, 0, is_client, ((=) "win11"))
-      else if pathelem "2k16" || pathelem "win2016" then
+      else if pathelem "2k16" then
         (10, 0, not_client, ((=) "win2k16"))
-      else if pathelem "2k19" || pathelem "win2019" then
+      else if pathelem "2k19" then
         (10, 0, not_client, ((=) "win2k19"))
-      else if pathelem "2k22" || pathelem "win2022" then
+      else if pathelem "2k22" then
         (10, 0, not_client, ((=) "win2k22"))
-      else if pathelem "2k25" || pathelem "win2025" then
+      else if pathelem "2k25" then
         (10, 0, not_client, ((=) "win2k25"))
       else
         raise Not_found in
