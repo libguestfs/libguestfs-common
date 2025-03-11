@@ -527,10 +527,16 @@ and virtio_iso_path_matches_guest_os t path =
       else
         raise Not_found in
 
-    let p_sriov = pathelem "sriov" in
+    (* https://issues.redhat.com/browse/RHEL-56383
+     * sriov/ dir can have files that conflict with netkvm driver install.
+     *)
+    let p_sriov =
+      String.find path "vioprot." >= 0 ||
+      pathelem "sriov"
+    in
 
     arch = p_arch &&
-    not p_sriov && (* always ignored, see RHEL-56383 *)
+    not p_sriov &&
     os_major = p_os_major && os_minor = p_os_minor &&
     match_os_variant os_variant &&
     match_osinfo osinfo
