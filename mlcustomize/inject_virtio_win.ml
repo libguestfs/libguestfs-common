@@ -350,7 +350,6 @@ and ddb_regedits inspect drv_name drv_pciid =
  * been copied.
  *)
 and copy_drivers t driverdir =
-  (not t.was_set && [] <> copy_from_libosinfo t driverdir) ||
     [] <> copy_from_virtio_win t "/" driverdir
             (virtio_iso_path_matches_guest_os t)
       (fun () ->
@@ -545,45 +544,6 @@ and virtio_iso_path_matches_qemu_ga t path =
 (* Find blnsvr for the current Windows version. *)
 and virtio_iso_path_matches_blnsvr t path =
   virtio_iso_path_matches_guest_os t path && PCRE.matches re_blnsvr path
-
-(* Look up in libosinfo for the OS, and copy all the locally
- * available files specified as drivers for that OS to the [destdir].
- *
- * This function does nothing in case either:
- * - the osinfo short ID is not found in the libosinfo DB
- * - the OS does not have any driver for the architecture of the guest
- * - the location of the drivers is not a local directory
- *
- * Files that do not exist are silently skipped.
- *
- * Returns list of copied files.
- *)
-and copy_from_libosinfo { g; i_osinfo; i_arch } destdir =
-  try
-    let os = Libosinfo_utils.get_os_by_short_id i_osinfo in
-    let drivers = os#get_device_drivers () in
-    let driver = Libosinfo_utils.best_driver drivers i_arch in
-    let uri = Xml.parse_uri driver.Libosinfo.location in
-    let basedir =
-      match uri.Xml.uri_path with
-      | Some p -> p
-      | None -> assert false in
-    List.filter_map (
-      fun f ->
-        let source = basedir // f in
-        if not (Sys.file_exists source) then
-          None
-        else (
-          let target_name = String.lowercase_ascii (Filename.basename f) in
-          let target = destdir ^ "/" ^ target_name in
-          debug "windows: copying guest tools bits (via libosinfo): 'host:%s' -> '%s'"
-                source target;
-
-          g#write target (read_whole_file source);
-          Some target_name
-        )
-    ) driver.Libosinfo.files
-  with Not_found -> []
 
 (* Install qemu-ga.  [files] is the non-empty list of possible qemu-ga
  * installers we detected.
