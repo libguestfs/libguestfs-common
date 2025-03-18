@@ -463,8 +463,7 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
  * specific Windows flavor of the current guest.
  *)
 and virtio_iso_path_matches_guest_os t path =
-  let { i_major_version = os_major; i_minor_version = os_minor;
-        i_arch = arch; i_product_variant = os_variant;
+  let { i_arch = arch;
         i_osinfo = osinfo } = t in
   try
     (* Lowercased path, since the ISO may contain upper or lowercase path
@@ -487,43 +486,39 @@ and virtio_iso_path_matches_guest_os t path =
       else if pathelem "amd64" then "x86_64"
       else raise Not_found in
 
-    let is_client os_variant = os_variant = "Client"
-    and not_client os_variant = os_variant <> "Client"
-    and any_variant os_variant = true
-    and any_osinfo osinfo = true in
-    let p_os_major, p_os_minor, match_os_variant, match_osinfo =
+    let match_osinfo =
       if pathelem "xp" then
-        (5, 1, any_variant, any_osinfo)
+        ((=) "winxp")
       else if pathelem "2k3" then
-        (5, 2, any_variant, any_osinfo)
+        (function "win2k3" | "win2k3r2" -> true | _ -> false)
       else if pathelem "vista" then
-        (6, 0, is_client, any_osinfo)
+        ((=) "winvista")
       else if pathelem "2k8" then
-        (6, 0, not_client, any_osinfo)
+        ((=) "win2k8")
       else if pathelem "w7" then
-        (6, 1, is_client, any_osinfo)
+        ((=) "win7")
       else if pathelem "2k8r2" then
-        (6, 1, not_client, any_osinfo)
+        ((=) "win2k8r2")
       else if pathelem "w8" then
-        (6, 2, is_client, any_osinfo)
+        ((=) "win8")
       else if pathelem "2k12" then
-        (6, 2, not_client, any_osinfo)
+        ((=) "win2k12")
       else if pathelem "w8.1" then
-        (6, 3, is_client, any_osinfo)
+        ((=) "win8.1")
       else if pathelem "2k12r2" then
-        (6, 3, not_client, any_osinfo)
+        ((=) "win2k12r2")
       else if pathelem "w10" then
-        (10, 0, is_client, ((=) "win10"))
+        ((=) "win10")
       else if pathelem "w11" then
-        (10, 0, is_client, ((=) "win11"))
+        ((=) "win11")
       else if pathelem "2k16" then
-        (10, 0, not_client, ((=) "win2k16"))
+        ((=) "win2k16")
       else if pathelem "2k19" then
-        (10, 0, not_client, ((=) "win2k19"))
+        ((=) "win2k19")
       else if pathelem "2k22" then
-        (10, 0, not_client, ((=) "win2k22"))
+        ((=) "win2k22")
       else if pathelem "2k25" then
-        (10, 0, not_client, ((=) "win2k25"))
+        ((=) "win2k25")
       else
         raise Not_found in
 
@@ -543,8 +538,6 @@ and virtio_iso_path_matches_guest_os t path =
     arch = p_arch &&
     not p_sriov &&
     not p_pdb &&
-    os_major = p_os_major && os_minor = p_os_minor &&
-    match_os_variant os_variant &&
     match_osinfo osinfo
 
   with Not_found -> false
