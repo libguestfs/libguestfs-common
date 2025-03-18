@@ -132,7 +132,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
   (* XXX Inelegant hack copied originally from [Convert_windows].
    * We should be able to work this into the code properly later.
    *)
-  let (machine : machine_type), virtio_1_0 =
+  let (machine : machine_type), _ =
     match t.i_arch with
     | ("i386"|"x86_64") ->
        (try
@@ -180,7 +180,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       { block_driver = IDE; net_driver = RTL8139;
         virtio_rng = false; virtio_balloon = false;
         isa_pvpanic = false; virtio_socket = false;
-        machine; virtio_1_0; }
+        machine; virtio_1_0 = true; }
   )
   else (
     (* Can we install the block driver? *)
@@ -259,7 +259,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       virtio_balloon = g#exists (driverdir // "balloon.inf");
       isa_pvpanic = g#exists (driverdir // "pvpanic.inf");
       virtio_socket = g#exists (driverdir // "viosock.inf");
-      machine; virtio_1_0;
+      machine; virtio_1_0 = true;
     }
   )
 
