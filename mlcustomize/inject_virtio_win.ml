@@ -132,45 +132,27 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
   (* XXX Inelegant hack copied originally from [Convert_windows].
    * We should be able to work this into the code properly later.
    *)
-  let (machine : machine_type), _ =
+  let (machine : machine_type) =
     match t.i_arch with
     | ("i386"|"x86_64") ->
        (try
-          (* Fall back to the decision that's based on the year that the OS
-           * was released in under three circumstances:
-           * - the user specified the location of the Windows virtio drivers
-           *   through an environment variable, or
-           * - "Libosinfo_utils.get_os_by_short_id" fails to look up the OS,
-           *   or
-           * - "Libosinfo_utils.best_driver" cannot find any matching driver.
-           * In each of these cases, a "Not_found" exception is raised.  This
-           * behavior exactly mirrors that of "Windows_virtio.copy_drivers".
-           *)
-          if t.was_set then raise Not_found;
           let os = Libosinfo_utils.get_os_by_short_id t.i_osinfo in
-          let devices = os#get_devices ()
-          and drivers = os#get_device_drivers () in
-          let best_drv_devs =
-            (Libosinfo_utils.best_driver drivers t.i_arch).devices in
-          debug "libosinfo internal devices for OS \"%s\":\n%s"
-            t.i_osinfo
+          let devices = os#get_devices () in
+          debug "libosinfo devices for OS \"%s\":\n%s" t.i_osinfo
             (Libosinfo_utils.string_of_osinfo_device_list devices);
-          debug "libosinfo \"best driver\" devices for OS \"%s\":\n%s"
-            t.i_osinfo
-            (Libosinfo_utils.string_of_osinfo_device_list best_drv_devs);
-          let { Libosinfo_utils.q35; vio10 } =
-            Libosinfo_utils.os_support_of_osinfo_device_list
-              (devices @ best_drv_devs) in
-          (if q35 then Q35 else I440FX), vio10
+          let { Libosinfo_utils.q35; _ } =
+            Libosinfo_utils.os_support_of_osinfo_device_list devices in
+          (if q35 then Q35 else I440FX)
         with
         | Not_found ->
            (* Pivot on the year 2007.  Any Windows version from earlier than
             * 2007 should use i440fx, anything 2007 or newer should use q35.
             * Luckily this coincides almost exactly with the release of NT 6.
             *)
-           (if t.i_major_version < 6 then I440FX else Q35), true
+           debug "osinfo lookup failed. falling back to heuristic for windows machine type";
+           (if t.i_major_version < 6 then I440FX else Q35)
        )
-    | _ -> Virt, true
+    | _ -> Virt
   in
 
   if not (copy_drivers t driverdir) then (
