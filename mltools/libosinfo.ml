@@ -35,24 +35,12 @@ type osinfo_device = {
   subsystem : string;
 }
 
-type osinfo_device_driver = {
-  architecture : string;
-  location : string;
-  pre_installable : bool;
-  signed : bool;
-  priority : int64;
-  files : string list;
-  devices : osinfo_device list;
-}
-
 external osinfo_os_get_id : osinfo_os_t -> string = "v2v_osinfo_os_get_id"
-external osinfo_os_get_device_drivers : osinfo_os_t -> osinfo_device_driver list = "v2v_osinfo_os_get_device_drivers"
 external osinfo_os_get_devices : osinfo_os_t -> osinfo_device list = "v2v_osinfo_os_get_all_devices"
 
 class osinfo_os h =
   object (self)
     method get_id () = osinfo_os_get_id h
-    method get_device_drivers () = osinfo_os_get_device_drivers h
     method get_devices () = osinfo_os_get_devices h
 end
 

@@ -32,21 +32,9 @@ type osinfo_device = {
   subsystem : string;
 }
 
-type osinfo_device_driver = {
-  architecture : string;
-  location : string;
-  pre_installable : bool;
-  signed : bool;
-  priority : int64;
-  files : string list;
-  devices : osinfo_device list;
-}
-
 class osinfo_os : osinfo_os_t -> object
   method get_id : unit -> string
   (** Return the ID. *)
-  method get_device_drivers : unit -> osinfo_device_driver list
-  (** Return the list of device drivers. *)
   method get_devices : unit -> osinfo_device list
   (** Return the list of devices. *)
 end

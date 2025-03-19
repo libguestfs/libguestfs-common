@@ -191,25 +191,6 @@ v2v_osinfo_os_get_id (value osv)
   CAMLreturn (copyv);
 }
 
-static value
-glist_to_value_list (GList *list)
-{
-  CAMLparam0 ();
-  CAMLlocal3 (rv, v, copyv);
-  GList *l;
-
-  rv = Val_emptylist;
-  for (l = list; l != NULL; l = l->next) {
-    v = caml_alloc (2, 0);
-    copyv = caml_copy_string (l->data);
-    Store_field (v, 0, copyv);
-    Store_field (v, 1, rv);
-    rv = v;
-  }
-
-  CAMLreturn (rv);
-}
-
 /* Collect OsinfoDevice properties from two levels:
  *
  * - The OSINFO_ENTITY_PROP_ID property, originating from the OsinfoEntity base
@@ -272,65 +253,6 @@ v2v_osinfo_device_list_to_value_list (OsinfoDeviceList *dev_list)
   }
 
   CAMLreturn (retvalv);
-}
-
-value
-v2v_osinfo_os_get_device_drivers (value osv)
-{
-  CAMLparam1 (osv);
-  CAMLlocal4 (rv, v, vi, copyv);
-  OsinfoDeviceDriverList *list;
-  gint i, len;
-
-  list = osinfo_os_get_device_drivers (OsinfoOs_t_val (osv));
-  len = osinfo_list_get_length (OSINFO_LIST(list));
-
-  rv = Val_emptylist;
-  for (i = len - 1; i >= 0; --i) {
-    OsinfoDeviceDriver *driver;
-    const gchar *str;
-    gboolean b;
-    GList *l;
-    gint64 i64;
-    OsinfoDeviceList *dev_list;
-
-    driver = OSINFO_DEVICE_DRIVER(osinfo_list_get_nth (OSINFO_LIST(list), i));
-
-    vi = caml_alloc (7, 0);
-    str = osinfo_device_driver_get_architecture (driver);
-    copyv = caml_copy_string (str);
-    Store_field (vi, 0, copyv);
-    str = osinfo_device_driver_get_location (driver);
-    copyv = caml_copy_string (str);
-    Store_field (vi, 1, copyv);
-    b = osinfo_device_driver_get_pre_installable (driver);
-    Store_field (vi, 2, Val_bool (b));
-    b = osinfo_device_driver_get_signed (driver);
-    Store_field (vi, 3, Val_bool (b));
-#if IS_LIBOSINFO_VERSION(1, 7, 0)
-    i64 = osinfo_device_driver_get_priority (driver);
-#else
-    /* Same as OSINFO_DEVICE_DRIVER_DEFAULT_PRIORITY in libosinfo 1.7.0+. */
-    i64 = 50;
-#endif
-    copyv = caml_copy_int64 (i64);
-    Store_field (vi, 4, copyv);
-    l = osinfo_device_driver_get_files (driver);
-    Store_field (vi, 5, glist_to_value_list (l));
-    g_list_free (l);
-    dev_list = osinfo_device_driver_get_devices (driver);
-    v = (dev_list == NULL) ?
-        Val_emptylist :
-        v2v_osinfo_device_list_to_value_list (dev_list);
-    Store_field (vi, 6, v);
-
-    v = caml_alloc (2, 0);
-    Store_field (v, 0, vi);
-    Store_field (v, 1, rv);
-    rv = v;
-  }
-
-  CAMLreturn (rv);
 }
 
 value
