@@ -45,7 +45,6 @@ Makefile.in
 /mlstdutils/bytes.ml
 /mlstdutils/bytes.mli
 /mlstdutils/guestfs_config.ml
-/mlstdutils/oUnit-*
 /mlstdutils/std_utils_tests
 /mltools/.depend
 /mltools/getopt_tests

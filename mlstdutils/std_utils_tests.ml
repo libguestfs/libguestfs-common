@@ -1,5 +1,5 @@
 (* Utilities for OCaml tools in libguestfs.
- * Copyright (C) 2011-2019 Red Hat Inc.
+ * Copyright (C) 2011-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,25 +20,50 @@
 
 open Printf
 
-open OUnit2
 open Std_utils
 
-(* Utils. *)
-let assert_equal_string = assert_equal ~printer:(fun x -> x)
-let assert_equal_int = assert_equal ~printer:(fun x -> string_of_int x)
-let assert_equal_int64 = assert_equal ~printer:(fun x -> Int64.to_string x)
-let assert_equal_stringlist = assert_equal ~printer:(fun x -> "(" ^ (String.escaped (String.concat "," x)) ^ ")")
-let assert_equal_stringpair = assert_equal ~printer:(fun (x, y) -> sprintf "%S, %S" x y)
+let assert_equal ~printer a b =
+  if a <> b then
+    failwithf "FAIL: %s <> %s" (printer a) (printer b)
+
+let assert_raises exn fn =
+  try
+    fn ();
+    failwithf "FAIL: expected function to raise an exception"
+  with exn' ->
+    if exn <> exn' then (
+      eprintf "FAIL: function raised the wrong exception:\n\
+               expected %s\n\
+               actual %s\n"
+        (Printexc.to_string exn) (Printexc.to_string exn');
+      exit 1
+    )
+
+let assert_equal_string =
+  assert_equal ~printer:identity
+let assert_equal_int =
+  assert_equal ~printer:(fun x -> string_of_int x)
+let assert_equal_int64 =
+  assert_equal ~printer:(fun x -> Int64.to_string x)
+let assert_equal_stringlist =
+  assert_equal ~printer:(fun x -> "(" ^ (String.escaped (String.concat "," x)) ^ ")")
+let assert_equal_stringpair =
+  assert_equal ~printer:(fun (x, y) -> sprintf "%S, %S" x y)
 let assert_nonempty_string str =
-  if str = "" then
-    assert_failure (sprintf "Expected empty string, got '%s'" str)
+  if str = "" then (
+    eprintf "Expected empty string, got '%s'\n" str;
+    exit 1
+  )
 let assert_raises_executable_not_found exe =
   assert_raises (Executable_not_found exe) (fun () -> which exe)
+
+let assert_bool name b =
+  if not b then failwithf "FAIL: %s" name
 
 (* Test Std_utils.int_of_X and Std_utils.X_of_int byte swapping
  * functions.
  *)
-let rec test_byteswap ctx =
+let rec test_byteswap () =
   test_swap int_of_le16 le16_of_int 0x2040L "\x40\x20";
   test_swap int_of_le32 le32_of_int 0x20406080L "\x80\x60\x40\x20";
   test_swap int_of_le64 le64_of_int
@@ -52,8 +77,10 @@ and test_swap int_of_x x_of_int i s =
   assert_equal_int64 i (int_of_x s);
   assert_equal_string s (x_of_int i)
 
+let () = test_byteswap ()
+
 (* Test Std_utils.Char.mem. *)
-let test_char_mem ctx =
+let () =
   assert_bool "Char.mem" (Char.mem 'a' "abc");
   assert_bool "Char.mem" (Char.mem 'b' "abc");
   assert_bool "Char.mem" (Char.mem 'c' "abc");
@@ -61,7 +88,7 @@ let test_char_mem ctx =
   assert_bool "Char.mem" (not (Char.mem 'a' ""))
 
 (* Test Std_utils.String.is_prefix. *)
-let test_string_is_prefix ctx =
+let () =
   assert_bool "String.is_prefix,," (String.is_prefix "" "");
   assert_bool "String.is_prefix,foo," (String.is_prefix "foo" "");
   assert_bool "String.is_prefix,foo,foo" (String.is_prefix "foo" "foo");
@@ -69,7 +96,7 @@ let test_string_is_prefix ctx =
   assert_bool "not (String.is_prefix,,foo" (not (String.is_prefix "" "foo"))
 
 (* Test Std_utils.String.is_suffix. *)
-let test_string_is_suffix ctx =
+let () =
   assert_bool "String.is_suffix,," (String.is_suffix "" "");
   assert_bool "String.is_suffix,foo," (String.is_suffix "foo" "");
   assert_bool "String.is_suffix,foo,foo" (String.is_suffix "foo" "foo");
@@ -77,7 +104,7 @@ let test_string_is_suffix ctx =
   assert_bool "not String.is_suffix,,foo" (not (String.is_suffix "" "foo"))
 
 (* Test Std_utils.String.find. *)
-let test_string_find ctx =
+let () =
   assert_equal_int 0 (String.find "" "");
   assert_equal_int 0 (String.find "foo" "");
   assert_equal_int 1 (String.find "foo" "o");
@@ -86,7 +113,7 @@ let test_string_find ctx =
   assert_equal_int (-1) (String.find "foobar" "baz")
 
 (* Test Std_utils.String.break. *)
-let test_string_break ctx =
+let () =
   assert_equal_stringpair ("a", "b") (String.break 1 "ab");
   assert_equal_stringpair ("", "ab") (String.break 0 "ab");
   assert_equal_stringpair ("", "ab") (String.break (-1) "ab");
@@ -98,7 +125,7 @@ let test_string_break ctx =
   assert_equal_stringpair ("", "") (String.break 2 "")
 
 (* Test Std_utils.String.split. *)
-let test_string_split ctx =
+let () =
   assert_equal_stringpair ("a", "b") (String.split " " "a b");
   assert_equal_stringpair ("", "ab") (String.split " " " ab");
   assert_equal_stringpair ("", "abc") (String.split "" "abc");
@@ -106,7 +133,7 @@ let test_string_split ctx =
   assert_equal_stringpair ("", "") (String.split " " "")
 
 (* Test Std_utils.String.nsplit. *)
-let test_string_nsplit ctx =
+let () =
   (* XXX Not clear if the next test case indicates an error in
    * String.nsplit.  However this is how it has historically worked.
    *)
@@ -128,7 +155,7 @@ let test_string_nsplit ctx =
   assert_equal_stringlist xs (String.nsplit " " xs_concat)
 
 (* Test Std_utils.String.lines_split. *)
-let test_string_lines_split ctx =
+let () =
   assert_equal_stringlist [""] (String.lines_split "");
   assert_equal_stringlist ["A"] (String.lines_split "A");
   assert_equal_stringlist ["A"; ""] (String.lines_split "A\n");
@@ -144,7 +171,7 @@ let test_string_lines_split ctx =
   assert_equal_stringlist ["A\nB\n"] (String.lines_split "A\\\nB\\\n")
 
 (* Test Std_utils.String.span and cspan. *)
-let test_string_span ctx =
+let () =
   assert_equal_int 3 (String.span "aaabb" "a");
   assert_equal_int 3 (String.span "aaaba" "a");
   assert_equal_int 3 (String.span "aba" "ab");
@@ -155,7 +182,7 @@ let test_string_span ctx =
   assert_equal_int 0 (String.cspan "" "ab")
 
 (* Test Std_utils.String.chomp. *)
-let test_string_chomp ctx =
+let () =
   assert_equal_string "a" (String.chomp "a");
   assert_equal_string "a" (String.chomp "a\n");
   assert_equal_string "a\nb" (String.chomp "a\nb");
@@ -164,38 +191,17 @@ let test_string_chomp ctx =
   assert_equal_string "\n" (String.chomp "\n\n") (* only removes one *)
 
 (* Test Std_utils.which. *)
-let test_which ctx =
+let () =
   assert_nonempty_string (which "true");
   assert_raises_executable_not_found "this-command-does-not-really-exist";
   begin
     let exe_name = "true" in
     let exe = which exe_name in
     assert_equal_string exe (which exe);
-    with_bracket_chdir ctx (Filename.dirname exe) (
-      fun ctx ->
-        let exe_relative = "./" ^ exe_name in
-        assert_equal_string exe_relative (which exe_relative)
-    )
+    let pwd = Sys.getcwd () in
+    Sys.chdir (Filename.dirname exe);
+    let exe_relative = "./" ^ exe_name in
+    assert_equal_string exe_relative (which exe_relative);
+    Sys.chdir pwd
   end;
   ()
-
-(* Suites declaration. *)
-let suite =
-  "mllib Std_utils" >:::
-    [
-      "numeric.byteswap" >:: test_byteswap;
-      "char.mem" >:: test_char_mem;
-      "strings.is_prefix" >:: test_string_is_prefix;
-      "strings.is_suffix" >:: test_string_is_suffix;
-      "strings.break" >:: test_string_break;
-      "strings.find" >:: test_string_find;
-      "strings.split" >:: test_string_split;
-      "strings.nsplit" >:: test_string_nsplit;
-      "strings.lines_split" >:: test_string_lines_split;
-      "strings.span" >:: test_string_span;
-      "strings.chomp" >:: test_string_chomp;
-      "which" >:: test_which;
-    ]
-
-let () =
-  run_test_tt_main suite

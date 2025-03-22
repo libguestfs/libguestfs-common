@@ -72,9 +72,6 @@ OCAMLPACKAGES = \
 	-package str,unix \
 	-I $(builddir)
 OCAMLPACKAGES_TESTS = $(MLSTDUTILS_CMA)
-if HAVE_OCAML_PKG_OUNIT
-OCAMLPACKAGES_TESTS += -package ounit2
-endif
 
 OCAMLFLAGS = $(OCAML_FLAGS) $(OCAML_WARN_ERROR) -ccopt '$(CFLAGS)'
 
@@ -126,13 +123,8 @@ std_utils_tests_LINK = \
 
 TESTS_ENVIRONMENT = $(top_builddir)/run --test
 
-TESTS =
-check_PROGRAMS =
-
-if HAVE_OCAML_PKG_OUNIT
-check_PROGRAMS += std_utils_tests
-TESTS += std_utils_tests
-endif
+check_PROGRAMS = std_utils_tests
+TESTS = std_utils_tests
 
 check-valgrind:
 	$(MAKE) VG="@VG@" check
