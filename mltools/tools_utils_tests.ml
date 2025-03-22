@@ -1,5 +1,5 @@
 (* Common utilities for OCaml tools in libguestfs.
- * Copyright (C) 2011-2019 Red Hat Inc.
+ * Copyright (C) 2011-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,24 @@
 
 (* This file tests the Tools_utils module. *)
 
-open OUnit2
-
 open Std_utils
 open Tools_utils
 
-(* Utils. *)
-let assert_equal_string = assert_equal ~printer:(fun x -> x)
-let assert_equal_int = assert_equal ~printer:(fun x -> string_of_int x)
-let assert_equal_int64 = assert_equal ~printer:(fun x -> Int64.to_string x)
-let assert_equal_intlist = assert_equal ~printer:(fun x -> "(" ^ (String.concat ";" (List.map string_of_int x)) ^ ")")
+let assert_equal ~printer a b =
+  if a <> b then
+    failwithf "FAIL: %s <> %s" (printer a) (printer b)
+
+let assert_equal_string =
+  assert_equal ~printer:identity
+let assert_equal_int =
+  assert_equal ~printer:(fun x -> string_of_int x)
+let assert_equal_int64 =
+  assert_equal ~printer:(fun x -> Int64.to_string x)
+let assert_equal_intlist =
+  assert_equal ~printer:(fun x -> "(" ^ (String.concat ";" (List.map string_of_int x)) ^ ")")
 
 (* Test Tools_utils.parse_size and Tools_utils.parse_resize. *)
-let test_parse_resize ctx =
+let () =
   assert_equal_int64 1_L (parse_size "1b");
   assert_equal_int64 10_L (parse_size "10b");
   assert_equal_int64 1024_L (parse_size "1K");
@@ -77,7 +82,7 @@ let test_parse_resize ctx =
   assert_equal_int64 101100_L (parse_resize 100000_L "+1.12%")
 
 (* Test Tools_utils.human_size. *)
-let test_human_size ctx =
+let () =
   assert_equal_string "100" (human_size 100_L);
   assert_equal_string "-100" (human_size (-100_L));
   assert_equal_string "1.0K" (human_size 1024_L);
@@ -90,7 +95,7 @@ let test_human_size ctx =
   assert_equal_string "-3.4G" (human_size (-3650722201_L))
 
 (* Test Tools_utils.run_command. *)
-let test_run_command ctx =
+let () =
   assert_equal_int 0 (run_command ["true"]);
   begin
     let tmpfile, chan = bracket_tmpfile ctx in
@@ -109,7 +114,7 @@ let test_run_command ctx =
   ()
 
 (* Test Tools_utils.run_commands. *)
-let test_run_commands ctx =
+let () =
   begin
     let res = run_commands [] in
     assert_equal_intlist [] res
@@ -155,16 +160,3 @@ let test_run_commands ctx =
     assert_equal_string "this is a test\n" content
   end;
   ()
-
-(* Suites declaration. *)
-let suite =
-  "mltools Tools_utils" >:::
-    [
-      "sizes.parse_resize" >:: test_parse_resize;
-      "sizes.human_size" >:: test_human_size;
-      "run_command" >:: test_run_command;
-      "run_commands" >:: test_run_commands;
-    ]
-
-let () =
-  run_test_tt_main suite

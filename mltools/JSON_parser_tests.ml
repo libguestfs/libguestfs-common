@@ -1,5 +1,5 @@
 (* virt-builder
- * Copyright (C) 2015 Red Hat Inc.
+ * Copyright (C) 2015-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,13 @@
 
 (* This file tests the JSON_parser module. *)
 
-open OUnit2
 open JSON_parser
 
-(* Utils. *)
-let assert_equal_string = assert_equal ~printer:(fun x -> x)
+
+let assert_equal ~printer a b =
+  if a <> b then
+    failwithf "FAIL: %s <> %s" (printer a) (printer b)
+let assert_equal_string = assert_equal ~printer:identity
 let assert_equal_int = assert_equal ~printer:(fun x -> string_of_int x)
 let assert_equal_int64 = assert_equal ~printer:(fun x -> Int64.to_string x)
 let assert_equal_bool = assert_equal ~printer:(fun x -> string_of_bool x)
@@ -78,7 +80,8 @@ let get_list = function
   | _ as v -> assert_failure (type_mismatch_string "list" v)
 
 
-let test_tree_parse_invalid ctx =
+(* tree parse invalid *)
+let () =
   assert_raises_invalid_argument "";
   assert_raises_invalid_argument "invalid";
   assert_raises_invalid_argument ":5";
@@ -89,7 +92,8 @@ let test_tree_parse_invalid ctx =
   let str = "{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":{\"a\":5}}}}}}}}}}}}}}}}}}}}}" in
   assert_raises_nested str
 
-let test_tree_parse_basic ctx =
+(* tree parse basic *)
+let () =
   let value = json_parser_tree_parse "{}" in
   assert_is_object value;
 
@@ -99,7 +103,8 @@ let test_tree_parse_basic ctx =
   let value = json_parser_tree_parse "[]" in
   assert_is_array value
 
-let test_tree_parse_inspect ctx =
+(* tree parse inspect *)
+let () =
   let value = json_parser_tree_parse "{\"foo\":5}" in
   let l = get_dict value in
   assert_equal_int 1 (List.length l);
@@ -122,7 +127,8 @@ let test_tree_parse_inspect ctx =
   assert_is_number 10_L (List.nth a 2);
   assert_is_number 2_L (List.assoc "second" l)
 
-let test_tree_parse_file_basic ctx =
+(* tree parse file basic *)
+let () =
   begin
     let tmpfile, chan = bracket_tmpfile ctx in
     output_string chan "{}\n";
@@ -143,16 +149,3 @@ let test_tree_parse_file_basic ctx =
     assert_is_number 5_L (snd (List.hd l));
   end;
   ()
-
-(* Suites declaration. *)
-let suite =
-  "mltools JSON_parser" >:::
-    [
-      "tree_parse.invalid" >:: test_tree_parse_invalid;
-      "tree_parse.basic" >:: test_tree_parse_basic;
-      "tree_parse.inspect" >:: test_tree_parse_inspect;
-      "tree_parse_file.basic" >:: test_tree_parse_file_basic;
-    ]
-
-let () =
-  run_test_tt_main suite

@@ -1,5 +1,5 @@
 (* mltools JSON tests
- * Copyright (C) 2015 Red Hat Inc.
+ * Copyright (C) 2015-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,19 +20,20 @@
 
 open Std_utils
 
-open OUnit2
-
-(* Utils. *)
-let assert_equal_string = assert_equal ~printer:(fun x -> x)
+let assert_equal ~printer a b =
+  if a <> b then
+    failwithf "FAIL: %s <> %s" (printer a) (printer b)
+let assert_equal_string = assert_equal ~printer:identity
 
 (* "basic" suite. *)
-let test_empty ctx =
+let () =
   let doc = [] in
   assert_equal_string "{}" (JSON.string_of_doc doc);
   assert_equal_string "{
 }" (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_string ctx =
+(* string *)
+let () =
   let doc = [ "test_string", JSON.String "foo"; ] in
   assert_equal_string "{ \"test_string\": \"foo\" }"
     (JSON.string_of_doc doc);
@@ -41,7 +42,8 @@ let test_string ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_bool ctx =
+(* bool *)
+let () =
   let doc = [ "test_true", JSON.Bool true;
               "test_false", JSON.Bool false ] in
   assert_equal_string
@@ -54,7 +56,8 @@ let test_bool ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_int ctx =
+(* int *)
+let () =
   let doc = [ "test_zero", JSON.Int 0L;
               "test_pos", JSON.Int 5L;
               "test_neg", JSON.Int (-5L);
@@ -73,7 +76,8 @@ let test_int ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_float ctx =
+(* float *)
+let () =
   let doc = [ "test_zero", JSON.Float 0.;
               "test_one", JSON.Float 1.;
               "test_frac", JSON.Float 1.5;
@@ -92,7 +96,8 @@ let test_float ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_list ctx =
+(* list *)
+let () =
   let doc = [ "item", JSON.List [ JSON.String "foo"; JSON.Int 10L; JSON.Bool true ] ] in
   assert_equal_string
     "{ \"item\": [ \"foo\", 10, true ] }"
@@ -107,7 +112,8 @@ let test_list ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_nested_dict ctx =
+(* nested dict *)
+let () =
   let doc = [
       "item", JSON.Dict [ "int", JSON.Int 5L; "string", JSON.String "foo"; ];
       "last", JSON.Int 10L;
@@ -125,7 +131,8 @@ let test_nested_dict ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_nested_nested_dict ctx =
+(* nested x2 dict *)
+let () =
   let doc = [
       "item", JSON.Dict [ "int", JSON.Int 5L;
         "item2", JSON.Dict [ "int", JSON.Int 0L; ];
@@ -147,7 +154,8 @@ let test_nested_nested_dict ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_escape ctx =
+(* escapes *)
+let () =
   let doc = [ "test_string", JSON.String "test \" ' \n \b \r \t"; ] in
   assert_equal_string "{ \"test_string\": \"test \\\" ' \\n \\b \\r \\t\" }"
     (JSON.string_of_doc doc);
@@ -157,7 +165,7 @@ let test_escape ctx =
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
 (* "examples" suite. *)
-let test_qemu ctx =
+let () =
   let doc = [
     "file.driver", JSON.String "https";
     "file.url", JSON.String "https://libguestfs.org";
@@ -176,7 +184,8 @@ let test_qemu ctx =
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
 
-let test_builder ctx =
+(* builder *)
+let () =
   let doc = [
     "version", JSON.Int 1L;
     "sources", JSON.List [
@@ -239,23 +248,3 @@ let test_builder ctx =
   ]
 }"
     (JSON.string_of_doc ~fmt:JSON.Indented doc)
-
-(* Suites declaration. *)
-let suite =
-  "mltools JSON" >:::
-    [
-      "basic.empty" >:: test_empty;
-      "basic.string" >:: test_string;
-      "basic.bool" >:: test_bool;
-      "basic.int" >:: test_int;
-      "basic.float" >:: test_float;
-      "basic.list" >:: test_list;
-      "basic.nested_dict" >:: test_nested_dict;
-      "basic.nested_nested dict" >:: test_nested_nested_dict;
-      "basic.escape" >:: test_escape;
-      "examples.qemu" >:: test_qemu;
-      "examples.virt-builder" >:: test_builder;
-    ]
-
-let () =
-  run_test_tt_main suite

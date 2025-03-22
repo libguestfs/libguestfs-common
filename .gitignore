@@ -54,7 +54,6 @@ Makefile.in
 /mltools/machine_readable_tests
 /mltools/tools_messages_tests
 /mltools/tools_utils_tests
-/mltools/oUnit-*
 /mlutils/.depend
 /mlutils/c_utils_unit_tests
 /mlvisit/.depend
