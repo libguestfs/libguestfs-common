@@ -34,6 +34,9 @@ let assert_equal_int64 =
 let assert_equal_intlist =
   assert_equal ~printer:(fun x -> "(" ^ (String.concat ";" (List.map string_of_int x)) ^ ")")
 
+let assert_bool name b =
+  if not b then failwithf "FAIL: %s" name
+
 (* Test Tools_utils.parse_size and Tools_utils.parse_resize. *)
 let () =
   assert_equal_int64 1_L (parse_size "1b");
@@ -98,14 +101,16 @@ let () =
 let () =
   assert_equal_int 0 (run_command ["true"]);
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     let res = run_command ["echo"; "this is a test"] ~stdout_fd:(Unix.descr_of_out_channel chan) in
     assert_equal_int 0 res;
     let content = read_whole_file tmpfile in
     assert_equal_string "this is a test\n" content
   end;
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     let res = run_command ["ls"; "/this-directory-is-unlikely-to-exist"] ~stderr_fd:(Unix.descr_of_out_channel chan) in
     assert_equal_int 2 res;
     let content = read_whole_file tmpfile in
@@ -132,28 +137,32 @@ let () =
     assert_equal_intlist [127] res
   end;
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     let res = run_commands [(["echo"; "this is a test"], Some (Unix.descr_of_out_channel chan), None)] in
     assert_equal_intlist [0] res;
     let content = read_whole_file tmpfile in
     assert_equal_string "this is a test\n" content
   end;
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     let res = run_commands [(["ls"; "/this-directory-is-unlikely-to-exist"], None, Some (Unix.descr_of_out_channel chan))] in
     assert_equal_intlist [2] res;
     let content = read_whole_file tmpfile in
     assert_bool "test_run_commands/not-existing/content" (String.length content > 0)
   end;
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     let res = run_commands [(["echo"; "this is a test"], Some (Unix.descr_of_out_channel chan), None); (["false"], None, None)] in
     assert_equal_intlist [0; 1] res;
     let content = read_whole_file tmpfile in
     assert_equal_string "this is a test\n" content
   end;
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     let res = run_commands [(["this-command-does-not-really-exist"], None, None); (["echo"; "this is a test"], Some (Unix.descr_of_out_channel chan), None)] in
     assert_equal_intlist [127; 0] res;
     let content = read_whole_file tmpfile in

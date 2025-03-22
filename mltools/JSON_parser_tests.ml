@@ -18,8 +18,10 @@
 
 (* This file tests the JSON_parser module. *)
 
-open JSON_parser
+open Printf
 
+open Std_utils
+open JSON_parser
 
 let assert_equal ~printer a b =
   if a <> b then
@@ -28,6 +30,22 @@ let assert_equal_string = assert_equal ~printer:identity
 let assert_equal_int = assert_equal ~printer:(fun x -> string_of_int x)
 let assert_equal_int64 = assert_equal ~printer:(fun x -> Int64.to_string x)
 let assert_equal_bool = assert_equal ~printer:(fun x -> string_of_bool x)
+
+let assert_bool name b =
+  if not b then failwithf "FAIL: %s" name
+
+let assert_raises exn fn =
+  try
+    fn ();
+    failwithf "FAIL: expected function to raise an exception"
+  with exn' ->
+    if exn <> exn' then (
+      eprintf "FAIL: function raised the wrong exception:\n\
+               expected %s\n\
+               actual %s\n"
+        (Printexc.to_string exn) (Printexc.to_string exn');
+      exit 1
+    )
 
 let string_of_json_t = function
   | JSON.Null -> "null"
@@ -59,25 +77,25 @@ let assert_is_object value =
     (match value with | JSON.Dict _ -> true | _ -> false)
 let assert_is_string exp = function
   | JSON.String s -> assert_equal_string exp s
-  | _ as v -> assert_failure (type_mismatch_string "string" v)
+  | _ as v -> failwith (type_mismatch_string "string" v)
 let assert_is_number exp = function
   | JSON.Int i -> assert_equal_int64 exp i
   | JSON.Float f -> assert_equal_int64 exp (Int64.of_float f)
-  | _ as v -> assert_failure (type_mismatch_string "number/double" v)
+  | _ as v -> failwith (type_mismatch_string "number/double" v)
 let assert_is_array value =
   assert_bool
     (type_mismatch_string "list" value)
     (match value with | JSON.List _ -> true | _ -> false)
 let assert_is_bool exp = function
   | JSON.Bool b -> assert_equal_bool exp b
-  | _ as v -> assert_failure (type_mismatch_string "bool" v)
+  | _ as v -> failwith (type_mismatch_string "bool" v)
 
 let get_dict = function
   | JSON.Dict x -> x
-  | _ as v -> assert_failure (type_mismatch_string "dict" v)
+  | _ as v -> failwith (type_mismatch_string "dict" v)
 let get_list = function
   | JSON.List x -> x
-  | _ as v -> assert_failure (type_mismatch_string "list" v)
+  | _ as v -> failwith (type_mismatch_string "list" v)
 
 
 (* tree parse invalid *)
@@ -130,7 +148,8 @@ let () =
 (* tree parse file basic *)
 let () =
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     output_string chan "{}\n";
     flush chan;
     close_out chan;
@@ -138,7 +157,8 @@ let () =
     assert_is_object value
   end;
   begin
-    let tmpfile, chan = bracket_tmpfile ctx in
+    let tmpfile, chan = Filename.open_temp_file "tmp" ".tmp" in
+    On_exit.unlink tmpfile;
     output_string chan "{\"foo\":5}\n";
     flush chan;
     close_out chan;
