@@ -1,5 +1,5 @@
 (* virt-v2v
- * Copyright (C) 2011-2019 Red Hat Inc.
+ * Copyright (C) 2011-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,28 @@
 
 open Printf
 
-open OUnit2
-
 open Std_utils
 open C_utils
 
-let test_drive_name ctx =
+let assert_equal ~printer a b =
+  if a <> b then
+    failwithf "FAIL: %s <> %s" (printer a) (printer b)
+
+let assert_raises exn fn =
+  try
+    fn ();
+    failwithf "FAIL: expected function to raise an exception"
+  with exn' ->
+    if exn <> exn' then (
+      eprintf "FAIL: function raised the wrong exception:\n\
+               expected %s\n\
+               actual %s\n"
+        (Printexc.to_string exn) (Printexc.to_string exn');
+      exit 1
+    )
+
+(* Test drive_name function. *)
+let () =
   let printer = identity in
   assert_equal ~printer "a" (drive_name 0);
   assert_equal ~printer "z" (drive_name 25);
@@ -37,7 +53,8 @@ let test_drive_name ctx =
   assert_equal ~printer "aaa" (drive_name 702);
   assert_equal ~printer "zzz" (drive_name 18277)
 
-let test_drive_index ctx =
+(* Test drive_index function. *)
+let () =
   let printer = string_of_int in
   assert_equal ~printer 0 (drive_index "a");
   assert_equal ~printer 25 (drive_index "z");
@@ -55,7 +72,8 @@ let test_drive_index ctx =
   assert_raises exn (fun () -> drive_index "Z");
   assert_raises exn (fun () -> drive_index "aB")
 
-let test_shell_unquote ctx =
+(* Test shell_unquote function. *)
+let () =
   let printer = identity in
   assert_equal ~printer "a" (shell_unquote "a");
   assert_equal ~printer "b" (shell_unquote "'b'");
@@ -67,15 +85,3 @@ let test_shell_unquote ctx =
   assert_equal ~printer "h\\-h" (shell_unquote "\"h\\-h\"");
   assert_equal ~printer "i`" (shell_unquote "\"i\\`\"");
   assert_equal ~printer "j\"" (shell_unquote "\"j\\\"\"")
-
-(* Suites declaration. *)
-let suite =
-  "C_utils" >:::
-    [
-      "C_utils.drive_name" >:: test_drive_name;
-      "C_utils.drive_index" >:: test_drive_index;
-      "C_utils.shell_unquote" >:: test_shell_unquote;
-    ]
-
-let () =
-  run_test_tt_main suite

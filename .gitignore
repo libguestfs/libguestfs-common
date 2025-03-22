@@ -57,7 +57,6 @@ Makefile.in
 /mltools/oUnit-*
 /mlutils/.depend
 /mlutils/c_utils_unit_tests
-/mlutils/oUnit-*
 /mlvisit/.depend
 /mlvisit/visit_tests
 /mlxml/.depend
