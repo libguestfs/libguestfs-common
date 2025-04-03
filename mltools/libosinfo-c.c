@@ -170,16 +170,12 @@ v2v_osinfo_os_find_os_by_short_id (value dbv, value osv)
 
   if (osinfo_list_get_length (list) == 0) {
     g_object_unref (list);
-    g_object_unref (filter);
-    g_object_unref (os_list);
     caml_raise_not_found ();
   }
 
   os = OSINFO_OS(osinfo_list_get_nth (list, 0));
   rv = Val_OsinfoOs_t (dbv, os);
   g_object_unref (list);
-  g_object_unref (filter);
-  g_object_unref (os_list);
 
   CAMLreturn (rv);
 }
