@@ -140,9 +140,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
           let devices = os#get_devices () in
           debug "libosinfo devices for OS \"%s\":\n%s" t.i_osinfo
             (Libosinfo_utils.string_of_osinfo_device_list devices);
-          let { Libosinfo_utils.q35; _ } =
-            Libosinfo_utils.os_support_of_osinfo_device_list devices in
-          (if q35 then Q35 else I440FX)
+          (if Libosinfo_utils.os_devices_supports_q35 devices then Q35 else I440FX)
         with
         | Not_found ->
            (* Pivot on the year 2007.  Any Windows version from earlier than

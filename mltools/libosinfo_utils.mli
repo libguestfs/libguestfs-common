@@ -28,16 +28,8 @@ val get_os_by_short_id : string -> Libosinfo.osinfo_os
 val string_of_osinfo_device_list : Libosinfo.osinfo_device list -> string
 (** Convert an [osinfo_device] list to a printable string for debugging. *)
 
-type os_support = {
-  q35 : bool;
-  vio10 : bool;
-}
-(** Tell whether the operating system supports the Q35 board type and/or
-    non-transitional (virtio-1.0-only) virtio devices. (Internally, the
-    virtio-1.0-net device is used as a proxy for the general statement about
-    virtio-1.0.)
- *)
+val os_devices_supports_vio10 : Libosinfo.osinfo_device list -> bool
+(** Check [osinfo_device] list includes evidence of virtio-1.0. *)
 
-val os_support_of_osinfo_device_list : Libosinfo.osinfo_device list ->
-                                       os_support
-(** Get [os_support] from an [osinfo_device] list. *)
+val os_devices_supports_q35 : Libosinfo.osinfo_device list -> bool
+(** Check [osinfo_device] list includes q35. *)
