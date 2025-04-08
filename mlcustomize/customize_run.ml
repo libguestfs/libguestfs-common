@@ -116,7 +116,7 @@ let run (g : G.guestfs) root (ops : ops) =
     else (
       match meth with
       | "osinfo" | "libosinfo" ->
-         Some (Inject_virtio_win.from_libosinfo g root)
+         error (f_"method '%s' is no longer supported") meth;
       | path ->
          Some (Inject_virtio_win.from_path g root path)
     )
