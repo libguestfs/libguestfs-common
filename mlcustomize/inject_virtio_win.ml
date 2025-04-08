@@ -89,10 +89,6 @@ and from_path g root path =
   let t = get_inspection g root in
   { t with virtio_win = path; was_set = true }
 
-and from_libosinfo g root =
-  let t = get_inspection g root in
-  { t with virtio_win = ""; was_set = false }
-
 and get_inspection g root =
   (* Fail hard if inspection hasn't been done or it's not a Windows
    * guest.  If it happens it indicates an internal error in the
