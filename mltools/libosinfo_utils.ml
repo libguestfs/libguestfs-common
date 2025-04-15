@@ -29,9 +29,9 @@ let get_db () =
   Lazy.force db
 
 let get_os_by_short_id os =
-  let os = (get_db ())#find_os_by_short_id os in
-  debug "libosinfo: loaded OS: %s" (os#get_id ());
-  os
+  match (get_db ())#find_os_by_short_id os with
+  | Some os -> debug "libosinfo: loaded OS: %s" (os#get_id ()); Some os
+  | None -> None
 
 let string_of_osinfo_device_list dev_list =
 

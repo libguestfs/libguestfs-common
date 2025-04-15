@@ -156,10 +156,10 @@ value
 v2v_osinfo_os_find_os_by_short_id (value dbv, value osv)
 {
   CAMLparam2 (dbv, osv);
-  CAMLlocal1 (rv);
+  CAMLlocal2 (v, rv);
   g_autoptr(OsinfoFilter) filter = NULL;
   g_autoptr(OsinfoOsList) os_list = NULL;
-  OsinfoList *list;
+  g_autoptr(OsinfoList) list = NULL;
   OsinfoOs *os;
 
   os_list = osinfo_db_get_os_list (OsinfoDb_t_val (dbv));
@@ -168,14 +168,13 @@ v2v_osinfo_os_find_os_by_short_id (value dbv, value osv)
                                 String_val (osv));
   list = osinfo_list_new_filtered (OSINFO_LIST(os_list), filter);
 
-  if (osinfo_list_get_length (list) == 0) {
-    g_object_unref (list);
-    caml_raise_not_found ();
-  }
+  if (osinfo_list_get_length (list) == 0)
+    CAMLreturn (Val_int (0)); /* None */
 
   os = OSINFO_OS(osinfo_list_get_nth (list, 0));
-  rv = Val_OsinfoOs_t (dbv, os);
-  g_object_unref (list);
+  v = Val_OsinfoOs_t (dbv, os);
+  rv = caml_alloc (1, 0); /* Some v */
+  Store_field (rv, 0, v);
 
   CAMLreturn (rv);
 }

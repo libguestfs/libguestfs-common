@@ -131,14 +131,14 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
   let (machine : machine_type) =
     match t.i_arch with
     | ("i386"|"x86_64") ->
-       (try
-          let os = Libosinfo_utils.get_os_by_short_id t.i_osinfo in
-          let devices = os#get_devices () in
-          debug "libosinfo devices for OS \"%s\":\n%s" t.i_osinfo
-            (Libosinfo_utils.string_of_osinfo_device_list devices);
-          (if Libosinfo_utils.os_devices_supports_q35 devices then Q35 else I440FX)
-        with
-        | Not_found ->
+       (match Libosinfo_utils.get_os_by_short_id t.i_osinfo with
+        | Some os ->
+           let devices = os#get_devices () in
+           debug "libosinfo devices for OS \"%s\":\n%s" t.i_osinfo
+             (Libosinfo_utils.string_of_osinfo_device_list devices);
+           (if Libosinfo_utils.os_devices_supports_q35 devices then Q35
+            else I440FX)
+        | None ->
            (* Pivot on the year 2007.  Any Windows version from earlier than
             * 2007 should use i440fx, anything 2007 or newer should use q35.
             * Luckily this coincides almost exactly with the release of NT 6.

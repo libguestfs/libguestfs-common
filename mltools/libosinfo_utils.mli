@@ -18,11 +18,10 @@
 
 (** This module implements helper functions based on libosinfo. *)
 
-val get_os_by_short_id : string -> Libosinfo.osinfo_os
+val get_os_by_short_id : string -> Libosinfo.osinfo_os option
 (** [get_os_by_short_id short-id] get the [Libosinfo.osinfo_os]
     that has the specified [short-id].
-
-    Raise [Not_found] in case there is no matching OS.
+    Returns [None] if there is no matching short ID.
  *)
 
 val string_of_osinfo_device_list : Libosinfo.osinfo_device list -> string
