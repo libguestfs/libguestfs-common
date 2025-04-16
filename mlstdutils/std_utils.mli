@@ -123,6 +123,8 @@ module String : sig
     (** Explode a string into a list of characters. *)
     val map_chars : (char -> 'a) -> string -> 'a list
     (** Explode string, then map function over the characters. *)
+    val implode : char list -> string
+    (** Join list of characters into a single string. *)
     val spaces : int -> string
     (** [spaces n] creates a string of n spaces. *)
     val span : string -> string -> int
