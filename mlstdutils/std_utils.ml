@@ -275,6 +275,12 @@ module String = struct
     let map_chars f str =
       List.map f (explode str)
 
+    let implode cs =
+      let n = List.length cs in
+      let b = Bytes.create n in
+      List.iteri (Bytes.unsafe_set b) cs;
+      Bytes.to_string b
+
     let spaces n = String.make n ' '
 
     let span str accept =
