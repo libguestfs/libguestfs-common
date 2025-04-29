@@ -179,6 +179,12 @@ let test_which ctx =
   end;
   ()
 
+(* Test List.make. *)
+let test_list_make ctx =
+  assert_equal_stringlist [] (List.make 0 "1");
+  assert_equal_stringlist ["1"; "1"; "1"] (List.make 3 "1");
+  assert_raises (Invalid_argument "make") (fun () -> List.make (-1) "1")
+
 (* Suites declaration. *)
 let suite =
   "mllib Std_utils" >:::
@@ -195,6 +201,7 @@ let suite =
       "strings.span" >:: test_string_span;
       "strings.chomp" >:: test_string_chomp;
       "which" >:: test_which;
+      "list.make" >:: test_list_make;
     ]
 
 let () =
