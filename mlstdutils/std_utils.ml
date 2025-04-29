@@ -396,6 +396,14 @@ module List = struct
 
     let push_back_list xsp xs = xsp := !xsp @ xs
     let push_front_list xs xsp = xsp := xs @ !xsp
+
+    let make n x =
+      let rec loop acc = function
+        | 0 -> acc
+        | i when i > 0 -> loop (x :: acc) (i-1)
+        | _ -> invalid_arg "make"
+      in
+      loop [] n
 end
 
 module Option = struct

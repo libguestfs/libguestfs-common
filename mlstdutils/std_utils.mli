@@ -289,6 +289,9 @@ module List : sig
 
         [push_front_list] is like {!push_front} above, except it prepends
         a list to the list reference. *)
+
+    val make : int -> 'a -> 'a list
+    (** [make n x] returns a list with [x] repeated [n] times. *)
 end
 (** Override the List module from stdlib. *)
 
