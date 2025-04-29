@@ -205,3 +205,9 @@ let () =
     Sys.chdir pwd
   end;
   ()
+
+(* Test List.make. *)
+let () =
+  assert_equal_stringlist [] (List.make 0 "1");
+  assert_equal_stringlist ["1"; "1"; "1"] (List.make 3 "1");
+  assert_raises (Invalid_argument "make") (fun () -> List.make (-1) "1")
