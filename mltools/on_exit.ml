@@ -60,7 +60,7 @@ let do_actions () =
   done_actions := true
 
 (* False until at least one function is called.  Avoids registering
- * the signal and at_exit handlers unnnecessarily.
+ * the signal and at_exit handlers unnecessarily.
  *)
 let registered = ref false
 
