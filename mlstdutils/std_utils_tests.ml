@@ -211,3 +211,8 @@ let () =
   assert_equal_stringlist [] (List.make 0 "1");
   assert_equal_stringlist ["1"; "1"; "1"] (List.make 3 "1");
   assert_raises (Invalid_argument "make") (fun () -> List.make (-1) "1")
+
+(* Test List.same. *)
+let () =
+  assert_bool "List.same []" (List.same (List.make 0 "1"));
+  assert_bool "List.same [1; 1; ...; 1]" (List.same (List.make 10 1))

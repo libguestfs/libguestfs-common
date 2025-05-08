@@ -423,6 +423,10 @@ module List = struct
         | _ -> invalid_arg "make"
       in
       loop [] n
+
+    let same = function
+      | [] -> true
+      | x :: xs -> List.for_all ((=) x) xs
 end
 
 let (//) = Filename.concat

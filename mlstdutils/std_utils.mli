@@ -296,6 +296,9 @@ module List : sig
 
     val make : int -> 'a -> 'a list
     (** [make n x] returns a list with [x] repeated [n] times. *)
+    val same : 'a list -> bool
+    (** [same xs] returns true iff the list contains only identical elements,
+        or is the empty list. *)
 end
 (** Override the List module from stdlib. *)
 
