@@ -339,6 +339,11 @@ module List = struct
       else if xs = [] then []
       else drop (n-1) (List.tl xs)
 
+    let rec last = function
+      | [] -> invalid_arg "List.last"
+      | [x] -> x
+      | _ :: xs -> last xs
+
     let rec filter_map f = function
       | [] -> []
       | x :: xs ->

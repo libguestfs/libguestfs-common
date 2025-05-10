@@ -216,6 +216,12 @@ module List : sig
 
         @raise Invalid_argument if [n] is negative *)
 
+    val last : 'a list -> 'a
+    (** Return the last element in the list (analogous to {!List.hd} but
+        much less efficient).
+
+        @raise Invalid_argument if the list is empty *)
+
     val filter_map : ('a -> 'b option) -> 'a list -> 'b list
     (** [filter_map f xs] applies [f] to each element of [xs].  If
         [f x] returns [Some y] then [y] is added to the returned list. *)

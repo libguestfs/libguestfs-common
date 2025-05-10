@@ -216,3 +216,9 @@ let () =
 let () =
   assert_bool "List.same []" (List.same (List.make 0 "1"));
   assert_bool "List.same [1; 1; ...; 1]" (List.same (List.make 10 1))
+
+(* Test List.last. *)
+let () =
+  assert_equal_string "3" (List.last ["1"; "2"; "3"]);
+  assert_equal_string "1" (List.last ["1"]);
+  assert_raises (Invalid_argument "List.last") (fun () -> List.last [])
