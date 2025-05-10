@@ -18,6 +18,138 @@
 
 open Printf
 
+module List = struct
+    include List
+
+    (* Drop elements from a list while a predicate is true. *)
+    let rec drop_while f = function
+      | [] -> []
+      | x :: xs when f x -> drop_while f xs
+      | xs -> xs
+
+    (* Take elements from a list while a predicate is true. *)
+    let rec take_while f = function
+      | x :: xs when f x -> x :: take_while f xs
+      | _ -> []
+
+    let take n xs =
+      if n < 0 then invalid_arg "List.take"
+      else if n = 0 then []
+      else (
+        (* This optimisation avoids copying xs. *)
+        let len = List.length xs in
+        if len <= n then xs
+        else (
+          let rec take n = function
+            | x :: xs when n >= 1 -> x :: take (n-1) xs
+            | _ -> []
+          in
+          take n xs
+        )
+      )
+    let rec drop n xs =
+      if n < 0 then invalid_arg "List.drop"
+      else if n = 0 then xs
+      else if xs = [] then []
+      else drop (n-1) (List.tl xs)
+
+    let rec last = function
+      | [] -> invalid_arg "List.last"
+      | [x] -> x
+      | _ :: xs -> last xs
+
+    let rec filter_map f = function
+      | [] -> []
+      | x :: xs ->
+          match f x with
+          | Some y -> y :: filter_map f xs
+          | None -> filter_map f xs
+
+    let rec find_map f = function
+      | [] -> raise Not_found
+      | x :: xs ->
+          match f x with
+          | Some y -> y
+          | None -> find_map f xs
+
+    let rec group_by = function
+      | [] -> []
+      | (day1, x1) :: (day2, x2) :: rest when day1 = day2 ->
+         let rest = group_by ((day2, x2) :: rest) in
+         let day, xs = List.hd rest in
+         (day, x1 :: xs) :: List.tl rest
+      | (day, x) :: rest ->
+         (day, [x]) :: group_by rest
+
+    let rec combine3 xs ys zs =
+      match xs, ys, zs with
+      | [], [], [] -> []
+      | x::xs, y::ys, z::zs -> (x, y, z) :: combine3 xs ys zs
+      | _ -> invalid_arg "combine3"
+
+    let rec assoc_lbl ?(cmp = Stdlib.compare) ~default x = function
+      | [] -> default
+      | (y, y') :: _ when cmp x y = 0 -> y'
+      | _ :: ys -> assoc_lbl ~cmp ~default x ys
+
+    let uniq ?(cmp = Stdlib.compare) xs =
+      let rec loop acc = function
+        | [] -> acc
+        | [x] -> x :: acc
+        | x :: (y :: _ as xs) when cmp x y = 0 ->
+           loop acc xs
+        | x :: (y :: _ as xs) ->
+           loop (x :: acc) xs
+      in
+      List.rev (loop [] xs)
+
+    let remove_duplicates xs =
+      let h = Hashtbl.create (List.length xs) in
+      let rec loop = function
+        | [] -> []
+        | x :: xs when Hashtbl.mem h x -> xs
+        | x :: xs -> Hashtbl.add h x true; x :: loop xs
+      in
+      loop xs
+
+    let push_back xsp x = xsp := !xsp @ [x]
+    let push_front x xsp = xsp := x :: !xsp
+    let pop_back xsp =
+      let x, xs =
+        match List.rev !xsp with
+        | x :: xs -> x, xs
+        | [] -> failwith "pop" in
+      xsp := List.rev xs;
+      x
+    let pop_front xsp =
+      let x, xs =
+        match !xsp with
+        | x :: xs -> x, xs
+        | [] -> failwith "shift" in
+      xsp := xs;
+      x
+
+    let may_push_back xsp x =
+      match x with None -> () | Some x -> push_back xsp x
+    let may_push_front x xsp =
+      match x with None -> () | Some x -> push_front x xsp
+
+    let push_back_list xsp xs = xsp := !xsp @ xs
+    let push_front_list xs xsp = xsp := xs @ !xsp
+
+    let make n x =
+      let rec loop acc = function
+        | 0 -> acc
+        | i when i > 0 -> loop (x :: acc) (i-1)
+        | _ -> invalid_arg "make"
+      in
+      loop [] n
+
+    let same = function
+      | [] -> true
+      | x :: xs -> List.for_all ((=) x) xs
+end
+
 module Char = struct
     include Char
 
@@ -302,138 +434,6 @@ module String = struct
       loop 0
 
     let unix2dos str = replace str "\n" "\r\n"
-end
-
-module List = struct
-    include List
-
-    (* Drop elements from a list while a predicate is true. *)
-    let rec drop_while f = function
-      | [] -> []
-      | x :: xs when f x -> drop_while f xs
-      | xs -> xs
-
-    (* Take elements from a list while a predicate is true. *)
-    let rec take_while f = function
-      | x :: xs when f x -> x :: take_while f xs
-      | _ -> []
-
-    let take n xs =
-      if n < 0 then invalid_arg "List.take"
-      else if n = 0 then []
-      else (
-        (* This optimisation avoids copying xs. *)
-        let len = List.length xs in
-        if len <= n then xs
-        else (
-          let rec take n = function
-            | x :: xs when n >= 1 -> x :: take (n-1) xs
-            | _ -> []
-          in
-          take n xs
-        )
-      )
-    let rec drop n xs =
-      if n < 0 then invalid_arg "List.drop"
-      else if n = 0 then xs
-      else if xs = [] then []
-      else drop (n-1) (List.tl xs)
-
-    let rec last = function
-      | [] -> invalid_arg "List.last"
-      | [x] -> x
-      | _ :: xs -> last xs
-
-    let rec filter_map f = function
-      | [] -> []
-      | x :: xs ->
-          match f x with
-          | Some y -> y :: filter_map f xs
-          | None -> filter_map f xs
-
-    let rec find_map f = function
-      | [] -> raise Not_found
-      | x :: xs ->
-          match f x with
-          | Some y -> y
-          | None -> find_map f xs
-
-    let rec group_by = function
-      | [] -> []
-      | (day1, x1) :: (day2, x2) :: rest when day1 = day2 ->
-         let rest = group_by ((day2, x2) :: rest) in
-         let day, xs = List.hd rest in
-         (day, x1 :: xs) :: List.tl rest
-      | (day, x) :: rest ->
-         (day, [x]) :: group_by rest
-
-    let rec combine3 xs ys zs =
-      match xs, ys, zs with
-      | [], [], [] -> []
-      | x::xs, y::ys, z::zs -> (x, y, z) :: combine3 xs ys zs
-      | _ -> invalid_arg "combine3"
-
-    let rec assoc_lbl ?(cmp = Stdlib.compare) ~default x = function
-      | [] -> default
-      | (y, y') :: _ when cmp x y = 0 -> y'
-      | _ :: ys -> assoc_lbl ~cmp ~default x ys
-
-    let uniq ?(cmp = Stdlib.compare) xs =
-      let rec loop acc = function
-        | [] -> acc
-        | [x] -> x :: acc
-        | x :: (y :: _ as xs) when cmp x y = 0 ->
-           loop acc xs
-        | x :: (y :: _ as xs) ->
-           loop (x :: acc) xs
-      in
-      List.rev (loop [] xs)
-
-    let remove_duplicates xs =
-      let h = Hashtbl.create (List.length xs) in
-      let rec loop = function
-        | [] -> []
-        | x :: xs when Hashtbl.mem h x -> xs
-        | x :: xs -> Hashtbl.add h x true; x :: loop xs
-      in
-      loop xs
-
-    let push_back xsp x = xsp := !xsp @ [x]
-    let push_front x xsp = xsp := x :: !xsp
-    let pop_back xsp =
-      let x, xs =
-        match List.rev !xsp with
-        | x :: xs -> x, xs
-        | [] -> failwith "pop" in
-      xsp := List.rev xs;
-      x
-    let pop_front xsp =
-      let x, xs =
-        match !xsp with
-        | x :: xs -> x, xs
-        | [] -> failwith "shift" in
-      xsp := xs;
-      x
-
-    let may_push_back xsp x =
-      match x with None -> () | Some x -> push_back xsp x
-    let may_push_front x xsp =
-      match x with None -> () | Some x -> push_front x xsp
-
-    let push_back_list xsp xs = xsp := !xsp @ xs
-    let push_front_list xs xsp = xsp := xs @ !xsp
-
-    let make n x =
-      let rec loop acc = function
-        | 0 -> acc
-        | i when i > 0 -> loop (x :: acc) (i-1)
-        | _ -> invalid_arg "make"
-      in
-      loop [] n
-
-    let same = function
-      | [] -> true
-      | x :: xs -> List.for_all ((=) x) xs
 end
 
 let (//) = Filename.concat

@@ -16,138 +16,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *)
 
-module Char : sig
-    type t = char
-    val chr : int -> char
-    val code : char -> int
-    val compare: t -> t -> int
-    val escaped : char -> string
-    val unsafe_chr : int -> char
-
-    val lowercase_ascii : char -> char
-    val uppercase_ascii : char -> char
-
-    val isspace : char -> bool
-    (** Return true if char is a whitespace character. *)
-    val isdigit : char -> bool
-    (** Return true if the character is a digit [[0-9]]. *)
-    val isxdigit : char -> bool
-    (** Return true if the character is a hex digit [[0-9a-fA-F]]. *)
-    val isalpha : char -> bool
-    (** Return true if the character is a US ASCII 7 bit alphabetic. *)
-    val isalnum : char -> bool
-    (** Return true if the character is a US ASCII 7 bit alphanumeric. *)
-
-    val hexdigit : char -> int
-    (** Return the value of a hex digit.  If the char is not in
-        the set [[0-9a-fA-F]] then this returns [-1]. *)
-
-    val mem : char -> string -> bool
-    (** [mem c str] returns true if the byte [c] is contained in [str].
-
-        This is actually the same as {!String.contains} with the
-        parameters reversed. *)
-end
-(** Override the Char module from stdlib. *)
-
-module String : sig
-    type t = string
-    val compare: t -> t -> int
-    val concat : string -> string list -> string
-    val contains : string -> char -> bool
-    val contains_from : string -> int -> char -> bool
-    val escaped : string -> string
-    val get : string -> int -> char
-    val index : string -> char -> int
-    val index_from : string -> int -> char -> int
-    val iter : (char -> unit) -> string -> unit
-    val iteri : (int -> char -> unit) -> string -> unit
-    val map : (char -> char) -> string -> string
-    val length : string -> int
-    val make : int -> char -> string
-    val rcontains_from : string -> int -> char -> bool
-    val rindex : string -> char -> int
-    val rindex_from : string -> int -> char -> int
-    val sub : string -> int -> int -> string
-    val unsafe_get : string -> int -> char
-
-    val lowercase_ascii : string -> string
-    val uppercase_ascii : string -> string
-    val capitalize_ascii : string -> string
-
-    val is_prefix : string -> string -> bool
-    (** [is_prefix str prefix] returns true if [prefix] is a prefix of [str]. *)
-    val is_suffix : string -> string -> bool
-    (** [is_suffix str suffix] returns true if [suffix] is a suffix of [str]. *)
-    val find : string -> string -> int
-    (** [find str sub] searches for [sub] as a substring of [str].  If
-        found it returns the index.  If not found, it returns [-1]. *)
-    val find_from : string -> int -> string -> int
-    (** [find_from str start sub] searches for [sub] as a substring of [str],
-        starting at index [start].  If found it returns the index.
-        If not found, it returns [-1]. *)
-    val replace : string -> string -> string -> string
-    (** [replace str s1 s2] replaces all instances of [s1] appearing in
-        [str] with [s2]. *)
-    val replace_char : string -> char -> char -> string
-    (** Replace character in string. *)
-    val break : int -> string -> string * string
-    (** [break n str] breaks a string at the nth byte, returning the
-        first and second parts.  If [n] is beyond the end of the
-        string it returns [(str, "")]. *)
-    val split : string -> string -> string * string
-    (** [split sep str] splits [str] at the first occurrence of the
-        separator [sep], returning the part before and the part after.
-        If separator is not found, return the whole string and an
-        empty string. *)
-    val nsplit : ?max:int -> string -> string -> string list
-    (** [nsplit ?max sep str] splits [str] into multiple strings at each
-        separator [sep].
-
-        As with the Perl split function, you can give an optional
-        [?max] parameter to limit the number of strings returned.  The
-        final element of the list will contain the remainder of the
-        input string. *)
-    val lines_split : string -> string list
-    (** [lines_split str] splits [str] into lines, keeping continuation
-        characters (i.e. [\] at the end of lines) into account. *)
-    val random8 : unit -> string
-    (** Return a string of 8 random printable characters. *)
-    val triml : ?test:(char -> bool) -> string -> string
-    (** Trim left. *)
-    val trimr : ?test:(char -> bool) -> string -> string
-    (** Trim right. *)
-    val trim : ?test:(char -> bool) -> string -> string
-    (** Trim left and right. *)
-    val chomp : string -> string
-    (** If the string ends with [\n], remove it. *)
-    val count_chars : char -> string -> int
-    (** Count number of times the character occurs in string. *)
-    val explode : string -> char list
-    (** Explode a string into a list of characters. *)
-    val map_chars : (char -> 'a) -> string -> 'a list
-    (** Explode string, then map function over the characters. *)
-    val implode : char list -> string
-    (** Join list of characters into a single string. *)
-    val spaces : int -> string
-    (** [spaces n] creates a string of n spaces. *)
-    val span : string -> string -> int
-    val cspan : string -> string -> int
-    (** [span str accept] returns the length in bytes of the initial
-        segment of [str] which contains only bytes in [accept].
-
-        [cspan str reject] returns the length in bytes of the initial
-        segment of [str] which contains only bytes {!i not} in [reject].
-
-        These work exactly like the C functions [strspn] and [strcspn]. *)
-    val unix2dos : string -> string
-    (** Convert string with ordinary Unix-style line-endings to
-        CRLF DOS-style line-endings.
-
-        The same as {!String.replace} [str "\n" "\r\n"]. *)
-end
-(** Override the String module from stdlib. *)
-
 module List : sig
     val length : 'a list -> int
     val hd : 'a list -> 'a
@@ -310,6 +178,138 @@ module List : sig
         or is the empty list. *)
 end
 (** Override the List module from stdlib. *)
+
+module Char : sig
+    type t = char
+    val chr : int -> char
+    val code : char -> int
+    val compare: t -> t -> int
+    val escaped : char -> string
+    val unsafe_chr : int -> char
+
+    val lowercase_ascii : char -> char
+    val uppercase_ascii : char -> char
+
+    val isspace : char -> bool
+    (** Return true if char is a whitespace character. *)
+    val isdigit : char -> bool
+    (** Return true if the character is a digit [[0-9]]. *)
+    val isxdigit : char -> bool
+    (** Return true if the character is a hex digit [[0-9a-fA-F]]. *)
+    val isalpha : char -> bool
+    (** Return true if the character is a US ASCII 7 bit alphabetic. *)
+    val isalnum : char -> bool
+    (** Return true if the character is a US ASCII 7 bit alphanumeric. *)
+
+    val hexdigit : char -> int
+    (** Return the value of a hex digit.  If the char is not in
+        the set [[0-9a-fA-F]] then this returns [-1]. *)
+
+    val mem : char -> string -> bool
+    (** [mem c str] returns true if the byte [c] is contained in [str].
+
+        This is actually the same as {!String.contains} with the
+        parameters reversed. *)
+end
+(** Override the Char module from stdlib. *)
+
+module String : sig
+    type t = string
+    val compare: t -> t -> int
+    val concat : string -> string list -> string
+    val contains : string -> char -> bool
+    val contains_from : string -> int -> char -> bool
+    val escaped : string -> string
+    val get : string -> int -> char
+    val index : string -> char -> int
+    val index_from : string -> int -> char -> int
+    val iter : (char -> unit) -> string -> unit
+    val iteri : (int -> char -> unit) -> string -> unit
+    val map : (char -> char) -> string -> string
+    val length : string -> int
+    val make : int -> char -> string
+    val rcontains_from : string -> int -> char -> bool
+    val rindex : string -> char -> int
+    val rindex_from : string -> int -> char -> int
+    val sub : string -> int -> int -> string
+    val unsafe_get : string -> int -> char
+
+    val lowercase_ascii : string -> string
+    val uppercase_ascii : string -> string
+    val capitalize_ascii : string -> string
+
+    val is_prefix : string -> string -> bool
+    (** [is_prefix str prefix] returns true if [prefix] is a prefix of [str]. *)
+    val is_suffix : string -> string -> bool
+    (** [is_suffix str suffix] returns true if [suffix] is a suffix of [str]. *)
+    val find : string -> string -> int
+    (** [find str sub] searches for [sub] as a substring of [str].  If
+        found it returns the index.  If not found, it returns [-1]. *)
+    val find_from : string -> int -> string -> int
+    (** [find_from str start sub] searches for [sub] as a substring of [str],
+        starting at index [start].  If found it returns the index.
+        If not found, it returns [-1]. *)
+    val replace : string -> string -> string -> string
+    (** [replace str s1 s2] replaces all instances of [s1] appearing in
+        [str] with [s2]. *)
+    val replace_char : string -> char -> char -> string
+    (** Replace character in string. *)
+    val break : int -> string -> string * string
+    (** [break n str] breaks a string at the nth byte, returning the
+        first and second parts.  If [n] is beyond the end of the
+        string it returns [(str, "")]. *)
+    val split : string -> string -> string * string
+    (** [split sep str] splits [str] at the first occurrence of the
+        separator [sep], returning the part before and the part after.
+        If separator is not found, return the whole string and an
+        empty string. *)
+    val nsplit : ?max:int -> string -> string -> string list
+    (** [nsplit ?max sep str] splits [str] into multiple strings at each
+        separator [sep].
+
+        As with the Perl split function, you can give an optional
+        [?max] parameter to limit the number of strings returned.  The
+        final element of the list will contain the remainder of the
+        input string. *)
+    val lines_split : string -> string list
+    (** [lines_split str] splits [str] into lines, keeping continuation
+        characters (i.e. [\] at the end of lines) into account. *)
+    val random8 : unit -> string
+    (** Return a string of 8 random printable characters. *)
+    val triml : ?test:(char -> bool) -> string -> string
+    (** Trim left. *)
+    val trimr : ?test:(char -> bool) -> string -> string
+    (** Trim right. *)
+    val trim : ?test:(char -> bool) -> string -> string
+    (** Trim left and right. *)
+    val chomp : string -> string
+    (** If the string ends with [\n], remove it. *)
+    val count_chars : char -> string -> int
+    (** Count number of times the character occurs in string. *)
+    val explode : string -> char list
+    (** Explode a string into a list of characters. *)
+    val map_chars : (char -> 'a) -> string -> 'a list
+    (** Explode string, then map function over the characters. *)
+    val implode : char list -> string
+    (** Join list of characters into a single string. *)
+    val spaces : int -> string
+    (** [spaces n] creates a string of n spaces. *)
+    val span : string -> string -> int
+    val cspan : string -> string -> int
+    (** [span str accept] returns the length in bytes of the initial
+        segment of [str] which contains only bytes in [accept].
+
+        [cspan str reject] returns the length in bytes of the initial
+        segment of [str] which contains only bytes {!i not} in [reject].
+
+        These work exactly like the C functions [strspn] and [strcspn]. *)
+    val unix2dos : string -> string
+    (** Convert string with ordinary Unix-style line-endings to
+        CRLF DOS-style line-endings.
+
+        The same as {!String.replace} [str "\n" "\r\n"]. *)
+end
+(** Override the String module from stdlib. *)
 
 val ( // ) : string -> string -> string
 (** Concatenate directory and filename. *)
