@@ -319,7 +319,8 @@ module List = struct
       | _ -> []
 
     let take n xs =
-      if n <= 0 then []
+      if n < 0 then invalid_arg "List.take"
+      else if n = 0 then []
       else (
         (* This optimisation avoids copying xs. *)
         let len = List.length xs in
@@ -333,7 +334,8 @@ module List = struct
         )
       )
     let rec drop n xs =
-      if n <= 0 then xs
+      if n < 0 then invalid_arg "List.drop"
+      else if n = 0 then xs
       else if xs = [] then []
       else drop (n-1) (List.tl xs)
 

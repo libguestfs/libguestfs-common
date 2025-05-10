@@ -206,12 +206,15 @@ module List : sig
 
     val take : int -> 'a list -> 'a list
     (** [take n xs] returns the first [n] elements of [xs].  If [xs] is
-        shorter than [n], then it returns [xs].  Note it never fails
-        for any input. *)
+        shorter than [n], then it returns [xs].  [n] must be non-negative.
+
+        @raise Invalid_argument if [n] is negative *)
     val drop : int -> 'a list -> 'a list
     (** [drop n xs] returns the suffix of [xs] after the first [n]
         elements.  If [xs] is shorter than [n], then it returns the empty
-        list.  Note it never fails for any input. *)
+        list.  [n] must be non-negative.
+
+        @raise Invalid_argument if [n] is negative *)
 
     val filter_map : ('a -> 'b option) -> 'a list -> 'b list
     (** [filter_map f xs] applies [f] to each element of [xs].  If
