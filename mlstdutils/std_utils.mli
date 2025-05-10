@@ -308,6 +308,12 @@ module String : sig
         CRLF DOS-style line-endings.
 
         The same as {!String.replace} [str "\n" "\r\n"]. *)
+    val common_prefix : string -> string -> string
+    (** Return the longest common prefix of two strings. *)
+    val longest_common_prefix : string list -> string
+    (** Return the longest common prefix of all the strings in the list.
+        If the list is empty or there is no common prefix, [""] is
+        returned.  If there is only one string in the list, it is returned. *)
 end
 (** Override the String module from stdlib. *)
 

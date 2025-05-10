@@ -434,6 +434,23 @@ module String = struct
       loop 0
 
     let unix2dos str = replace str "\n" "\r\n"
+
+    let rec longest_common_prefix = function
+      | [] -> ""
+      | [s] -> s
+      | strs ->
+         let strs = List.sort compare strs in
+         let s1 = List.hd strs and s2 = List.last strs in
+         common_prefix s1 s2
+    and common_prefix s1 s2 =
+      let n1 = length s1 and n2 = length s2 in
+      let n = min n1 n2 in
+      let rec loop i =
+        if i = n then sub s1 0 n
+        else if unsafe_get s1 i <> unsafe_get s2 i then sub s1 0 i
+        else loop (i+1)
+      in
+      loop 0
 end
 
 let (//) = Filename.concat

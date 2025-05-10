@@ -190,6 +190,37 @@ let () =
   assert_equal_string "" (String.chomp "\n");
   assert_equal_string "\n" (String.chomp "\n\n") (* only removes one *)
 
+(* Test Std_utils.String.common_prefix, longest_common_prefix. *)
+let () =
+  assert_equal_string "" (String.common_prefix "" "");
+  assert_equal_string "" (String.common_prefix "" "abc");
+  assert_equal_string "" (String.common_prefix "abc" "");
+  assert_equal_string "" (String.common_prefix "hello" "world");
+  assert_equal_string "abc" (String.common_prefix "abc" "abcde");
+  assert_equal_string "abc" (String.common_prefix "abcde" "abc");
+  assert_equal_string "abc" (String.common_prefix "abcde" "abcghi");
+  assert_equal_string "" (String.longest_common_prefix []);
+  assert_equal_string "" (String.longest_common_prefix [""]);
+  assert_equal_string "abc" (String.longest_common_prefix ["abc"]);
+  assert_equal_string "" (String.longest_common_prefix [""; "abc"]);
+  assert_equal_string "" (String.longest_common_prefix ["abc"; ""]);
+  assert_equal_string "" (String.longest_common_prefix ["hello"; "world"]);
+  assert_equal_string ""
+    (String.longest_common_prefix ["hello"; "there"; "world"]);
+  assert_equal_string "abc" (String.longest_common_prefix ["abc"; "abcde"]);
+  assert_equal_string "abc" (String.longest_common_prefix ["abcde"; "abc"]);
+  assert_equal_string "abc" (String.longest_common_prefix ["abcde"; "abcghi"]);
+  assert_equal_string "abc"
+    (String.longest_common_prefix ["abcde"; "abcghi"; "abc123"]);
+  assert_equal_string "abc"
+    (String.longest_common_prefix ["abc"; "abcghi"; "abc123"]);
+  assert_equal_string "abc"
+    (String.longest_common_prefix ["abcde"; "abc"; "abc123"]);
+  assert_equal_string "abc"
+    (String.longest_common_prefix ["abcde"; "abcde"; "abc"]);
+  assert_equal_string "abc"
+    (String.longest_common_prefix ["abc"; "abc"; "abc"])
+
 (* Test Std_utils.which. *)
 let () =
   assert_nonempty_string (which "true");
