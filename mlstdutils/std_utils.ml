@@ -308,14 +308,14 @@ module List = struct
     include List
 
     (* Drop elements from a list while a predicate is true. *)
-    let rec dropwhile f = function
+    let rec drop_while f = function
       | [] -> []
-      | x :: xs when f x -> dropwhile f xs
+      | x :: xs when f x -> drop_while f xs
       | xs -> xs
 
     (* Take elements from a list while a predicate is true. *)
-    let rec takewhile f = function
-      | x :: xs when f x -> x :: takewhile f xs
+    let rec take_while f = function
+      | x :: xs when f x -> x :: take_while f xs
       | _ -> []
 
     let take n xs =

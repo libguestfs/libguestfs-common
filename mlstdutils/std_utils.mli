@@ -194,11 +194,11 @@ module List : sig
     val sort_uniq : ('a -> 'a -> int) -> 'a list -> 'a list
     val merge : ('a -> 'a -> int) -> 'a list -> 'a list -> 'a list
 
-    val dropwhile : ('a -> bool) -> 'a list -> 'a list
-    (** [dropwhile f xs] drops leading elements from [xs] until
+    val drop_while : ('a -> bool) -> 'a list -> 'a list
+    (** [drop_while f xs] drops leading elements from [xs] until
         [f] returns false. *)
-    val takewhile : ('a -> bool) -> 'a list -> 'a list
-    (** [takewhile f xs] takes leading elements from [xs] until
+    val take_while : ('a -> bool) -> 'a list -> 'a list
+    (** [take_while f xs] takes leading elements from [xs] until
         [f] returns false.
 
         For any list [xs] and function [f],
