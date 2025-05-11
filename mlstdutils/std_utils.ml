@@ -626,13 +626,6 @@ let unique = let i = ref 0 in fun () -> incr i; !i
 
 type ('a, 'b) maybe = Either of 'a | Or of 'b
 
-let protect ~f ~finally =
-  let r =
-    try Either (f ())
-    with exn -> Or exn in
-  finally ();
-  match r with Either ret -> ret | Or exn -> raise exn
-
 type 'a return = { return: 'b. 'a -> 'b } [@@unboxed]
 let with_return (type a) f =
   let exception Return of a in
@@ -689,15 +682,15 @@ let wrap () = !wrap
 
 let with_open_in filename f =
   let chan = open_in filename in
-  protect ~f:(fun () -> f chan) ~finally:(fun () -> close_in chan)
+  Fun.protect (fun () -> f chan) ~finally:(fun () -> close_in chan)
 
 let with_open_out filename f =
   let chan = open_out filename in
-  protect ~f:(fun () -> f chan) ~finally:(fun () -> close_out chan)
+  Fun.protect (fun () -> f chan) ~finally:(fun () -> close_out chan)
 
 let with_openfile filename flags perms f =
   let fd = Unix.openfile filename flags perms in
-  protect ~f:(fun () -> f fd) ~finally:(fun () -> Unix.close fd)
+  Fun.protect (fun () -> f fd) ~finally:(fun () -> Unix.close fd)
 
 let read_whole_file path =
   let buf = Buffer.create 16384 in

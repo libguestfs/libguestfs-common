@@ -369,18 +369,6 @@ val unique : unit -> int
 type ('a, 'b) maybe = Either of 'a | Or of 'b
 (** Like the Haskell [Either] type. *)
 
-val protect : f:(unit -> 'a) -> finally:(unit -> unit) -> 'a
-(** Execute [~f] and afterwards execute [~finally].
-
-    If [~f] throws an exception then [~finally] is run and the
-    original exception from [~f] is re-raised.
-
-    If [~finally] throws an exception, then the original exception
-    is lost. (NB: Janestreet core {!Exn.protectx}, on which this
-    function is modelled, doesn't throw away the exception in this
-    case, but requires a lot more work by the caller.  Perhaps we
-    will change this in future.) *)
-
 type 'a return = { return: 'b. 'a -> 'b } [@@unboxed]
 val with_return : ('a return -> 'a) -> 'a
 (** {v

@@ -31,9 +31,8 @@ let with_hive_readonly (g : Guestfs.guestfs) hive_filename f =
   let verbose = verbose () in
   g#hivex_open ~write:false ~unsafe:true ~verbose (* ~debug:verbose *)
                hive_filename;
-  protect
-    ~f:(
-      fun () ->
+  Fun.protect
+    (fun () ->
         let t = g, g#hivex_root () in
         f t
     )
@@ -42,9 +41,8 @@ let with_hive_readonly (g : Guestfs.guestfs) hive_filename f =
 let with_hive_write (g : Guestfs.guestfs) hive_filename f =
   let verbose = verbose () in
   g#hivex_open ~write:true ~verbose (* ~debug:verbose *) hive_filename;
-  protect
-    ~f:(
-      fun () ->
+  Fun.protect
+    (fun () ->
         let t = g, g#hivex_root () in
         let ret = f t in
         g#hivex_commit None;
