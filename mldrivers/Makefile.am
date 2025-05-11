@@ -79,6 +79,9 @@ OCAMLPACKAGES = \
 	-I $(top_builddir)/common/mltools \
 	-I $(builddir)
 OCAMLPACKAGES_TESTS = $(MLDRIVERS_CMA)
+if HAVE_OCAML_PKG_GETTEXT
+OCAMLPACKAGES += -package gettext-stub
+endif
 
 OCAMLFLAGS = $(OCAML_FLAGS) $(OCAML_WARN_ERROR) -ccopt '$(CFLAGS)'
 
