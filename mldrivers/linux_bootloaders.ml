@@ -110,7 +110,7 @@ object
     List.map ((^) grub_prefix) vmlinuzes
 
   method set_default_kernel vmlinuz =
-    if not (String.is_prefix vmlinuz grub_prefix) then
+    if not (String.starts_with grub_prefix vmlinuz) then
       error (f_"kernel %s is not under grub tree %s")
         vmlinuz grub_prefix;
     let kernel_under_grub_prefix =

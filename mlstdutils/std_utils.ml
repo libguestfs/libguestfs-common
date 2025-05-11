@@ -214,11 +214,11 @@ module String = struct
       Bytes.unsafe_set b 0 (Char.uppercase_ascii (Bytes.unsafe_get b 0));
       Bytes.to_string b
 
-    let is_prefix str prefix =
+    let starts_with ~prefix str =
       let n = length prefix in
       length str >= n && sub str 0 n = prefix
 
-    let is_suffix str suffix =
+    let ends_with ~suffix str =
       let sufflen = length suffix
       and len = length str in
       len >= sufflen && sub str (len - sufflen) sufflen = suffix
@@ -824,7 +824,7 @@ let unix_like = function
   | "hurd"
   | "linux"
   | "minix" -> true
-  | typ when String.is_suffix typ "bsd" -> true
+  | typ when String.ends_with "bsd" typ -> true
   | _ -> false
 
 (** Return the last part of a string, after the specified separator. *)

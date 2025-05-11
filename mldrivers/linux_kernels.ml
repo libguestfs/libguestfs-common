@@ -97,8 +97,9 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
     let kernel_pkgs = List.filter (
       fun { G.app2_name = name } ->
         name = "kernel"
-          || (String.is_prefix name "kernel-" && not (String.is_suffix name "-devel"))
-          || String.is_prefix name "linux-image-"
+          || (String.starts_with "kernel-" name &&
+                not (String.ends_with "-devel" name))
+          || String.starts_with "linux-image-" name
     ) apps in
     if verbose () then (
       let names = List.map (fun { G.app2_name = name } -> name) kernel_pkgs in
@@ -115,7 +116,7 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
             * it exists by stat'ing it.
             *)
            let vmlinuz = List.find (
-             fun filename -> String.is_prefix filename "/boot/vmlinuz-"
+             fun filename -> String.starts_with "/boot/vmlinuz-" filename
            ) files in
            let vmlinuz_stat =
              try g#statns vmlinuz with G.Error _ -> raise Not_found in
@@ -131,7 +132,7 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
                  fun filename ->
                    let filename_len = String.length filename in
                    if filename_len > prefix_len &&
-                      String.is_prefix filename prefix then (
+                      String.starts_with prefix filename then (
                      let version = String.sub filename prefix_len
                                               (filename_len - prefix_len) in
                      Some (filename, version)
@@ -229,7 +230,8 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
                try
                  List.find (
                    fun m ->
-                     List.exists (String.is_suffix m) all_candidates
+                     List.exists (fun suffix -> String.ends_with ~suffix m)
+                       all_candidates
                  ) modules
                with Not_found ->
                  (* No known module found, pick an arbitrary one
@@ -277,8 +279,8 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
             * a debug kernel.
             *)
            let is_debug =
-             String.is_suffix app.G.app2_name "-debug" ||
-             String.is_suffix app.G.app2_name "-dbg" in
+             String.ends_with "-debug" app.G.app2_name ||
+             String.ends_with "-dbg" app.G.app2_name in
 
            Some {
              ki_app  = app;

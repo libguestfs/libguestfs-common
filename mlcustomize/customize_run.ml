@@ -142,7 +142,7 @@ let run (g : G.guestfs) root (ops : ops) =
       (* If the mode string is octal, add the OCaml prefix for octal values
        * so it is properly converted as octal integer.
        *)
-      let mode = if String.is_prefix mode "0" then "0o" ^ mode else mode in
+      let mode = if String.starts_with "0" mode then "0o" ^ mode else mode in
       g#chmod (int_of_string mode) path
 
     | `Chown (uid, gid, path) ->

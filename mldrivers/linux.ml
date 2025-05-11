@@ -105,7 +105,7 @@ let file_list_of_package (g : Guestfs.guestfs) root app =
    * has no files in it:
    * https://github.com/rpm-software-management/rpm/issues/962
    *)
-  if String.is_prefix files "(contains no files)" then []
+  if String.starts_with "(contains no files)" files then []
   else (
     let files = String.nsplit "\n" files in
     List.sort compare files

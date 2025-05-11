@@ -454,7 +454,7 @@ and virtio_iso_path_matches_guest_os t path =
      *)
     let pathelem elem =
       String.find lc_path ("/" ^ elem ^ "/") >= 0 ||
-      String.is_prefix lc_path (elem ^ "/")
+      String.starts_with (elem ^ "/") lc_path
     in
     let p_arch =
       if pathelem "x86" || pathelem "i386" then "i386"
@@ -508,7 +508,7 @@ and virtio_iso_path_matches_guest_os t path =
     (* .pdb files are debugging files. they are not part of the
      * signed driver and are not necessary to install.
      *)
-    let p_pdb = String.is_suffix path ".pdb" in
+    let p_pdb = String.ends_with ".pdb" path in
 
     arch = p_arch &&
     not p_sriov &&

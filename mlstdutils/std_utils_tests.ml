@@ -87,21 +87,23 @@ let () =
   assert_bool "Char.mem" (not (Char.mem 'd' "abc"));
   assert_bool "Char.mem" (not (Char.mem 'a' ""))
 
-(* Test Std_utils.String.is_prefix. *)
+(* Test Std_utils.String.starts_with. *)
 let () =
-  assert_bool "String.is_prefix,," (String.is_prefix "" "");
-  assert_bool "String.is_prefix,foo," (String.is_prefix "foo" "");
-  assert_bool "String.is_prefix,foo,foo" (String.is_prefix "foo" "foo");
-  assert_bool "String.is_prefix,foo123,foo" (String.is_prefix "foo123" "foo");
-  assert_bool "not (String.is_prefix,,foo" (not (String.is_prefix "" "foo"))
+  assert_bool "String.starts_with,," (String.starts_with "" "");
+  assert_bool "String.starts_with,foo," (String.starts_with "" "foo");
+  assert_bool "String.starts_with,foo,foo" (String.starts_with "foo" "foo");
+  assert_bool "String.starts_with,foo123,foo"
+    (String.starts_with "foo" "foo123");
+  assert_bool "not (String.starts_with,,foo"
+    (not (String.starts_with "foo" ""))
 
-(* Test Std_utils.String.is_suffix. *)
+(* Test Std_utils.String.ends_with. *)
 let () =
-  assert_bool "String.is_suffix,," (String.is_suffix "" "");
-  assert_bool "String.is_suffix,foo," (String.is_suffix "foo" "");
-  assert_bool "String.is_suffix,foo,foo" (String.is_suffix "foo" "foo");
-  assert_bool "String.is_suffix,123foo,foo" (String.is_suffix "123foo" "foo");
-  assert_bool "not String.is_suffix,,foo" (not (String.is_suffix "" "foo"))
+  assert_bool "String.ends_with,," (String.ends_with "" "");
+  assert_bool "String.ends_with,foo," (String.ends_with "" "foo");
+  assert_bool "String.ends_with,foo,foo" (String.ends_with "foo" "foo");
+  assert_bool "String.ends_with,123foo,foo" (String.ends_with "foo" "123foo");
+  assert_bool "not String.ends_with,,foo" (not (String.ends_with "foo" ""))
 
 (* Test Std_utils.String.find. *)
 let () =

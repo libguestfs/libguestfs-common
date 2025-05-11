@@ -236,10 +236,10 @@ module String : sig
     val uppercase_ascii : string -> string
     val capitalize_ascii : string -> string
 
-    val is_prefix : string -> string -> bool
-    (** [is_prefix str prefix] returns true if [prefix] is a prefix of [str]. *)
-    val is_suffix : string -> string -> bool
-    (** [is_suffix str suffix] returns true if [suffix] is a suffix of [str]. *)
+    val starts_with : prefix:string -> string -> bool
+    (** Return true if [prefix] is a prefix of [str]. *)
+    val ends_with : suffix:string -> string -> bool
+    (** Return true if [suffix] is a suffix of [str]. *)
     val find : string -> string -> int
     (** [find str sub] searches for [sub] as a substring of [str].  If
         found it returns the index.  If not found, it returns [-1]. *)

@@ -133,10 +133,6 @@ let show_help h () =
   Buffer.output_buffer stdout b;
   exit 0
 
-let is_prefix str prefix =
-  let n = String.length prefix in
-  String.length str >= n && String.sub str 0 n = prefix
-
 (* Implement `--short-options' and `--long-options'. *)
 let display_short_options h () =
   List.iter (
@@ -202,7 +198,7 @@ let create specs ?anon_fun usage_msg =
     | Symbol (_, elements, _) ->
       List.iter (
         fun e ->
-          if String.length e == 0 || is_prefix e "-" then
+          if String.length e == 0 || String.starts_with "-" e then
             invalid_arg (sprintf "invalid element in Symbol: '%s'" e);
       ) elements;
   in

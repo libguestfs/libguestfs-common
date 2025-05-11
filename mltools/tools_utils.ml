@@ -739,7 +739,7 @@ let run_in_guest_command g root ?logfile ?incompatible_fn cmd =
    *)
   let guest_os = g#inspect_get_type root in
   let guest_os_compatible =
-    String.is_prefix Guestfs_config.host_os "linux" &&
+    String.starts_with "linux" Guestfs_config.host_os &&
     guest_os = "linux" in
   let guest_arch = g#inspect_get_arch root in
   let guest_arch_compatible = guest_arch_compatible guest_arch in
