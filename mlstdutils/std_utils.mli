@@ -71,7 +71,7 @@ module List : sig
         [f] returns false.
 
         For any list [xs] and function [f],
-        [xs = takewhile f xs @ dropwhile f xs] *)
+        [xs = take_while f xs @ drop_while f xs] *)
 
     val take : int -> 'a list -> 'a list
     (** [take n xs] returns the first [n] elements of [xs].  If [xs] is
