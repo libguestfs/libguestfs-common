@@ -26,7 +26,7 @@ open JSON_parser
 let assert_equal ~printer a b =
   if a <> b then
     failwithf "FAIL: %s <> %s" (printer a) (printer b)
-let assert_equal_string = assert_equal ~printer:identity
+let assert_equal_string = assert_equal ~printer:Fun.id
 let assert_equal_int = assert_equal ~printer:(fun x -> string_of_int x)
 let assert_equal_int64 = assert_equal ~printer:(fun x -> Int64.to_string x)
 let assert_equal_bool = assert_equal ~printer:(fun x -> string_of_bool x)

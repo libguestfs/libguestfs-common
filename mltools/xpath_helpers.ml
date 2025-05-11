@@ -37,7 +37,7 @@ let xpath_eval parsefn xpathctx expr =
             expr str
   )
 
-let xpath_string = xpath_eval identity
+let xpath_string = xpath_eval Fun.id
 let xpath_int = xpath_eval int_of_string
 let xpath_int64 = xpath_eval Int64.of_string
 

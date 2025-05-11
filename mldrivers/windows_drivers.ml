@@ -201,15 +201,15 @@ and pci_to_hardware = function
                    pci_subsys = None; pci_rev = None } in
      let f pci key =
        if PCRE.matches re_pci_cc key then
-         { pci with pci_class = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { pci with pci_class = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_pci_ven key then
-         { pci with pci_vendor = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { pci with pci_vendor = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_pci_dev key then
-         { pci with pci_device = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { pci with pci_device = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_pci_subsys key then
-         { pci with pci_subsys = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { pci with pci_subsys = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_pci_rev key then
-         { pci with pci_rev = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { pci with pci_rev = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else
          pci
      in
@@ -223,15 +223,15 @@ and hid_to_hardware = function
                    hid_rev = None; hid_col = None; hid_multi = None } in
      let f hid key =
        if PCRE.matches re_hid_vid key then
-         { hid with hid_vendor = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { hid with hid_vendor = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_hid_pid key then
-         { hid with hid_product = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { hid with hid_product = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_hid_rev key then
-         { hid with hid_rev = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { hid with hid_rev = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_hid_col key then
-         { hid with hid_col = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { hid with hid_col = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_hid_multi key then
-         { hid with hid_multi = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { hid with hid_multi = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else
          hid
      in
@@ -246,13 +246,13 @@ and usb_to_hardware = function
                    usb_rev = None; usb_multi = None } in
      let f usb key =
        if PCRE.matches re_usb_vid key then
-         { usb with usb_vendor = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { usb with usb_vendor = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_usb_pid key then
-         { usb with usb_product = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { usb with usb_product = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_usb_rev key then
-         { usb with usb_rev = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { usb with usb_rev = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else if PCRE.matches re_usb_multi key then
-         { usb with usb_multi = Some (sscanf (PCRE.sub 1) "%Lx" identity) }
+         { usb with usb_multi = Some (sscanf (PCRE.sub 1) "%Lx" Fun.id) }
        else
          usb
      in

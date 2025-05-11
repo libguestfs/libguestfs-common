@@ -476,7 +476,7 @@ let rec run_commands ?(echo_cmd = true) ?help cmds =
           res.(i) <- code;
           None
     ) cmds in
-  let pids = List.filter_map identity pids in
+  let pids = List.filter_map Fun.id pids in
   let pids = ref pids in
   while !pids <> [] do
     let pid, stat = Unix.waitpid [] 0 in

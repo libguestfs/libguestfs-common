@@ -42,7 +42,7 @@ let assert_raises exn fn =
 
 (* Test drive_name function. *)
 let () =
-  let printer = identity in
+  let printer = Fun.id in
   assert_equal ~printer "a" (drive_name 0);
   assert_equal ~printer "z" (drive_name 25);
   assert_equal ~printer "aa" (drive_name 26);
@@ -74,7 +74,7 @@ let () =
 
 (* Test shell_unquote function. *)
 let () =
-  let printer = identity in
+  let printer = Fun.id in
   assert_equal ~printer "a" (shell_unquote "a");
   assert_equal ~printer "b" (shell_unquote "'b'");
   assert_equal ~printer "c" (shell_unquote "\"c\"");

@@ -40,7 +40,7 @@ let assert_raises exn fn =
     )
 
 let assert_equal_string =
-  assert_equal ~printer:identity
+  assert_equal ~printer:Fun.id
 let assert_equal_int =
   assert_equal ~printer:(fun x -> string_of_int x)
 let assert_equal_int64 =

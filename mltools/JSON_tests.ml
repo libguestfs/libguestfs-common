@@ -23,7 +23,7 @@ open Std_utils
 let assert_equal ~printer a b =
   if a <> b then
     failwithf "FAIL: %s <> %s" (printer a) (printer b)
-let assert_equal_string = assert_equal ~printer:identity
+let assert_equal_string = assert_equal ~printer:Fun.id
 
 (* "basic" suite. *)
 let () =

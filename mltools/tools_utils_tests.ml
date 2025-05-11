@@ -26,7 +26,7 @@ let assert_equal ~printer a b =
     failwithf "FAIL: %s <> %s" (printer a) (printer b)
 
 let assert_equal_string =
-  assert_equal ~printer:identity
+  assert_equal ~printer:Fun.id
 let assert_equal_int =
   assert_equal ~printer:(fun x -> string_of_int x)
 let assert_equal_int64 =
