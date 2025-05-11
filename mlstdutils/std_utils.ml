@@ -58,13 +58,6 @@ module List = struct
       | [x] -> x
       | _ :: xs -> last xs
 
-    let rec filter_map f = function
-      | [] -> []
-      | x :: xs ->
-          match f x with
-          | Some y -> y :: filter_map f xs
-          | None -> filter_map f xs
-
     let rec find_map f = function
       | [] -> raise Not_found
       | x :: xs ->

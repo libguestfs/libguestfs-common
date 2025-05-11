@@ -31,6 +31,7 @@ module List : sig
     val map : ('a -> 'b) -> 'a list -> 'b list
     val mapi : (int -> 'a -> 'b) -> 'a list -> 'b list
     val rev_map : ('a -> 'b) -> 'a list -> 'b list
+    val filter_map : ('a -> 'b option) -> 'a list -> 'b list
     val fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list -> 'a
     val fold_right : ('a -> 'b -> 'b) -> 'a list -> 'b -> 'b
     val iter2 : ('a -> 'b -> unit) -> 'a list -> 'b list -> unit
@@ -90,9 +91,6 @@ module List : sig
 
         @raise Invalid_argument if the list is empty *)
 
-    val filter_map : ('a -> 'b option) -> 'a list -> 'b list
-    (** [filter_map f xs] applies [f] to each element of [xs].  If
-        [f x] returns [Some y] then [y] is added to the returned list. *)
     val find_map : ('a -> 'b option) -> 'a list -> 'b
     (** [find_map f xs] applies [f] to each element of [xs] until
         [f x] returns [Some y].  It returns [y].  If we exhaust the
