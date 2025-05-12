@@ -80,6 +80,12 @@ module List = struct
       | x::xs, y::ys, z::zs -> (x, y, z) :: combine3 xs ys zs
       | _ -> invalid_arg "combine3"
 
+    let rec combine4 ws xs ys zs =
+      match ws, xs, ys, zs with
+      | [], [], [], [] -> []
+      | w::ws, x::xs, y::ys, z::zs -> (w, x, y, z) :: combine4 ws xs ys zs
+      | _ -> invalid_arg "combine4"
+
     let rec assoc_lbl ?(cmp = Stdlib.compare) ~default x = function
       | [] -> default
       | (y, y') :: _ when cmp x y = 0 -> y'

@@ -106,6 +106,11 @@ module List : sig
     (** Like {!List.combine} but for triples.
         All lists must be the same length. *)
 
+    val combine4 : 'a list -> 'b list -> 'c list -> 'd list ->
+                   ('a * 'b * 'c * 'd) list
+    (** Like {!List.combine} but for 4-tuples.
+        All lists must be the same length. *)
+
     val assoc_lbl : ?cmp:('a -> 'a -> int) -> default:'b -> 'a -> ('a * 'b) list -> 'b
     (** Like {!assoc} but with a user-defined comparison function, and
         instead of raising [Not_found], it returns the [~default] value. *)
