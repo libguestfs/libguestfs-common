@@ -305,12 +305,18 @@ if not exist \"%%scripts_done%%\" (
 :: Pick the next script to run.
 for %%%%f in (\"%%scripts%%\"\\*.bat) do (
   echo running \"%%%%f\"
-  move \"%%%%f\" \"%%scripts_done%%\"
-  pushd \"%%scripts_done%%\"
+  pushd \"%%scripts%%\"
   call \"%%%%~nf\"
   set elvl=!errorlevel!
   echo .... exit code !elvl!
   popd
+
+  if !elvl! NEQ 249 (
+    echo Script succeeded, moving to scripts-done
+    move \"%%%%f\" \"%%scripts_done%%\"
+  ) else (
+    echo Script failed, will retry on next boot
+  )
 
   :: Reboot the computer.  This is necessary to free any locked
   :: files which may prevent later scripts from running.
