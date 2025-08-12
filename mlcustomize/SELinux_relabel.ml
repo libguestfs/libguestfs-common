@@ -1,5 +1,5 @@
 (* virt-customize
- * Copyright (C) 2016 Red Hat Inc.
+ * Copyright (C) 2016-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,4 +114,4 @@ and use_setfiles g =
   );
 
   (* Relabel everything. *)
-  g#selinux_relabel ~force:true specfile "/"
+  g#setfiles ~force:true specfile ["/"]
