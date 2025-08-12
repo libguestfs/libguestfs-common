@@ -113,5 +113,13 @@ and use_setfiles g =
     g#copy_attributes ~all:true old_specfile specfile
   );
 
+  (* Get the list of mountpoints, since setfiles does not cross
+   * filesystems (RHEL-108174).
+   *)
+  let mps = g#mountpoints () |>
+            List.map snd |>       (* the list of directories *)
+            List.sort compare |>  (* sort them for consistency *)
+            Array.of_list in
+
   (* Relabel everything. *)
-  g#setfiles ~force:true specfile ["/"]
+  g#setfiles ~force:true specfile mps
