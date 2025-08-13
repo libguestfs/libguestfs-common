@@ -1,5 +1,5 @@
 (* virt-customize
- * Copyright (C) 2016 Red Hat Inc.
+ * Copyright (C) 2016-2025 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,10 @@ open Common_gettext.Gettext
 open Printf
 
 module G = Guestfs
+
+(* XXX A lot of this code could usefully be moved into
+ * [libguestfs.git/daemon/selinux.ml].
+ *)
 
 let rec relabel (g : G.guestfs) =
   (* Is the guest using SELinux?  (Otherwise this is a no-op). *)
@@ -109,5 +113,13 @@ and use_setfiles g =
     g#copy_attributes ~all:true old_specfile specfile
   );
 
+  (* Get the list of mountpoints, since setfiles does not cross
+   * filesystems (RHEL-108174).
+   *)
+  let mps = g#mountpoints () |>
+            List.map snd |>       (* the list of directories *)
+            List.sort compare |>  (* sort them for consistency *)
+            Array.of_list in
+
   (* Relabel everything. *)
-  g#selinux_relabel ~force:true specfile "/"
+  g#setfiles ~force:true specfile mps
