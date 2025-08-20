@@ -35,8 +35,7 @@ let sanitize_name =
 module Linux = struct
   let firstboot_dir = "/usr/lib/virt-sysprep"
 
-  let firstboot_sh = sprintf "\
-#!/bin/sh -
+  let firstboot_sh = sprintf {|#!/bin/sh -
 
 ### BEGIN INIT INFO
 # Provides:          virt-sysprep
@@ -57,14 +56,14 @@ d=%s/scripts
 d_done=%s/scripts-done
 logfile=~root/virt-sysprep-firstboot.log
 
-echo \"$0\" \"$@\" 2>&1 | tee -a $logfile
-echo \"Scripts dir: $d\" 2>&1 | tee -a $logfile
+echo "$0" "$@" 2>&1 | tee -a $logfile
+echo "Scripts dir: $d" 2>&1 | tee -a $logfile
 
-if test \"$1\" = \"start\"
+if test "$1" = "start"
 then
   mkdir -p $d_done
   for f in $d/* ; do
-    if test -x \"$f\"
+    if test -x "$f"
     then
       # move the script to the 'scripts-done' directory, so it is not
       # executed again at the next boot
@@ -75,7 +74,7 @@ then
   done
   rm -f $d_done/*
 fi
-" firstboot_dir firstboot_dir
+|} firstboot_dir firstboot_dir
 
   let systemd_target = "multi-user.target"
 
@@ -282,38 +281,37 @@ module Windows = struct
      * XXX It would be better to use powershell here.  For some ideas see
      * https://github.com/HCK-CI/HLK-Setup-Scripts/
      *)
-    let firstboot_script = sprintf "\
-@echo off
+    let firstboot_script = sprintf {|@echo off
 
 setlocal EnableDelayedExpansion
 set firstboot=%s
-set log=%%firstboot%%\\log.txt
+set log=%%firstboot%%\log.txt
 
-set scripts=%%firstboot%%\\scripts
-set scripts_done=%%firstboot%%\\scripts-done
+set scripts=%%firstboot%%\scripts
+set scripts_done=%%firstboot%%\scripts-done
 
-call :main >> \"%%log%%\" 2>&1
+call :main >> "%%log%%" 2>&1
 exit /b
 
 :main
 echo starting firstboot service
 
-if not exist \"%%scripts_done%%\" (
-  mkdir \"%%scripts_done%%\"
+if not exist "%%scripts_done%%" (
+  mkdir "%%scripts_done%%"
 )
 
 :: Pick the next script to run.
-for %%%%f in (\"%%scripts%%\"\\*.bat) do (
-  echo running \"%%%%f\"
-  pushd \"%%scripts%%\"
-  call \"%%%%~nf\"
+for %%%%f in ("%%scripts%%"\*.bat) do (
+  echo running "%%%%f"
+  pushd "%%scripts%%"
+  call "%%%%~nf"
   set elvl=!errorlevel!
   echo .... exit code !elvl!
   popd
 
   if !elvl! NEQ 249 (
     echo Script succeeded, moving to scripts-done
-    move \"%%%%f\" \"%%scripts_done%%\"
+    move "%%%%f" "%%scripts_done%%"
   ) else (
     echo Script failed, will retry on next boot
   )
@@ -329,8 +327,8 @@ for %%%%f in (\"%%scripts%%\"\\*.bat) do (
 
 :: Fallthrough here if there are no scripts.
 echo uninstalling firstboot service
-\"%%firstboot%%\\%s\" -s firstboot uninstall
-" firstboot_dir_win srvany in
+"%%firstboot%%\%s" -s firstboot uninstall
+|} firstboot_dir_win srvany in
 
     g#write (firstboot_dir // "firstboot.bat")
             (String.unix2dos firstboot_script);
