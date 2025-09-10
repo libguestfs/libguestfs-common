@@ -46,6 +46,7 @@ module List : sig
     val mem : 'a -> 'a list -> bool
     val memq : 'a -> 'a list -> bool
     val find : ('a -> bool) -> 'a list -> 'a
+    val find_opt : ('a -> bool) -> 'a list -> 'a option
     val filter : ('a -> bool) -> 'a list -> 'a list
     val find_all : ('a -> bool) -> 'a list -> 'a list
     val partition : ('a -> bool) -> 'a list -> 'a list * 'a list
