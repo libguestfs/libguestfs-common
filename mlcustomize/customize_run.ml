@@ -97,7 +97,7 @@ let run (g : G.guestfs) root (ops : ops) =
     ) in
 
   (* Store the passwords and set them all at the end. *)
-  let passwords = Hashtbl.create 13 in
+  let passwords = Hashtbl.create 16 in
   let set_password user pw =
     if Hashtbl.mem passwords user then
       error (f_"multiple --root-password/--password options set the \
