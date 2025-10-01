@@ -77,7 +77,7 @@ and op = [
       (* --run-command 'CMD+ARGS' *)
   | `Scrub of string
       (* --scrub FILE *)
-  | `SMAttach of Subscription_manager.sm_pool
+  | `SMAttach of string
       (* --sm-attach SELECTOR *)
   | `SMRegister
       (* --sm-register *)
@@ -115,7 +115,7 @@ and flags = {
       (* --no-selinux-relabel *)
   selinux_relabel_ignored : bool;
       (* --selinux-relabel *)
-  sm_credentials : Subscription_manager.sm_credentials option;
+  sm_credentials : string option;
       (* --sm-credentials SELECTOR *)
 }
 
