@@ -392,35 +392,6 @@ It cannot delete directories, only regular files.
 
 This is a compatibility option that does nothing.
 
-=item B<--sm-attach> SELECTOR
-
-Attach to a pool using C<subscription-manager>.
-
-See L<virt-builder(1)/SUBSCRIPTION-MANAGER> for the format of
-the C<SELECTOR> field.
-
-=item B<--sm-credentials> SELECTOR
-
-Set the credentials for C<subscription-manager>.
-
-See L<virt-builder(1)/SUBSCRIPTION-MANAGER> for the format of
-the C<SELECTOR> field.
-
-=item B<--sm-register>
-
-Register the guest using C<subscription-manager>.
-
-This requires credentials being set using I<--sm-credentials>.
-
-=item B<--sm-remove>
-
-Remove all the subscriptions from the guest using
-C<subscription-manager>.
-
-=item B<--sm-unregister>
-
-Unregister the guest using C<subscription-manager>.
-
 =item B<--ssh-inject> USER[:SELECTOR]
 
 Inject an ssh key so the given C<USER> will be able to log in over

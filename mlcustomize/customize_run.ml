@@ -279,43 +279,6 @@ let run (g : G.guestfs) root (ops : ops) =
       message (f_"Scrubbing: %s") path;
       g#scrub_file path
 
-    | `SMAttach pool ->
-      (match pool with
-      | Subscription_manager.PoolAuto ->
-        message (f_"Attaching to compatible subscriptions");
-        let cmd = "subscription-manager attach --auto" in
-        do_run ~display:cmd ~warn_failed_no_network:true cmd
-      | Subscription_manager.PoolId id ->
-        message (f_"Attaching to the pool %s") id;
-        let cmd = sprintf "subscription-manager attach --pool=%s" (quote id) in
-        do_run ~display:cmd ~warn_failed_no_network:true cmd
-      )
-
-    | `SMRegister ->
-      message (f_"Registering with subscription-manager");
-      let creds =
-        match ops.flags.sm_credentials with
-        | None ->
-          error (f_"subscription-manager credentials required for \
-                    --sm-register")
-        | Some c -> c in
-      let cmd = sprintf "subscription-manager register \
-                         --username=%s --password=%s"
-                  (quote creds.Subscription_manager.sm_username)
-                  (quote creds.Subscription_manager.sm_password) in
-      do_run ~display:"subscription-manager register"
-             ~warn_failed_no_network:true cmd
-
-    | `SMRemove ->
-      message (f_"Removing all the subscriptions");
-      let cmd = "subscription-manager remove --all" in
-      do_run ~display:cmd ~warn_failed_no_network:true cmd
-
-    | `SMUnregister ->
-      message (f_"Unregistering with subscription-manager");
-      let cmd = "subscription-manager unregister" in
-      do_run ~display:cmd ~warn_failed_no_network:true cmd
-
     | `SSHInject (user, selector) ->
       if unix_like (g#inspect_get_type root) then (
         message (f_"SSH key inject: %s") user;
