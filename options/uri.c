@@ -195,7 +195,7 @@ parse (const char *arg, char **path_ret, char **query_ret, char **protocol_ret,
    * exportname expected will be "pool/disk".  Here, uri->path will be
    * "/pool/disk" so we have to knock off the leading '/' character.
    */
-  char *path = uri->path;
+  path = uri->path;
   if (path && path[0] == '/' &&
       (STREQ (uri->scheme, "gluster") ||
        STREQ (uri->scheme, "iscsi") ||
