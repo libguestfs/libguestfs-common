@@ -295,6 +295,7 @@ exit /b
 
 :main
 echo starting firstboot service
+echo effective user: %USERNAME% domain: %USERDOMAIN%
 
 if not exist "%%scripts_done%%" (
   mkdir "%%scripts_done%%"
