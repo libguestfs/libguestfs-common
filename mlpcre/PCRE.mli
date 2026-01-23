@@ -52,11 +52,12 @@ exception Error of string * int
 type regexp
 (** The type of a compiled regular expression. *)
 
-val compile : ?caseless:bool -> ?dotall:bool -> ?extended:bool -> ?multiline:bool -> string -> regexp
+val compile : ?anchored:bool -> ?caseless:bool -> ?dotall:bool ->
+              ?extended:bool -> ?multiline:bool -> string -> regexp
 (** Compile a regular expression.  This can raise {!Error}.
 
-    The flags [?caseless], [?dotall], [?extended], [?multiline]
-    correspond to the [pcre_compile] flags [PCRE_CASELESS] etc.
+    The flags [?anchored], [?caseless], [?dotall], [?extended], [?multiline]
+    correspond to the [pcre_compile] flags [PCRE_ANCHORED] etc.
     See pcre2api(3) for details of what they do.
     All flags default to false. *)
 

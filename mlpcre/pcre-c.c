@@ -154,11 +154,12 @@ Optint_val (value intv, int defval)
 }
 
 value
-guestfs_int_pcre_compile (value caselessv, value dotallv,
-                          value extendedv, value multilinev,
+guestfs_int_pcre_compile (value anchoredv, value caselessv,
+                          value dotallv,  value extendedv,
+                          value multilinev,
                           value pattv)
 {
-  CAMLparam4 (caselessv, dotallv, extendedv, multilinev);
+  CAMLparam5 (anchoredv, caselessv, dotallv, extendedv, multilinev);
   CAMLxparam1 (pattv);
   const char *patt;
   int options = 0;
@@ -167,6 +168,8 @@ guestfs_int_pcre_compile (value caselessv, value dotallv,
   PCRE2_SIZE errnum;
 
   /* Flag parameters are all ‘bool option’, defaulting to false. */
+  if (is_Some_true (anchoredv))
+    options |= PCRE2_ANCHORED;
   if (is_Some_true (caselessv))
     options |= PCRE2_CASELESS;
   if (is_Some_true (dotallv))
@@ -184,6 +187,14 @@ guestfs_int_pcre_compile (value caselessv, value dotallv,
     raise_pcre_error (errcode);
 
   CAMLreturn (Val_regexp (re));
+}
+
+value
+guestfs_int_pcre_compile_byte (value *argv, int argn)
+{
+  assert (argn == 6);
+  return guestfs_int_pcre_compile (argv[0], argv[1], argv[2],
+                                   argv[3], argv[4], argv[5]);
 }
 
 value
