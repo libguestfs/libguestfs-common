@@ -51,6 +51,7 @@ module List : sig
     val find_all : ('a -> bool) -> 'a list -> 'a list
     val partition : ('a -> bool) -> 'a list -> 'a list * 'a list
     val assoc : 'a -> ('a * 'b) list -> 'b
+    val assoc_opt : 'a -> ('a * 'b) list -> 'b option
     val assq : 'a -> ('a * 'b) list -> 'b
     val mem_assoc : 'a -> ('a * 'b) list -> bool
     val mem_assq : 'a -> ('a * 'b) list -> bool
