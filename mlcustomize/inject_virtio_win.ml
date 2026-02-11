@@ -254,13 +254,10 @@ and inject_qemu_ga ({ g; root } as t) =
 
 and inject_blnsvr ({ g; root } as t) =
   (* Copy the files to the guest. *)
-  let dir, dir_win = Firstboot.firstboot_dir g root in
-  let dir_win = Option.value dir_win ~default:dir in
-  let tempdir = sprintf "%s/Temp" dir in
-  let tempdir_win = sprintf "%s\\Temp" dir_win in
-  g#mkdir_p tempdir;
+  let driverdir = sprintf "%s/Drivers/VirtIO" t.i_windows_systemroot in
+  g#mkdir_p driverdir;
 
-  let files = copy_blnsvr t tempdir in
+  let files = copy_blnsvr t driverdir in
   match files with
   | [] -> false (* Didn't find or install anything. *)
 
@@ -268,7 +265,7 @@ and inject_blnsvr ({ g; root } as t) =
    * drivers/by-driver).  Pick the first.
    *)
   | blnsvr :: _ ->
-     configure_blnsvr t tempdir_win blnsvr;
+     configure_blnsvr t driverdir blnsvr;
      true
 
 and add_guestor_to_registry t ((g, root) as reg) drv_name drv_pciid =
@@ -570,9 +567,9 @@ and configure_qemu_ga t tempdir_win files =
 
   Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga" !script
 
-and configure_blnsvr t tempdir_win blnsvr =
+and configure_blnsvr t driverdir blnsvr =
   let cmd = sprintf "\
                      @echo off\n\
                      echo Installing %s\n\
-                     \"%s\\%s\" -i\n" blnsvr tempdir_win blnsvr in
+                     \"%s\\%s\" -i\n" blnsvr driverdir blnsvr in
   Firstboot.add_firstboot_script t.g t.root "install-blnsvr" cmd
