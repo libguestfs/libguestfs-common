@@ -433,7 +433,12 @@ mllib_xml_parse_uri (value strv)
   CAMLlocal3 (rv, sv, ov);
   xmlURIPtr uri;
 
-  uri = xmlParseURI (String_val (strv));
+  /* Use xmlParseURIRaw with raw=1 to preserve percent-encoding in URI
+   * components.  xmlParseURI decodes percent-encoded characters (e.g.
+   * %2f → '/'), which loses the distinction between encoded and literal
+   * characters in the path.
+   */
+  uri = xmlParseURIRaw (String_val (strv), 1);
   if (uri == NULL)
     caml_invalid_argument ("parse_uri: unable to parse URI");
 
