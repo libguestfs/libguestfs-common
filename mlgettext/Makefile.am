@@ -71,11 +71,11 @@ endif
 libmlgettext_a_DEPENDENCIES = $(OBJECTS)
 
 mlgettext.cma: $(BOBJECTS)
-	$(OCAMLFIND) ocamlc $(OCAMLPACKAGES) -a $^ -o $@
+	$(AM_V_GEN) $(OCAMLFIND) ocamlc $(OCAMLPACKAGES) -a $^ -o $@
 
 if HAVE_OCAMLOPT
 mlgettext.cmxa: $(XOBJECTS)
-	$(OCAMLFIND) ocamlopt $(OCAMLPACKAGES) -a $^ -o $@
+	$(AM_V_GEN) $(OCAMLFIND) ocamlopt $(OCAMLPACKAGES) -a $^ -o $@
 endif
 
 # Dependencies.

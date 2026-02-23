@@ -86,7 +86,7 @@ endif
 libmlcutils_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLCUTILS_CMA): $(OBJECTS) libmlcutils.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmlcutils_a_OBJECTS) \
 	    -cclib -lutils \
 	    -o mlcutils

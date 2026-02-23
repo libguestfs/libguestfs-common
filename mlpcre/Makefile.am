@@ -83,7 +83,7 @@ endif
 libmlpcre_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLPCRE_CMA): $(OBJECTS) libmlpcre.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmlpcre_a_OBJECTS) -cclib -lpcre2-8 -o mlpcre
 
 # Tests.

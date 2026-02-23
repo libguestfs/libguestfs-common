@@ -142,7 +142,7 @@ endif
 libmlcustomize_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLCUSTOMIZE_CMA): $(OBJECTS) libmlcustomize.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmlcustomize_a_OBJECTS) -o mlcustomize
 
 # Tests.

@@ -94,7 +94,7 @@ endif
 libmldrivers_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLDRIVERS_CMA): $(OBJECTS) libmldrivers.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmldrivers_a_OBJECTS) -o mldrivers
 
 # OCaml dependencies.
