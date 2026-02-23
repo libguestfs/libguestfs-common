@@ -161,7 +161,7 @@ endif
 libmltools_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLTOOLS_CMA): $(OBJECTS) libmltools.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmltools_a_OBJECTS) -o mltools
 
 # Tests.

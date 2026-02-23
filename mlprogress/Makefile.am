@@ -83,7 +83,7 @@ endif
 libmlprogress_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLPROGRESS_CMA): $(OBJECTS) libmlprogress.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmlprogress_a_OBJECTS) \
 	    -cclib -lprogress \
 	    -o mlprogress

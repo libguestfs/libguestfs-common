@@ -88,7 +88,7 @@ endif
 libmlvisit_a_DEPENDENCIES = $(OBJECTS)
 
 $(MLVISIT_CMA): $(OBJECTS) libmlvisit.a
-	$(OCAMLFIND) mklib $(OCAMLPACKAGES) \
+	$(AM_V_GEN) $(OCAMLFIND) mklib $(OCAMLPACKAGES) \
 	    $(OBJECTS) $(libmlvisit_a_OBJECTS) -cclib -lvisit -o mlvisit
 
 # Tests.

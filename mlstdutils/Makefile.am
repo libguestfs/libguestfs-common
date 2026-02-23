@@ -84,11 +84,11 @@ endif
 libmlstdutils_a_DEPENDENCIES = $(OBJECTS)
 
 mlstdutils.cma: $(BOBJECTS)
-	$(OCAMLFIND) ocamlc $(OCAMLPACKAGES) -a $^ -o $@
+	$(AM_V_GEN) $(OCAMLFIND) ocamlc $(OCAMLPACKAGES) -a $^ -o $@
 
 if HAVE_OCAMLOPT
 mlstdutils.cmxa: $(XOBJECTS)
-	$(OCAMLFIND) ocamlopt $(OCAMLPACKAGES) -a $^ -o $@
+	$(AM_V_GEN) $(OCAMLFIND) ocamlopt $(OCAMLPACKAGES) -a $^ -o $@
 endif
 
 # Tests.
