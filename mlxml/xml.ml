@@ -162,3 +162,4 @@ type uri = {
 }
 
 external parse_uri : string -> uri = "mllib_xml_parse_uri"
+external parse_uri_raw : string -> bool -> uri = "mllib_xml_parse_uri_raw"

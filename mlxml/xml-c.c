@@ -426,16 +426,12 @@ mllib_xml_doc_get_root_element (value docv)
   }
 }
 
-value
-mllib_xml_parse_uri (value strv)
+/* Convert an xmlURIPtr to an OCaml uri record (9-field tuple). */
+static value
+uri_to_ocaml_tuple (xmlURIPtr uri)
 {
-  CAMLparam1 (strv);
+  CAMLparam0 ();
   CAMLlocal3 (rv, sv, ov);
-  xmlURIPtr uri;
-
-  uri = xmlParseURI (String_val (strv));
-  if (uri == NULL)
-    caml_invalid_argument ("parse_uri: unable to parse URI");
 
   rv = caml_alloc_tuple (9);
 
@@ -514,6 +510,44 @@ mllib_xml_parse_uri (value strv)
   else ov = Val_int (0);
   Store_field (rv, 8, ov);
 
+  CAMLreturn (rv);
+}
+
+value
+mllib_xml_parse_uri (value strv)
+{
+  CAMLparam1 (strv);
+  xmlURIPtr uri;
+  value rv;
+
+  uri = xmlParseURI (String_val (strv));
+  if (uri == NULL)
+    caml_invalid_argument ("parse_uri: unable to parse URI");
+
+  rv = uri_to_ocaml_tuple (uri);
+  xmlFreeURI (uri);
+
+  CAMLreturn (rv);
+}
+
+/* Like parse_uri above, but uses xmlParseURIRaw to optionally
+ * preserve percent-encoding in URI components such as authority,
+ * server, path and query string.  xmlParseURI decodes percent-encoded
+ * characters (e.g. %2f becomes '/'), which loses the distinction
+ * between encoded and literal characters.
+ */
+value
+mllib_xml_parse_uri_raw (value strv, value rawv)
+{
+  CAMLparam2 (strv, rawv);
+  xmlURIPtr uri;
+  value rv;
+
+  uri = xmlParseURIRaw (String_val (strv), Bool_val (rawv));
+  if (uri == NULL)
+    caml_invalid_argument ("parse_uri_raw: unable to parse URI");
+
+  rv = uri_to_ocaml_tuple (uri);
   xmlFreeURI (uri);
 
   CAMLreturn (rv);

@@ -115,3 +115,11 @@ val parse_uri : string -> uri
     Note this is different from the {!URI} module which is specialized
     for parsing the [-a] parameter on the command line.  This function
     exposes the full [xmlParseURI] interface. *)
+
+val parse_uri_raw : string -> bool -> uri
+(** http://xmlsoft.org/html/libxml-uri.html#xmlParseURIRaw
+
+    Like {!parse_uri} but uses [xmlParseURIRaw].  When [raw] is [true],
+    percent-encoding in URI components such as authority, server, path
+    and query string is preserved.  When [false], percent-encoded
+    characters are decoded (same as {!parse_uri}). *)
