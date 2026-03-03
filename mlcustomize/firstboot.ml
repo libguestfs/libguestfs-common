@@ -284,11 +284,11 @@ module Windows = struct
     let firstboot_script = sprintf {|@echo off
 
 setlocal EnableDelayedExpansion
-set firstboot=%s
-set log=%%firstboot%%\log.txt
+set "firstboot=%s"
+set "log=%%firstboot%%\log.txt"
 
-set scripts=%%firstboot%%\scripts
-set scripts_done=%%firstboot%%\scripts-done
+set "scripts=%%firstboot%%\scripts"
+set "scripts_done=%%firstboot%%\scripts-done"
 
 call :main >> "%%log%%" 2>&1
 exit /b
