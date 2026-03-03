@@ -271,6 +271,9 @@ module Windows = struct
     (* Create a directory for firstboot scripts in the guest. *)
     g#mkdir_p (firstboot_dir // "scripts");
 
+    (* Remove the sentinel file if it exists from a previous run. *)
+    g#rm_f (firstboot_dir // "complete");
+
     (* Copy pvvxsvc or rhsrvany to the guest. *)
     g#upload (virt_tools_data_dir () // srvany) (firstboot_dir // srvany);
 
@@ -327,6 +330,10 @@ for %%%%f in ("%%scripts%%"\*.bat) do (
 )
 
 :: Fallthrough here if there are no scripts.
+
+:: Touch a sentinel file to say we have finished.
+type nul > "%%firstboot%%\complete"
+
 echo uninstalling firstboot service
 "%%firstboot%%\%s" -s firstboot uninstall
 |} firstboot_dir_win srvany in
