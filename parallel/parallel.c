@@ -221,6 +221,7 @@ worker_thread (void *thread_data_vp)
     g = guestfs_create ();
     if (g == NULL) {
       perror ("guestfs_create");
+      fclose (fp);
       thread_data->r = -1;
       return &thread_data->r;
     }
