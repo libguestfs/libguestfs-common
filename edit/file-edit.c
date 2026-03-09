@@ -155,7 +155,7 @@ edit_file_perl (guestfs_h *g, const char *filename, const char *perl_expr,
 {
   CLEANUP_UNLINK_FREE char *tmpfilename = NULL;
   CLEANUP_FREE char *cmd = NULL;
-  CLEANUP_FREE char *outfile = NULL;
+  CLEANUP_UNLINK_FREE char *outfile = NULL;
   int r;
 
   /* Download the file and write it to a temporary. */
