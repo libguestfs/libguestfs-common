@@ -119,7 +119,7 @@ edit_file_editor (guestfs_h *g, const char *filename, const char *editor,
     fprintf (stderr, "%s\n", cmd);
 
   r = system (cmd);
-  if (r == -1 || WEXITSTATUS (r) != 0) {
+  if (r == -1 || !WIFEXITED (r) || WEXITSTATUS (r) != 0) {
     perror (cmd);
     return -1;
   }
@@ -194,7 +194,7 @@ edit_file_perl (guestfs_h *g, const char *filename, const char *perl_expr,
     fprintf (stderr, "%s\n", cmd);
 
   r = system (cmd);
-  if (r == -1 || WEXITSTATUS (r) != 0)
+  if (r == -1 || !WIFEXITED (r) || WEXITSTATUS (r) != 0)
     return -1;
 
   if (rename (outfile, tmpfilename) == -1) {
