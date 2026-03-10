@@ -756,6 +756,11 @@ qemuopts_to_channel (struct qemuopts *qopts, FILE *fp)
   }
   fputc ('\n', fp);
 
+  if (ferror (fp)) {
+    errno = EIO;
+    return -1;
+  }
+
   return 0;
 }
 
@@ -1033,6 +1038,11 @@ qemuopts_to_config_channel (struct qemuopts *qopts, FILE *fp)
       }
     }
     fprintf (fp, "\n");
+  }
+
+  if (ferror (fp)) {
+    errno = EIO;
+    return -1;
   }
 
   return 0;
