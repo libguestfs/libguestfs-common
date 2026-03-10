@@ -101,6 +101,8 @@ guestfs_int_mlutils_full_path (value dirv, value namev)
     name = String_val (Field (namev, 0));
 
   ret = guestfs_int_full_path (String_val (dirv), name);
+  if (ret == NULL)
+    caml_raise_out_of_memory ();
   rv = caml_copy_string (ret);
   free (ret);
 
