@@ -349,7 +349,7 @@ guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
   struct statfs buf;
 
   if (statfs (String_val (pathv), &buf) == -1)
-    unix_error (errno, (char *) "statvfs", pathv);
+    return Val_bool (0);
 
   /* Some but not all of these are defined in <linux/magic.h>. */
 #ifndef CIFS_MAGIC_NUMBER
