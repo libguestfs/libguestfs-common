@@ -341,10 +341,12 @@ guestfs_int_mllib_statvfs_statvfs (value pathv)
   CAMLreturn (rv);
 }
 
-/* NB: This is a [@@noalloc] call. */
 value
 guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
 {
+  CAMLparam1 (pathv);
+  CAMLlocal1 (rv);
+
 #ifdef HAVE_STATFS
   struct statfs buf;
 
@@ -362,12 +364,14 @@ guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
 #define SMB_SUPER_MAGIC 0x517b
 #endif
 
-  return Val_bool ((unsigned int) buf.f_type == CIFS_MAGIC_NUMBER ||
-                   (unsigned int) buf.f_type == NFS_SUPER_MAGIC ||
-                   (unsigned int) buf.f_type == SMB_SUPER_MAGIC);
+  rv = Val_bool ((unsigned int) buf.f_type == CIFS_MAGIC_NUMBER ||
+                 (unsigned int) buf.f_type == NFS_SUPER_MAGIC ||
+                 (unsigned int) buf.f_type == SMB_SUPER_MAGIC);
 #else
-  return Val_bool (0);
+  rv = Val_bool (0);
 #endif
+
+  CAMLreturn (rv);
 }
 
 /* NB: This is a [@@noalloc] call. */
