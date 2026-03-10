@@ -68,7 +68,7 @@ guestfs_int_mlutils_shell_unquote (value strv)
 
   ret = guestfs_int_shell_unquote (String_val (strv));
   if (ret == NULL)
-    unix_error (errno, (char *) "guestfs_int_shell_unquote", Nothing);
+    caml_unix_error (errno, (char *) "guestfs_int_shell_unquote", Nothing);
 
   retv = caml_copy_string (ret);
   free (ret);
@@ -102,7 +102,7 @@ guestfs_int_mlutils_full_path (value dirv, value namev)
 
   ret = guestfs_int_full_path (String_val (dirv), name);
   if (ret == NULL)
-    unix_error (errno, (char *) "guestfs_int_full_path", dirv);
+    caml_unix_error (errno, (char *) "guestfs_int_full_path", dirv);
   rv = caml_copy_string (ret);
   free (ret);
 

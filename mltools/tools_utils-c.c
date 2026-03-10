@@ -126,10 +126,10 @@ guestfs_int_mllib_rfc3339_date_time_string (value unitv)
   size_t total = 0;
 
   if (clock_gettime (CLOCK_REALTIME, &ts) == -1)
-    unix_error (errno, (char *) "clock_gettime", Val_unit);
+    caml_unix_error (errno, (char *) "clock_gettime", Val_unit);
 
   if (localtime_r (&ts.tv_sec, &tm) == NULL)
-    unix_error (errno, (char *) "localtime_r", caml_copy_int64 (ts.tv_sec));
+    caml_unix_error (errno, (char *) "localtime_r", caml_copy_int64 (ts.tv_sec));
 
   /* Sadly strftime does not support nanoseconds, so what we do is:
    * - stringify everything before the nanoseconds
@@ -141,17 +141,17 @@ guestfs_int_mllib_rfc3339_date_time_string (value unitv)
 
   ret = strftime (buf, sizeof (buf), "%Y-%m-%dT%H:%M:%S.", &tm);
   if (ret == 0)
-    unix_error (errno, (char *) "strftime", Val_unit);
+    caml_unix_error (errno, (char *) "strftime", Val_unit);
   total += ret;
 
   ret = snprintf (buf + total, sizeof (buf) - total, "%09ld", ts.tv_nsec);
   if (ret == 0)
-    unix_error (errno, (char *) "sprintf", caml_copy_int64 (ts.tv_nsec));
+    caml_unix_error (errno, (char *) "sprintf", caml_copy_int64 (ts.tv_nsec));
   total += ret;
 
   ret = strftime (buf + total, sizeof (buf) - total, "%z", &tm);
   if (ret == 0)
-    unix_error (errno, (char *) "strftime", Val_unit);
+    caml_unix_error (errno, (char *) "strftime", Val_unit);
   total += ret;
 
   /* Move the timezone minutes one character to the right, moving the

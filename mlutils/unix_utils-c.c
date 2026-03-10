@@ -147,7 +147,7 @@ guestfs_int_mllib_fnmatch (value patternv, value strv, value flagsv)
     /* XXX The fnmatch specification doesn't mention what errors can
      * be returned by fnmatch.  Assume they are errnos for now.
      */
-    unix_error (errno, (char *) "fnmatch", patternv);
+    caml_unix_error (errno, (char *) "fnmatch", patternv);
   }
 }
 
@@ -180,16 +180,16 @@ guestfs_int_mllib_fsync_file (value filenamev)
   /* Note to do fsync you have to open for write. */
   fd = open (filename, O_RDWR);
   if (fd == -1)
-    unix_error (errno, (char *) "open", filenamev);
+    caml_unix_error (errno, (char *) "open", filenamev);
 
   if (fsync (fd) == -1) {
     err = errno;
     close (fd);
-    unix_error (err, (char *) "fsync", filenamev);
+    caml_unix_error (err, (char *) "fsync", filenamev);
   }
 
   if (close (fd) == -1)
-    unix_error (errno, (char *) "close", filenamev);
+    caml_unix_error (errno, (char *) "close", filenamev);
 
   CAMLreturn (Val_unit);
 }
@@ -203,11 +203,11 @@ guestfs_int_mllib_mkdtemp (value val_pattern)
 
   pattern = strdup (String_val (val_pattern));
   if (pattern == NULL)
-    unix_error (errno, (char *) "strdup", val_pattern);
+    caml_unix_error (errno, (char *) "strdup", val_pattern);
 
   ret = mkdtemp (pattern);
   if (ret == NULL)
-    unix_error (errno, (char *) "mkdtemp", val_pattern);
+    caml_unix_error (errno, (char *) "mkdtemp", val_pattern);
 
   rv = caml_copy_string (ret);
   free (pattern);
@@ -224,7 +224,7 @@ guestfs_int_mllib_realpath (value pathv)
 
   r = realpath (String_val (pathv), NULL);
   if (r == NULL)
-    unix_error (errno, (char *) "realpath", pathv);
+    caml_unix_error (errno, (char *) "realpath", pathv);
 
   rv = caml_copy_string (r);
   free (r);
@@ -252,7 +252,7 @@ guestfs_int_mllib_statvfs_statvfs (value pathv)
   struct statvfs buf;
 
   if (statvfs (String_val (pathv), &buf) == -1)
-    unix_error (errno, (char *) "statvfs", pathv);
+    caml_unix_error (errno, (char *) "statvfs", pathv);
 
   f_bsize = buf.f_bsize;
   f_frsize = buf.f_frsize;
@@ -276,7 +276,7 @@ guestfs_int_mllib_statvfs_statvfs (value pathv)
                            (PULARGE_INTEGER) &free_bytes_available,
                            (PULARGE_INTEGER) &total_number_of_bytes,
                            (PULARGE_INTEGER) &total_number_of_free_bytes))
-    unix_error (EIO, (char *) "statvfs: GetDiskFreeSpaceEx", pathv);
+    caml_unix_error (EIO, (char *) "statvfs: GetDiskFreeSpaceEx", pathv);
 
   /* XXX I couldn't determine how to get block size.  MSDN has a
    * unhelpful hard-coded list here:
@@ -349,7 +349,7 @@ guestfs_int_mllib_statvfs_is_network_filesystem (value pathv)
   struct statfs buf;
 
   if (statfs (String_val (pathv), &buf) == -1)
-    unix_error (errno, (char *) "statvfs", pathv);
+    caml_unix_error (errno, (char *) "statvfs", pathv);
 
   /* Some but not all of these are defined in <linux/magic.h>. */
 #ifndef CIFS_MAGIC_NUMBER

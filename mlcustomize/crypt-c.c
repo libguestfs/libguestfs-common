@@ -47,7 +47,7 @@ virt_customize_crypt (value keyv, value saltv)
    */
   r = crypt (String_val (keyv), String_val (saltv));
   if (r == NULL)
-    unix_error (errno, (char *) "crypt", Nothing);
+    caml_unix_error (errno, (char *) "crypt", Nothing);
   rv = caml_copy_string (r);
 
   CAMLreturn (rv);
