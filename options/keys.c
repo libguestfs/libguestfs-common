@@ -78,6 +78,7 @@ read_key (const char *param)
   len = getline (&ret, &allocsize, infp);
   if (len == -1) {
     perror ("getline");
+    free (ret);
     ret = NULL;
     goto error;
   }
