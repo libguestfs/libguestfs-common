@@ -206,8 +206,11 @@ guestfs_int_mllib_mkdtemp (value val_pattern)
     caml_unix_error (errno, (char *) "strdup", val_pattern);
 
   ret = mkdtemp (pattern);
-  if (ret == NULL)
-    caml_unix_error (errno, (char *) "mkdtemp", val_pattern);
+  if (ret == NULL) {
+    int err = errno;
+    free (pattern);
+    caml_unix_error (err, (char *) "mkdtemp", val_pattern);
+  }
 
   rv = caml_copy_string (ret);
   free (pattern);
