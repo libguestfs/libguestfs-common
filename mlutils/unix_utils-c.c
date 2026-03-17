@@ -65,6 +65,8 @@
 #include <caml/mlvalues.h>
 #include <caml/unixsupport.h>
 
+#include "guestfs-utils.h"
+
 extern value guestfs_int_mllib_dev_t_makedev (value majv, value minv);
 extern value guestfs_int_mllib_dev_t_major (value devv);
 extern value guestfs_int_mllib_dev_t_minor (value devv);
