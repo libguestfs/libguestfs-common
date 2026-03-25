@@ -468,8 +468,6 @@ and virtio_iso_path_matches_guest_os t path =
         ((=) "winxp")
       else if pathelem "2k3" then
         (function "win2k3" | "win2k3r2" -> true | _ -> false)
-      else if pathelem "vista" then
-        ((=) "winvista")
       else if pathelem "2k8" then
         ((=) "win2k8")
       else if pathelem "w7" then
