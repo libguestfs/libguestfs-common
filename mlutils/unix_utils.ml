@@ -89,3 +89,28 @@ module Sysconf = struct
   external nr_processors_online : unit -> int =
     "guestfs_int_mllib_sysconf_nr_processors_online" [@@noalloc]
 end
+
+module Cgroup = struct
+  let v2_cpus () =
+    let file = "/sys/fs/cgroup/cpu.max" in
+    if Sys.file_exists file then
+      try
+        let line = read_first_line_from_file file in
+        if String.starts_with ~prefix:"max" line then
+          None
+        else
+          let quota, period =
+            Scanf.sscanf line "%Ld %Ld" (fun q p -> (q, p)) in
+          if period > 0L then
+            Some (max 1 (Int64.to_int (Int64.div quota period)))
+          else None
+      with
+      | Scanf.Scan_failure _ | Failure _ | End_of_file -> None
+    else
+      None
+
+  let nr_cpus_available () =
+    match v2_cpus () with
+    | Some cpus -> cpus
+    | None -> Sysconf.nr_processors_online ()
+end
