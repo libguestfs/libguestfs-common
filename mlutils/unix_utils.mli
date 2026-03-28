@@ -130,3 +130,21 @@ module Sysconf : sig
       Note this never fails.  In case we cannot get the number of
       cores it returns 1. *)
 end
+
+module Cgroup : sig
+  (** Functions to read CPU limits from cgroup filesystems. *)
+
+  val v2_cpus : unit -> int option
+  (** [v2_cpus ()] reads the cgroup v2 CPU quota from
+      [/sys/fs/cgroup/cpu.max] and returns the number of CPUs
+      allocated (quota / period), or [None] if the file does not
+      exist, the quota is "max" (unlimited), or the file cannot
+      be parsed.  The kernel stores quota and period as [long]
+      values in microseconds, so we parse them as [Int64]. *)
+
+  val nr_cpus_available : unit -> int
+  (** [nr_cpus_available ()] returns the number of CPUs available,
+      taking into account cgroup v2 CPU limits.
+      Falls back to {!Sysconf.nr_processors_online} if no cgroup
+      limits are set. *)
+end
