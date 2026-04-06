@@ -207,7 +207,10 @@ let info fs =
 
 (* Print a debug message. *)
 let debug fs =
-  let display str = if verbose () then prerr_endline str in
+  let display str =
+    if verbose () then
+      prerr_endline (sprintf "%s: debug: %s" !prog str)
+  in
   ksprintf display fs
 
 (* Common function to create a new Guestfs handle, with common options
