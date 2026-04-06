@@ -445,7 +445,7 @@ let external_command_failed help cmd reason =
 (* Run an external command, slurp up the output as a list of lines. *)
 let external_command ?(echo_cmd = true) ?help cmd =
   if echo_cmd then
-    debug "%s" cmd;
+    debug "external_command: %s" cmd;
   let chan = Unix.open_process_in cmd in
   let lines = ref [] in
   (try while true do lines := input_line chan :: !lines done
@@ -520,7 +520,7 @@ and do_run ?(echo_cmd = true) ?help ?stdout_fd ?stderr_fd args =
     let outfd = get_fd Unix.stdout stdout_fd in
     let errfd = get_fd Unix.stderr stderr_fd in
     if echo_cmd then
-      debug "%s" (stringify_args args);
+      debug "run_command: %s" (stringify_args args);
     let pid = Unix.create_process app (Array.of_list args) Unix.stdin
                 outfd errfd in
     Either (pid, app, stdout_fd, stderr_fd)
@@ -547,7 +547,7 @@ and do_teardown help app outfd errfd exitstat =
 
 let shell_command ?(echo_cmd = true) cmd =
   if echo_cmd then
-    debug "%s" cmd;
+    debug "shell_command: %s" cmd;
   Sys.command cmd
 
 (* Run uuidgen to return a random UUID. *)
