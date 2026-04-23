@@ -18,6 +18,7 @@
 
 open Printf
 
+open Std_utils
 open Tools_utils
 
 module G = Guestfs
@@ -28,12 +29,22 @@ type i_firmware =
 
 let detect_firmware g =
   let parttype_is_gpt dev =
-    try g#part_get_parttype dev = "gpt"
-    with G.Error msg as exn ->
-         (* If it's _not_ "unrecognised disk label" then re-raise it. *)
-         if g#last_errno () <> G.Errno.errno_EINVAL then raise exn;
-         debug "%s (ignored)" msg;
-         false
+    try
+      g#part_get_parttype dev = "gpt"
+    with
+    | G.Error msg when String.find msg "CHS geometry" >= 0 ->
+       (* Parted has poor handling of "sun" partition types, always
+        * issuing a warning because the CHS doesn't match the physical
+        * geometry.  Ignore this as we don't care about it in this
+        * function (RHEL-165220).
+        *)
+       debug "%s (ignored)" msg;
+       false
+    | G.Error msg as exn ->
+       (* If it's _not_ "unrecognised disk label" then re-raise it. *)
+       if g#last_errno () <> G.Errno.errno_EINVAL then raise exn;
+       debug "%s (ignored)" msg;
+       false
   in
   let accumulate_partition (esp_parts, bboot) part =
     let dev = g#part_to_dev part in
