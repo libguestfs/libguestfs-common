@@ -110,27 +110,60 @@ read_key (const char *param)
   return ret;
 }
 
+/* Read a key from a file and base64 encode it, returning "base64:..." */
 static char *
-read_first_line_from_file (const char *filename)
+read_key_and_base64_encode (const char *filename)
 {
-  CLEANUP_FCLOSE FILE *fp = NULL;
-  char *ret = NULL;
-  size_t allocsize = 0;
-  ssize_t len;
+  CLEANUP_FREE char *inp = NULL;
+  char *out;
+  size_t inplen, outlen, i, j;
 
-  fp = fopen (filename, "r");
-  if (!fp)
-    error (EXIT_FAILURE, errno, "fopen: %s", filename);
+  if (read_whole_file (filename, &inp, &inplen) == -1)
+    error (EXIT_FAILURE, 0, "read_key_and_base64_encode: read_whole_file: %s",
+           filename);
 
-  len = getline (&ret, &allocsize, fp);
-  if (len == -1)
-    error (EXIT_FAILURE, errno, "getline: %s", filename);
+  /* From https://stackoverflow.com/a/6782480 */
+  static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                                  'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                                  'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                                  'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                                  'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                                  'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                                  'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                                  '4', '5', '6', '7', '8', '9', '+', '/'};
+  static int mod_table[] = {0, 2, 1};
 
-  /* Remove the terminating \n if there is one. */
-  if (len > 0 && ret[len-1] == '\n')
-    ret[len-1] = '\0';
+  outlen = 4 * ((inplen + 2) / 3);
+  out = malloc (outlen + 7 + 1);
+  if (!out)
+    error (EXIT_FAILURE, errno, "read_key_and_base64_encode: %s: malloc",
+           filename);
 
-  return ret;
+  /* Add prefix and NUL-termination, then adjust 'out' to make the
+   * rest of the code simpler.
+   */
+  memcpy (out, "base64:", 7);
+  out[7 + outlen] = '\0';
+  out += 7;
+
+  for (i = 0, j = 0; i < inplen;) {
+    uint32_t octet_a = i < inplen ? (unsigned char) inp[i++] : 0;
+    uint32_t octet_b = i < inplen ? (unsigned char) inp[i++] : 0;
+    uint32_t octet_c = i < inplen ? (unsigned char) inp[i++] : 0;
+
+    uint32_t triple = (octet_a << 0x10) + (octet_b << 0x08) + octet_c;
+
+    assert (j <= outlen-4);
+    out[j++] = encoding_table[(triple >> 3 * 6) & 0x3F];
+    out[j++] = encoding_table[(triple >> 2 * 6) & 0x3F];
+    out[j++] = encoding_table[(triple >> 1 * 6) & 0x3F];
+    out[j++] = encoding_table[(triple >> 0 * 6) & 0x3F];
+  }
+
+  for (i = 0; i < mod_table[inplen % 3]; i++)
+    out[outlen - 1 - i] = '=';
+
+  return out - 7 /* see above */;
 }
 
 /* Return the key(s) matching this particular device from the
@@ -181,7 +214,7 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
         ++match;
         break;
       case key_file:
-        s = read_first_line_from_file (key->file.name);
+        s = read_key_and_base64_encode (key->file.name);
         match->clevis = false;
         match->passphrase = s;
         ++match;
