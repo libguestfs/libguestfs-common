@@ -113,4 +113,8 @@ extern const char *guestfs_int_strerror (int errnum, char *buf, size_t buflen);
 /* environ.c */
 extern char **guestfs_int_copy_environ (char **env, ...);
 
+/* whole-file.c */
+extern int read_whole_file (const char *filename,
+                            char **data_r, size_t *size_r);
+
 #endif /* GUESTFS_UTILS_H_ */
