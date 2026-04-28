@@ -174,9 +174,8 @@ get_keys (struct key_store *ks, const char *device, const char *uuid,
 
       switch (key->type) {
       case key_string:
-        s = strdup (key->string.s);
-        if (!s)
-          error (EXIT_FAILURE, errno, "strdup");
+        if (asprintf (&s, "text:%s", key->string.s) == -1)
+          error (EXIT_FAILURE, errno, "asprintf");
         match->clevis = false;
         match->passphrase = s;
         ++match;
