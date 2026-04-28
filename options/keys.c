@@ -37,17 +37,23 @@
  * Read a passphrase ('Key') from F</dev/tty> with echo off.
  *
  * The caller (F<fish/cmds.c>) will call free on the string
- * afterwards.  Based on the code in cryptsetup file F<lib/utils.c>.
+ * afterwards.
+ *
+ * The entered string is prefixed with "text:..." to avoid ambiguity
+ * (with libguestfs >= 1.60).  Base64 encoding cannot be used here.
+ *
+ * Based on the code in cryptsetup file F<lib/utils.c>.
  */
 char *
 read_key (const char *param)
 {
   FILE *infp, *outfp;
   struct termios orig, temp;
+  CLEANUP_FREE char *key = NULL;
+  size_t keysize = 0;
   char *ret = NULL;
   int tty;
   int tcset = 0;
-  size_t allocsize = 0;
   ssize_t len;
 
   /* Read and write to /dev/tty if available. */
@@ -75,17 +81,21 @@ read_key (const char *param)
     }
   }
 
-  len = getline (&ret, &allocsize, infp);
+  len = getline (&key, &keysize, infp);
   if (len == -1) {
     perror ("getline");
-    free (ret);
-    ret = NULL;
     goto error;
   }
 
   /* Remove the terminating \n if there is one. */
-  if (len > 0 && ret[len-1] == '\n')
-    ret[len-1] = '\0';
+  if (len > 0 && key[len-1] == '\n')
+    key[len-1] = '\0';
+
+  /* Prefix with "text:". */
+  if (asprintf (&ret, "text:%s", key) == -1) {
+    perror ("asprintf");
+    goto error;
+  }
 
  error:
   /* Restore echo, close file descriptor. */
