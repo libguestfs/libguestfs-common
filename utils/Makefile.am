@@ -30,6 +30,7 @@ libutils_la_SOURCES = \
 	libxml2-writer-macros.h \
 	pcre2-cleanups.c \
 	stringlists-utils.c \
+	whole-file.c \
 	utils.c
 libutils_la_CPPFLAGS = \
 	-DGUESTFS_NO_DEPRECATED=1 \
