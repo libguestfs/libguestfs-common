@@ -320,13 +320,18 @@ for %%%%f in ("%%scripts%%"\*.bat) do (
     echo Script failed, will retry on next boot
   )
 
-  :: Reboot the computer.  This is necessary to free any locked
-  :: files which may prevent later scripts from running.
-  shutdown /r /t 0 /y
+  :: Reboot the computer only if exit code indicates.
+  :: Exit code 250 means do not reboot, otherwise reboot
+  :: Reboot is necessary to free any locked files which
+  :: may prevent later scripts from running.
+  if !elvl! NEQ 250 (
+    shutdown /r /t 0 /y
 
-  :: Exit the script (in case shutdown returns before rebooting).
-  :: On next boot, the whole firstboot service will be called again.
-  exit /b
+    :: Exit the script (in case shutdown returns before rebooting).
+    :: On next boot, the whole firstboot service will be called again.
+
+    exit /b
+  )
 )
 
 :: Fallthrough here if there are no scripts.
