@@ -252,13 +252,13 @@ let rec argspec ?(v2v = false) () =
       Getopt.String (s_"SCRIPT", fun s -> List.push_front (`FirstbootScript s) ops),
       s_"Run script at first guest boot"
     ),
-    Some "SCRIPT", "Install C<SCRIPT> inside the guest, so that when the guest first boots\nup, the script runs (as root, late in the boot process).\n\nThe script is automatically chmod +x after installation in the guest.\n\nThe alternative version I<--firstboot-command> is the same, but it\nconveniently wraps the command up in a single line script for you.\n\nYou can have multiple I<--firstboot> options.  They run in the same\norder that they appear on the command line.\n\nPlease take a look at L<virt-builder(1)/FIRST BOOT SCRIPTS> for more\ninformation and caveats about the first boot scripts.\n\nSee also I<--run>.", false;
+    Some "SCRIPT", "Install C<SCRIPT> inside the guest, so that when the guest first boots\nup, the script runs (as root, late in the boot process).\n\nThe script is automatically chmod +x after installation in the guest.\n\nThe alternative version I<--firstboot-command> is the same, but it\nconveniently wraps the command up in a single line script for you.\n\nYou can have multiple I<--firstboot> options.  They run in the same\norder that they appear on the command line.\n\nSee also: L<virt-customize(1)/FIRSTBOOT>, I<--run>.", false;
     (
       [ L"firstboot-command" ],
       Getopt.String (s_"'CMD+ARGS'", fun s -> List.push_front (`FirstbootCommand s) ops),
       s_"Run command at first guest boot"
     ),
-    Some "'CMD+ARGS'", "Run command (and arguments) inside the guest when the guest first\nboots up (as root, late in the boot process).\n\nYou can have multiple I<--firstboot> options.  They run in the same\norder that they appear on the command line.\n\nPlease take a look at L<virt-builder(1)/FIRST BOOT SCRIPTS> for more\ninformation and caveats about the first boot scripts.\n\nSee also I<--run>.", false;
+    Some "'CMD+ARGS'", "Run command (and arguments) inside the guest when the guest first\nboots up (as root, late in the boot process).\n\nYou can have multiple I<--firstboot> options.  They run in the same\norder that they appear on the command line.\n\nSee also: L<virt-customize(1)/FIRSTBOOT>, I<--run>.", false;
     (
       [ L"firstboot-install" ],
       Getopt.String (
