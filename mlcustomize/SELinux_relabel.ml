@@ -122,4 +122,4 @@ and use_setfiles g =
             Array.of_list in
 
   (* Relabel everything. *)
-  g#setfiles ~force:true specfile mps
+  g#setfiles specfile mps
