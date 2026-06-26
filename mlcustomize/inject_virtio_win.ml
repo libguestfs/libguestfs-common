@@ -40,11 +40,19 @@ type t = {
   i_windows_systemroot : string;
   (** Inspection data needed by this module. *)
 
-  virtio_win : string;
-  (** Path to the virtio-win ISO or directory. *)
+  virtio_win : virtio_win_t;
+  (** Source of virtio-win drivers: an ISO file or a directory. *)
 
   mutable block_driver_priority : string list
   (** List of block drivers *)
+}
+and virtio_win_t = Virtio_win_iso of iso_t | Virtio_win_dir of dir_t
+and iso_t = {
+  iso_path : string;
+  g2_lazy : Guestfs.guestfs Lazy.t;
+}
+and dir_t = {
+  dir_path : string;
 }
 
 type block_type = Virtio_blk | Virtio_SCSI | IDE
@@ -62,10 +70,30 @@ type virtio_win_installed = {
   virtio_1_0 : bool;
 }
 
+let virtio_win_path = function
+  | Virtio_win_iso iso -> iso.iso_path
+  | Virtio_win_dir dir -> dir.dir_path
+
+let make_virtio_win path =
+  if is_directory path then
+    Virtio_win_dir { dir_path = path }
+  else
+    let g2_lazy = lazy (
+      try
+        let g2 = open_guestfs ~identifier:"virtio_win" () in
+        g2#add_drive_opts path ~readonly:true;
+        g2#launch ();
+        g2#mount_ro "/dev/sda" "/";
+        g2
+      with Guestfs.Error msg ->
+        error (f_"%s: cannot open virtio-win ISO file: %s") path msg
+    ) in
+    Virtio_win_iso { iso_path = path; g2_lazy }
+
 let rec from_environment g root datadir =
   let t = get_inspection g root in
 
-  let virtio_win =
+  let path =
     try Sys.getenv "VIRTIO_WIN"
     with Not_found ->
       try Sys.getenv "VIRTIO_WIN_DIR" (* old name for VIRTIO_WIN *)
@@ -74,11 +102,11 @@ let rec from_environment g root datadir =
         (if Sys.file_exists iso then iso
          else datadir // "virtio-win") in
 
-  { t with virtio_win }
+  { t with virtio_win = make_virtio_win path }
 
 and from_path g root path =
   let t = get_inspection g root in
-  { t with virtio_win = path }
+  { t with virtio_win = make_virtio_win path }
 
 and get_inspection g root =
   (* Fail hard if inspection hasn't been done or it's not a Windows
@@ -99,7 +127,7 @@ and get_inspection g root =
   { g; root;
     i_arch; i_major_version; i_minor_version; i_osinfo;
     i_product_variant; i_windows_current_control_set; i_windows_systemroot;
-    virtio_win = "";
+    virtio_win = Virtio_win_dir { dir_path = "" };
     block_driver_priority = ["virtio_blk"; "vrtioblk"; "viostor"] }
 
 let get_block_driver_priority t   = t.block_driver_priority
@@ -143,7 +171,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
   if not (copy_drivers t driverdir) then (
       warning (f_"there are no virtio drivers available for this version of Windows (%d.%d %s %s %s).  virt-v2v looks for drivers in %s\n\nThe guest will be configured to use slower emulated devices.")
               t.i_major_version t.i_minor_version t.i_arch
-              t.i_product_variant t.i_osinfo t.virtio_win;
+              t.i_product_variant t.i_osinfo (virtio_win_path t.virtio_win);
       { block_driver = IDE; net_driver = RTL8139;
         virtio_rng = false; virtio_balloon = false;
         isa_pvpanic = false; virtio_socket = false;
@@ -165,7 +193,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       | None ->
         warning (f_"there is no virtio block device driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
                 t.i_major_version t.i_minor_version
-                t.i_arch t.virtio_win;
+                t.i_arch (virtio_win_path t.virtio_win);
         IDE
 
       | Some driver_name ->
@@ -196,7 +224,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       if not has_netkvm then (
         warning (f_"there is no virtio network driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
                 t.i_major_version t.i_minor_version
-                t.i_arch t.virtio_win;
+                t.i_arch (virtio_win_path t.virtio_win);
         RTL8139
       )
       else
@@ -364,19 +392,20 @@ and copy_blnsvr t tempdir =
  *)
 and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
   let ret = ref [] in
-  if is_directory t.virtio_win then (
+  (match t.virtio_win with
+  | Virtio_win_dir { dir_path } ->
     debug "windows: copy_from_virtio_win: guest tools source directory %s"
-      t.virtio_win;
+      dir_path;
 
-    let dir = t.virtio_win // srcdir in
-    if not (is_directory dir) then missing ()
+    let srcpath = dir_path // srcdir in
+    if not (is_directory srcpath) then missing ()
     else (
-      let cmd = sprintf "cd %s && find -L -type f" (quote dir) in
+      let cmd = sprintf "cd %s && find -L -type f" (quote srcpath) in
       let paths = external_command cmd in
       List.iter (
         fun path ->
           if filter path then (
-            let source = dir // path in
+            let source = srcpath // path in
             let target_name = String.lowercase_ascii (Filename.basename path) in
             let target = destdir // target_name in
             debug "windows: copying guest tools bits: 'host:%s' -> '%s'"
@@ -387,23 +416,12 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
           )
       ) paths
     )
-  )
-  else if is_regular_file t.virtio_win || is_block_device t.virtio_win then (
-    debug "windows: copy_from_virtio_win: guest tools source ISO %s"
-      t.virtio_win;
 
-    let g2 =
-      try
-        let g2 = open_guestfs ~identifier:"virtio_win" () in
-        g2#add_drive_opts t.virtio_win ~readonly:true;
-        g2#launch ();
-        g2
-      with Guestfs.Error msg ->
-        error (f_"%s: cannot open virtio-win ISO file: %s") t.virtio_win msg in
-    (* Note we are mounting this as root on the *second*
-     * handle, not the main handle containing the guest.
-     *)
-    g2#mount_ro "/dev/sda" "/";
+  | Virtio_win_iso { iso_path; g2_lazy } ->
+    debug "windows: copy_from_virtio_win: guest tools source ISO %s"
+      iso_path;
+
+    let g2 = Lazy.force g2_lazy in
     let srcdir = "/" ^ srcdir in
     if not (g2#is_dir srcdir) then missing ()
     else (
@@ -415,14 +433,13 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
             let target_name = String.lowercase_ascii (Filename.basename path) in
             let target = destdir ^ "/" ^ target_name in
             debug "windows: copying guest tools bits: '%s:%s' -> '%s'"
-              t.virtio_win path target;
+              iso_path path target;
 
             g#write target (g2#read_file source);
             List.push_front target_name ret
           )
       ) paths;
     );
-    g2#close()
   );
   !ret
 
