@@ -39,6 +39,17 @@ type virtio_win_installed = {
     eg. if [virtio_rng] is true then we installed the virtio RNG
     device, otherwise we didn't. *)
 
+type copied_files = {
+  drivers_dir : string;
+  drivers : string list;
+  qemu_ga_dir : string;
+  qemu_ga : string list;
+  blnsvr_dir : string;
+  blnsvr : string list;
+}
+(** Results of {!copy_all_from_virtio_win}, containing lists of files
+    copied to each destination directory. *)
+
 val from_path : Guestfs.guestfs -> string -> string -> t
 (** Create a new virtio-win handle.  The parameters are [g root path].
 
@@ -65,11 +76,27 @@ val set_block_driver_priority : t -> string list -> unit
     This module contains a default priority list which should
     be suitable for most use cases. *)
 
-val inject_virtio_win_drivers : t -> Registry.t -> virtio_win_installed
-(** [inject_virtio_win_drivers t reg]
+val copy_all_from_virtio_win : t -> string -> string -> copied_files
+(** [copy_all_from_virtio_win t driverdir tempdir] batch copies all
+    virtio-win files (drivers, qemu-ga, blnsvr) from the virtio-win
+    source to the guest.  When the source is an ISO file, this mounts
+    the ISO once and performs all the three copy operations.
+
+    [driverdir] is the destination for drivers and blnsvr.exe.
+    [tempdir] is the destination for qemu-ga MSI files.
+
+    Returns a {!copied_files} record with lists of files copied to
+    each destination. *)
+
+val inject_virtio_win_drivers : ?copied_files:copied_files -> t -> Registry.t -> virtio_win_installed
+(** [inject_virtio_win_drivers ?copied_files t reg]
     installs virtio drivers from the driver directory or driver
     ISO into the guest driver directory and updates the registry
     so that the [viostor.sys] driver gets loaded by Windows at boot.
+
+    If [copied_files] is provided, uses the pre-copied driver files
+    instead of copying them again.  Otherwise copies files from the
+    virtio-win source.
 
     [reg] is the system hive which is open for writes when this
     function is called.
@@ -78,17 +105,25 @@ val inject_virtio_win_drivers : t -> Registry.t -> virtio_win_installed
     are now required by the guest, either virtio devices if we managed to
     install those, or legacy devices if we didn't. *)
 
-val inject_qemu_ga : t -> bool
+val inject_qemu_ga : ?copied_files:copied_files -> t -> bool
 (** Inject MSIs (ideally just one) with QEMU Guest Agent into a Windows
     guest.  A firstboot script is also injected which should install
     the MSI(s).
 
+    If [copied_files] is provided, uses the pre-copied qemu-ga MSI files
+    instead of copying them again.  Otherwise copies files from the
+    virtio-win source.
+
     Returns [true] iff we were able to inject qemu-ga. *)
 
-val inject_blnsvr : t -> bool
+val inject_blnsvr : ?copied_files:copied_files -> t -> bool
 (** Inject the Balloon Server ([blnsvr.exe]) into a Windows guest.
 
     A firstboot script is also injected which should install
     the server by running [blnsvr -i].
+
+    If [copied_files] is provided, uses the pre-copied blnsvr files
+    instead of copying them again.  Otherwise copies files from the
+    virtio-win source.
 
     Returns [true] iff we were able to inject the Balloon Server. *)
