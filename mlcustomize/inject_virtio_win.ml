@@ -556,11 +556,11 @@ and configure_qemu_ga t tempdir_win files =
   add "# Run qemu-ga installers";
   List.iter (
     fun msi ->
-      add (sprintf {|Write-Host "Writing log to %s\%s.log"|}
-             tempdir_win msi);
+      add (sprintf {|$msi = "%s\%s"|} tempdir_win msi);
+      add {|$logfile = "$msi.log"|};
+      add {|Write-Host "Writing log to $logfile"|};
       (* [`] is an escape char for quotes *)
-      add (sprintf {|Start-Process -Wait -FilePath "%s\%s" -ArgumentList "/norestart","/qn","/l+*vx","`"%s\%s.log`""|}
-             tempdir_win msi tempdir_win msi)
+      add {|Start-Process -Wait -FilePath "$msi" -ArgumentList "/norestart","/qn","/l+*vx","`"$logfile`""|}
   ) files;
 
   Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga" !script
