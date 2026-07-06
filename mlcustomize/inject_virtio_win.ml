@@ -558,9 +558,29 @@ and configure_qemu_ga t tempdir_win files =
     fun msi ->
       add (sprintf {|$msi = "%s\%s"|} tempdir_win msi);
       add {|$logfile = "$msi.log"|};
-      add {|Write-Host "Writing log to $logfile"|};
-      (* [`] is an escape char for quotes *)
-      add {|Start-Process -Wait -FilePath "$msi" -ArgumentList "/norestart","/qn","/l+*vx","`"$logfile`""|}
+      add {|$maxAttempts = 10|};
+      add {|$retryDelay = 60|};
+      add {|for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {|};
+      add {|  Write-Host "Attempt $attempt of $maxAttempts"|};
+      add {|  Write-Host "Writing log to $logfile"|};
+      (* [`] is an escape char for double quotes.
+       * [-PassThru] ensures that [Start-Process] returns the cmd object
+       * so we can get the exit code.
+       *)
+      add {|  $proc = Start-Process -Wait -PassThru -FilePath "$msi" -ArgumentList "/norestart","/qn","/l+*vx","`"$logfile`""|};
+      add {|  $exitCode = $proc.ExitCode|};
+      add {|  Write-Host "Exit code: $exitCode"|};
+      add {|  if ($exitCode -eq 0) {|};
+      add {|    Write-Host "QEMU Guest Agent installed successfully"|};
+      add {|    break|};
+      add {|  }|};
+      add {|  if ($attempt -lt $maxAttempts) {|};
+      add {|    Write-Host "Install failed, retrying in $retryDelay seconds..."|};
+      add {|    Start-Sleep -Seconds $retryDelay|};
+      add {|  } else {|};
+      add {|    Write-Host "Install failed after $maxAttempts attempts"|};
+      add {|  }|};
+      add {|}|}
   ) files;
 
   Firstboot.add_firstboot_powershell t.g t.root "install-qemu-ga" !script
