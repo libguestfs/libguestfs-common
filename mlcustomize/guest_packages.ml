@@ -115,7 +115,9 @@ let uninstall_command packages package_management =
       apt_opts='-q -y -o Dpkg::Options::=--force-confnew'
       apt-get $apt_opts remove %s
     " quoted_args
-  | "dnf" ->    sprintf "dnf -y remove %s" quoted_args
+  | "dnf" ->
+     sprintf "dnf -y --disableplugin=subscription-manager remove %s"
+             quoted_args
   | "pisi" ->   sprintf "pisi rm %s" quoted_args
   | "pacman" -> sprintf "pacman -R %s" quoted_args
   | "urpmi" ->  sprintf "urpme %s" quoted_args
