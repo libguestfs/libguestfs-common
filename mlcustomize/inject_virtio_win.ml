@@ -71,6 +71,15 @@ type virtio_win_installed = {
   virtio_1_0 : bool;
 }
 
+type copied_files = {
+  drivers_dir : string;
+  drivers : string list;
+  qemu_ga_dir : string;
+  qemu_ga : string list;
+  blnsvr_dir : string;
+  blnsvr : string list;
+}
+
 let rec from_environment g root datadir =
   let t = get_inspection g root in
 
@@ -120,7 +129,7 @@ let viostor_modern_pciid = "VEN_1AF4&DEV_1042&REV_01"
 let vioscsi_legacy_pciid = "VEN_1AF4&DEV_1004&REV_00"
 let vioscsi_modern_pciid = "VEN_1AF4&DEV_1048&REV_01"
 
-let rec inject_virtio_win_drivers ({ g } as t) reg =
+let rec inject_virtio_win_drivers ?copied_files ({ g } as t) reg =
   (* Copy the virtio drivers to the guest. *)
   let driverdir = sprintf "%s/Drivers/VirtIO" t.i_windows_systemroot in
   g#mkdir_p driverdir;
@@ -149,7 +158,17 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
     | _ -> Virt
   in
 
-  if not (copy_drivers t driverdir) then (
+  (* Use pre-copied files or copy now *)
+  let drivers_were_copied = match copied_files with
+    | Some files ->
+        (* Validate destination matches *)
+        assert (files.drivers_dir = driverdir);
+        files.drivers <> []
+    | None ->
+        copy_drivers t driverdir
+  in
+
+  if not drivers_were_copied then (
       warning (f_"there are no virtio drivers available for this version of Windows (%d.%d %s %s %s).  virt-v2v looks for drivers in %s\n\nThe guest will be configured to use slower emulated devices.")
               t.i_major_version t.i_minor_version t.i_arch
               t.i_product_variant t.i_osinfo t.virtio_win;
@@ -239,7 +258,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
     }
   )
 
-and inject_qemu_ga ({ g; root } as t) =
+and inject_qemu_ga ?copied_files ({ g; root } as t) =
   (* Copy the qemu-ga MSI(s) to the guest. *)
   let dir, dir_win = Firstboot.firstboot_dir g root in
   let dir_win = Option.value dir_win ~default:dir in
@@ -247,17 +266,29 @@ and inject_qemu_ga ({ g; root } as t) =
   let tempdir_win = sprintf "%s\\Temp" dir_win in
   g#mkdir_p tempdir;
 
-  let msi_files = copy_qemu_ga t tempdir in
+  let msi_files = match copied_files with
+    | Some files ->
+        assert (files.qemu_ga_dir = tempdir);
+        files.qemu_ga
+    | None ->
+        copy_qemu_ga t tempdir
+  in
   if msi_files <> [] then
     configure_qemu_ga t tempdir_win msi_files;
   msi_files <> [] (* return true if we found some qemu-ga MSI files *)
 
-and inject_blnsvr ({ g; root } as t) =
+and inject_blnsvr ?copied_files ({ g; root } as t) =
   (* Copy the files to the guest. *)
   let driverdir = sprintf "%s/Drivers/VirtIO" t.i_windows_systemroot in
   g#mkdir_p driverdir;
 
-  let files = copy_blnsvr t driverdir in
+  let files = match copied_files with
+    | Some files ->
+        assert (files.blnsvr_dir = driverdir);
+        files.blnsvr
+    | None ->
+        copy_blnsvr t driverdir
+  in
   match files with
   | [] -> false (* Didn't find or install anything. *)
 
@@ -371,7 +402,7 @@ and copy_blnsvr t tempdir =
  *
  * Returns list of copied files.
  *)
-and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
+and copy_from_virtio_win ?g2_opt ({ g } as t) srcdir destdir filter missing =
   let ret = ref [] in
   if is_directory t.virtio_win then (
     debug "windows: copy_from_virtio_win: guest tools source directory %s"
@@ -401,18 +432,28 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
     debug "windows: copy_from_virtio_win: guest tools source ISO %s"
       t.virtio_win;
 
-    let g2 =
-      try
-        let g2 = open_guestfs ~identifier:"virtio_win" () in
-        g2#add_drive_opts t.virtio_win ~readonly:true;
-        g2#launch ();
-        g2
-      with Guestfs.Error msg ->
-        error (f_"%s: cannot open virtio-win ISO file: %s") t.virtio_win msg in
-    (* Note we are mounting this as root on the *second*
-     * handle, not the main handle containing the guest.
-     *)
-    g2#mount_ro "/dev/sda" "/";
+    (* Use provided handle or create/mount a new one *)
+    let g2, should_close = match g2_opt with
+      | Some g2 ->
+          (* Handle already created, launched, and mounted by caller *)
+          g2, false
+      | None ->
+          (* Create, launch, and mount a new handle *)
+          let g2 =
+            try
+              let g2 = open_guestfs ~identifier:"virtio_win" () in
+              g2#add_drive_opts t.virtio_win ~readonly:true;
+              g2#launch ();
+              g2
+            with Guestfs.Error msg ->
+              error (f_"%s: cannot open virtio-win ISO file: %s") t.virtio_win msg in
+          (* Note we are mounting this as root on the *second*
+           * handle, not the main handle containing the guest.
+           *)
+          g2#mount_ro "/dev/sda" "/";
+          g2, true
+    in
+
     let srcdir = "/" ^ srcdir in
     if not (g2#is_dir srcdir) then missing ()
     else (
@@ -431,9 +472,66 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
           )
       ) paths;
     );
-    g2#close()
+
+    (* Only close if we created it *)
+    if should_close then g2#close()
   );
   !ret
+
+(* Batch copy all files from virtio-win (drivers, qemu-ga, blnsvr) using
+ * a single ISO mount if needed. This is more efficient than calling the
+ * individual copy functions separately when virtio_win is an ISO file.
+ *)
+and copy_all_from_virtio_win t driverdir tempdir =
+  if is_directory t.virtio_win then (
+    (* Directory mode: no appliance needed, copy directly *)
+    let drivers = copy_from_virtio_win t "/" driverdir
+                    (virtio_iso_path_matches_guest_os t)
+                    (fun () ->
+                      error (f_"root directory '/' is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log.")) in
+    let qemu_ga = copy_from_virtio_win t "/" tempdir
+                    (virtio_iso_path_matches_qemu_ga t)
+                    (fun () ->
+                      error (f_"root directory '/' is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log.")) in
+    let blnsvr = copy_from_virtio_win t "/" driverdir
+                   (virtio_iso_path_matches_blnsvr t)
+                   (fun () ->
+                     error (f_"root directory '/' is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log.")) in
+    { drivers_dir = driverdir; drivers;
+      qemu_ga_dir = tempdir; qemu_ga;
+      blnsvr_dir = driverdir; blnsvr }
+  )
+  else (
+    (* ISO mode: mount once, copy all, close *)
+    let g2 =
+      try
+        let g2 = open_guestfs ~identifier:"virtio_win" () in
+        g2#add_drive_opts t.virtio_win ~readonly:true;
+        g2#launch ();
+        g2
+      with Guestfs.Error msg ->
+        error (f_"%s: cannot open virtio-win ISO file: %s") t.virtio_win msg in
+    g2#mount_ro "/dev/sda" "/";
+
+    let drivers = copy_from_virtio_win ~g2_opt:g2 t "/" driverdir
+                    (virtio_iso_path_matches_guest_os t)
+                    (fun () ->
+                      error (f_"root directory '/' is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log.")) in
+    let qemu_ga = copy_from_virtio_win ~g2_opt:g2 t "/" tempdir
+                    (virtio_iso_path_matches_qemu_ga t)
+                    (fun () ->
+                      error (f_"root directory '/' is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log.")) in
+    let blnsvr = copy_from_virtio_win ~g2_opt:g2 t "/" driverdir
+                   (virtio_iso_path_matches_blnsvr t)
+                   (fun () ->
+                     error (f_"root directory '/' is missing from the virtio-win directory or ISO.\n\nThis should not happen and may indicate that virtio-win or virt-v2v is broken in some way.  Please report this as a bug with a full debug log.")) in
+
+    g2#close ();
+
+    { drivers_dir = driverdir; drivers;
+      qemu_ga_dir = tempdir; qemu_ga;
+      blnsvr_dir = driverdir; blnsvr }
+  )
 
 (* Given a path of a file relative to the root of the directory tree
  * with virtio-win drivers, figure out if it's suitable for the
