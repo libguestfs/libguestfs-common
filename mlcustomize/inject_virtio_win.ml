@@ -43,15 +43,6 @@ type t = {
   virtio_win : string;
   (** Path to the virtio-win ISO or directory. *)
 
-  was_set : bool;
-  (** If the virtio_win path was explicitly set, for example by
-      the user setting an environment variable.
-
-      This is used to "show intention" to use virtio-win instead
-      of libosinfo.  Although this behaviour is documented, IMHO it has
-      always been a bad idea.  We should change this in future to allow
-      the user to select where they want to get drivers from. XXX *)
-
   mutable block_driver_priority : string list
   (** List of block drivers *)
 }
@@ -74,20 +65,20 @@ type virtio_win_installed = {
 let rec from_environment g root datadir =
   let t = get_inspection g root in
 
-  let virtio_win, was_set =
-    try Sys.getenv "VIRTIO_WIN", true
+  let virtio_win =
+    try Sys.getenv "VIRTIO_WIN"
     with Not_found ->
-      try Sys.getenv "VIRTIO_WIN_DIR" (* old name for VIRTIO_WIN *), true
+      try Sys.getenv "VIRTIO_WIN_DIR" (* old name for VIRTIO_WIN *)
       with Not_found ->
         let iso = datadir // "virtio-win" // "virtio-win.iso" in
         (if Sys.file_exists iso then iso
-         else datadir // "virtio-win"), false in
+         else datadir // "virtio-win") in
 
-  { t with virtio_win; was_set }
+  { t with virtio_win }
 
 and from_path g root path =
   let t = get_inspection g root in
-  { t with virtio_win = path; was_set = true }
+  { t with virtio_win = path }
 
 and get_inspection g root =
   (* Fail hard if inspection hasn't been done or it's not a Windows
@@ -108,7 +99,7 @@ and get_inspection g root =
   { g; root;
     i_arch; i_major_version; i_minor_version; i_osinfo;
     i_product_variant; i_windows_current_control_set; i_windows_systemroot;
-    virtio_win = ""; was_set = false;
+    virtio_win = "";
     block_driver_priority = ["virtio_blk"; "vrtioblk"; "viostor"] }
 
 let get_block_driver_priority t   = t.block_driver_priority
