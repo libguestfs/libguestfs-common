@@ -68,6 +68,7 @@ struct drv {
     } a;
     struct {
       char *path;           /* disk path */
+      char *query;          /* query string */
       char *protocol;       /* protocol (eg. "nbd") */
       char **server;        /* server(s) - can be NULL */
       char *username;       /* username - can be NULL */
