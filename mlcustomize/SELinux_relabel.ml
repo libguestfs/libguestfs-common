@@ -28,11 +28,11 @@ module G = Guestfs
  * [libguestfs.git/daemon/selinux.ml].
  *)
 
-let rec relabel (g : G.guestfs) =
+let rec relabel (g : G.guestfs) excludes =
   (* Is the guest using SELinux?  (Otherwise this is a no-op). *)
   if is_selinux_guest g then (
     try
-      use_setfiles g;
+      use_setfiles g excludes;
       (* That worked, so we don't need to autorelabel. *)
       g#rm_f "/.autorelabel"
     with Failure _ ->
@@ -47,7 +47,7 @@ and is_selinux_guest g =
   g#is_file ~followsymlinks:true "/usr/sbin/load_policy" &&
   g#is_file ~followsymlinks:true "/etc/selinux/config"
 
-and use_setfiles g =
+and use_setfiles g excludes =
   (* Is setfiles / SELinux relabelling functionality available? *)
   if not (g#feature_available [| "selinuxrelabel" |]) then
     failwith "no selinux relabel feature";
@@ -121,5 +121,8 @@ and use_setfiles g =
             List.sort compare |>  (* sort them for consistency *)
             Array.of_list in
 
+  (* Excludes is actually a string array, not string list. *)
+  let excludes = Array.of_list excludes in
+
   (* Relabel everything. *)
-  g#setfiles specfile mps
+  g#setfiles ~excludes specfile mps

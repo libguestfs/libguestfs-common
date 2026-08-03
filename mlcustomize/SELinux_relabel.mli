@@ -18,12 +18,19 @@
 
 (** SELinux-relabel the filesystem. *)
 
-val relabel : Guestfs.guestfs -> unit
+val relabel : Guestfs.guestfs -> string list -> unit
 (** Relabel the mounted guestfs filesystem using the current SELinux
     policy that applies to the guest.
 
     If the guest does not look like it uses SELinux, this does nothing.
 
+    The parameters are the guestfs handle and a list of directories
+    that may be excluded (by passing I<--selinux-relabel-exclude>
+    one or more times).
+
     In case relabelling is not possible (since it is an optional
     feature which requires the setfiles(8) program), instead we
-    fall back to touching [/.autorelabel]. *)
+    fall back to touching [/.autorelabel].
+
+    The excludes list only affects setfiles relabelling,
+    not [/.autorelabel] since we do not control how that works. *)
