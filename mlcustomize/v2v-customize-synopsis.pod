@@ -12,4 +12,4 @@
     [--truncate-recursive PATH] [--uninstall PKG,PKG..] [--update]
     [--upload FILE:DEST] [--write FILE:CONTENT] [--no-logfile]
     [--password-crypto md5|sha256|sha512] [--no-selinux-relabel]
-    [--selinux-relabel]
+    [--selinux-relabel] [--selinux-relabel-exclude DIR]

@@ -386,6 +386,22 @@ It cannot delete directories, only regular files.
 
 This is a compatibility option that does nothing.
 
+=item B<--selinux-relabel-exclude> DIR
+
+Exclude directories from being relabelled.
+
+This advanced option lets you list directories in the guest which
+should not be relabelled, even when SELinux relabelling is
+enabled.  Use this carefully, as any changes that are made
+inside these directories during customization will have incorrect
+SELinux labels, leading to potential failures later, so you must
+be sure that the directories do not need relabelling.
+
+If in doubt, do not use this option.
+
+You can pass the option multiple times, eg.
+I<--selinux-relabel-exclude=/foo> I<--selinux-relabel-exclude=/bar>
+
 =item B<--ssh-inject> USER[:SELECTOR]
 
 Inject an ssh key so the given C<USER> will be able to log in over

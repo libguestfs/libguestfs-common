@@ -115,6 +115,8 @@ and flags = {
       (* --no-selinux-relabel *)
   selinux_relabel_ignored : bool;
       (* --selinux-relabel *)
+  selinux_relabel_excludes : string list;
+      (* --selinux-relabel-exclude *)
 }
 
 type argspec = Getopt.keys * Getopt.spec * Getopt.doc
@@ -125,6 +127,7 @@ let rec argspec ?(v2v = false) () =
   let password_crypto = ref None in
   let no_selinux_relabel = ref false in
   let selinux_relabel_ignored = ref false in
+  let selinux_relabel_excludes = ref [] in
 
   let rec get_ops () = {
     ops = List.rev !ops;
@@ -135,6 +138,7 @@ let rec argspec ?(v2v = false) () =
     password_crypto = !password_crypto;
     no_selinux_relabel = !no_selinux_relabel;
     selinux_relabel_ignored = !selinux_relabel_ignored;
+    selinux_relabel_excludes = !selinux_relabel_excludes;
   }
   in
 
@@ -488,6 +492,15 @@ let rec argspec ?(v2v = false) () =
       s_"Compatibility option doing nothing"
     ),
     None, "This is a compatibility option that does nothing.", false;
+    (
+      [ L"selinux-relabel-exclude" ],
+      Getopt.String (
+        s_"DIR",
+        List.push_back selinux_relabel_excludes
+      ),
+      s_"Exclude directories from SELinux relabelling"
+    ),
+    Some "DIR", "Exclude directories from being relabelled.\n\nThis advanced option lets you list directories in the guest which\nshould not be relabelled, even when SELinux relabelling is\nenabled.  Use this carefully, as any changes that are made\ninside these directories during customization will have incorrect\nSELinux labels, leading to potential failures later, so you must\nbe sure that the directories do not need relabelling.\n\nIf in doubt, do not use this option.\n\nYou can pass the option multiple times, eg.\nI<--selinux-relabel-exclude=/foo> I<--selinux-relabel-exclude=/bar>", false;
   ]
   and customize_read_from_file filename =
     let forbidden_commands = [
