@@ -305,7 +305,7 @@ if not exist "%%scripts_done%%" (
   mkdir "%%scripts_done%%"
 )
 
-:: Pick the next script to run.
+rem Pick the next script to run.
 for %%%%f in ("%%scripts%%"\*.bat) do (
   echo running "%%%%f"
   pushd "%%scripts%%"
@@ -321,23 +321,23 @@ for %%%%f in ("%%scripts%%"\*.bat) do (
     echo Script failed, will retry on next boot
   )
 
-  :: Reboot the computer only if exit code indicates.
-  :: Exit code 250 means do not reboot, otherwise reboot
-  :: Reboot is necessary to free any locked files which
-  :: may prevent later scripts from running.
+  rem Reboot the computer only if exit code indicates.
+  rem Exit code 250 means do not reboot, otherwise reboot.
+  rem Reboot is necessary to free any locked files which
+  rem may prevent later scripts from running.
   if !elvl! NEQ 250 (
     shutdown /r /t 0 /y
 
-    :: Exit the script (in case shutdown returns before rebooting).
-    :: On next boot, the whole firstboot service will be called again.
-
+    rem Exit the script (in case shutdown returns before
+    rem rebooting).  On next boot, the whole firstboot
+    rem service will be called again.
     exit /b
   )
 )
 
-:: Fallthrough here if there are no scripts.
+rem Fallthrough here if there are no scripts.
 
-:: Touch a sentinel file to say we have finished.
+rem Touch a sentinel file to say we have finished.
 type nul > "%%firstboot%%\complete"
 
 echo uninstalling firstboot service
