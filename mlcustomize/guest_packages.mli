@@ -38,7 +38,14 @@ val update_command : string -> string
     script) for updating the OS packages that are currently installed in the
     guest. *)
 
-val uninstall_command : string list -> string -> string
+val uninstall_command : ?clean_requirements_on_remove:bool ->
+                        string list -> string -> string
 (** [uninstall_command packages package_management] produces a properly quoted
     shell command string suitable for execution in the guest (directly or via a
-    Firstboot script) for uninstalling the OS packages listed in [packages]. *)
+    Firstboot script) for uninstalling the OS packages listed in [packages].
+
+    If used, [?clean_requirements_on_remove] will add
+    [--setopt=clean_requirements_on_remove=(True|False)] to the
+    command.  This is used by virt-v2v to avoid removing
+    dependencies (ie behaving like "noautoremove"). It currently
+    only works for yum/dmf. *)
