@@ -360,9 +360,13 @@ let run (g : G.guestfs) root (ops : ops) =
   );
 
   if not ops.flags.no_selinux_relabel then (
-    message (f_"SELinux relabelling");
+    let at_boot = ops.flags.selinux_relabel_at_boot in
+    if not at_boot then
+      message (f_"SELinux relabelling")
+    else
+      message (f_"SELinux relabelling deferred to first boot");
     let excludes = ops.flags.selinux_relabel_excludes in
-    SELinux_relabel.relabel ~excludes g
+    SELinux_relabel.relabel ~at_boot ~excludes g
   );
 
   (* Clean up the log file:

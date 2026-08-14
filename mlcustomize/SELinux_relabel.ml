@@ -28,19 +28,26 @@ module G = Guestfs
  * [libguestfs.git/daemon/selinux.ml].
  *)
 
-let rec relabel ?(excludes = []) (g : G.guestfs) =
+let rec relabel ?(at_boot = false) ?(excludes = []) (g : G.guestfs) =
   (* Is the guest using SELinux?  (Otherwise this is a no-op). *)
   if is_selinux_guest g then (
-    try
-      use_setfiles g excludes;
-      (* That worked, so we don't need to autorelabel. *)
-      g#rm_f "/.autorelabel"
-    with Failure _ ->
-      (* This is the fallback in case something in the setfiles
-       * method didn't work.  That includes the case where a non-SELinux
-       * host is processing an SELinux guest, and other things.
-       *)
+    if not at_boot then (
+      try
+        (* Try to relabel during customization/conversion. *)
+        use_setfiles g excludes;
+        (* That worked, so we don't need to autorelabel. *)
+        g#rm_f "/.autorelabel"
+      with Failure _ ->
+        (* This is the fallback in case something in the setfiles
+         * method didn't work.  That includes the case where a non-SELinux
+         * host is processing an SELinux guest, and other things.
+         *)
+        touch_autorelabel g
+    )
+    else (
+      (* Always do it at boot. *)
       touch_autorelabel g
+    )
   )
 
 and is_selinux_guest g =

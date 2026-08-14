@@ -18,13 +18,17 @@
 
 (** SELinux-relabel the filesystem. *)
 
-val relabel : ?excludes : string list -> Guestfs.guestfs -> unit
+val relabel : ?at_boot : bool -> ?excludes : string list ->
+              Guestfs.guestfs -> unit
 (** Relabel the mounted guestfs filesystem using the current SELinux
     policy that applies to the guest.
 
     If the guest does not look like it uses SELinux, this does nothing.
 
     The required parameter is the guestfs handle.
+
+    Optional [?at_boot] (if true) defers labelling to boot
+    (I<--selinux-relabel-at-boot>).
 
     Optional [?excludes] is a list of directories that may be excluded
     (by passing I<--selinux-relabel-exclude> one or more times).
