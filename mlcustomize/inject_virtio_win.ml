@@ -77,7 +77,7 @@ type virtio_win_installed = {
   virtio_1_0 : bool;
 }
 
-let virtio_win_path = function
+let path_of_virtio_win = function
   | Virtio_win_iso iso -> iso.iso_path
   | Virtio_win_dir dir -> dir.dir_path
 
@@ -182,7 +182,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
               t.inspection.i_major_version t.inspection.i_minor_version
               t.inspection.i_arch
               t.inspection.i_product_variant t.inspection.i_osinfo
-              (virtio_win_path t.virtio_win);
+              (path_of_virtio_win t.virtio_win);
       { block_driver = IDE; net_driver = RTL8139;
         virtio_rng = false; virtio_balloon = false;
         isa_pvpanic = false; virtio_socket = false;
@@ -204,7 +204,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       | None ->
         warning (f_"there is no virtio block device driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
                 t.inspection.i_major_version t.inspection.i_minor_version
-                t.inspection.i_arch (virtio_win_path t.virtio_win);
+                t.inspection.i_arch (path_of_virtio_win t.virtio_win);
         IDE
 
       | Some driver_name ->
@@ -235,7 +235,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       if not has_netkvm then (
         warning (f_"there is no virtio network driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
                 t.inspection.i_major_version t.inspection.i_minor_version
-                t.inspection.i_arch (virtio_win_path t.virtio_win);
+                t.inspection.i_arch (path_of_virtio_win t.virtio_win);
         RTL8139
       )
       else
