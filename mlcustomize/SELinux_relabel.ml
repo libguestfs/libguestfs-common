@@ -135,4 +135,17 @@ and use_setfiles g excludes =
   g#setfiles ~excludes specfile mps
 
 and touch_autorelabel g =
-  g#touch "/.autorelabel"
+  let path = "/.autorelabel" in
+  g#touch path;
+
+  (* You cannot just touch /.autorelabel because SELinux itself
+   * will prevent this file from being read and prevent the
+   * autorelabel service from running(!)  Therefore we have to
+   * guess at the correct label here.  Ugh.
+   *
+   * This label name has been stable from at least RHEL 7 up to
+   * Fedora 45.
+   *)
+  let label = "system_u:object_r:etc_runtime_t:s0" in
+  let len = String.length label in
+  g#setxattr "security.selinux" label len path
