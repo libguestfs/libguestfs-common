@@ -361,7 +361,8 @@ let run (g : G.guestfs) root (ops : ops) =
 
   if not ops.flags.no_selinux_relabel then (
     message (f_"SELinux relabelling");
-    SELinux_relabel.relabel g ops.flags.selinux_relabel_excludes
+    let excludes = ops.flags.selinux_relabel_excludes in
+    SELinux_relabel.relabel ~excludes g
   );
 
   (* Clean up the log file:

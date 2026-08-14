@@ -28,7 +28,7 @@ module G = Guestfs
  * [libguestfs.git/daemon/selinux.ml].
  *)
 
-let rec relabel (g : G.guestfs) excludes =
+let rec relabel ?(excludes = []) (g : G.guestfs) =
   (* Is the guest using SELinux?  (Otherwise this is a no-op). *)
   if is_selinux_guest g then (
     try
