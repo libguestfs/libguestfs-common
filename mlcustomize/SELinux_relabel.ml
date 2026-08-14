@@ -40,7 +40,7 @@ let rec relabel ?(excludes = []) (g : G.guestfs) =
        * method didn't work.  That includes the case where a non-SELinux
        * host is processing an SELinux guest, and other things.
        *)
-      g#touch "/.autorelabel"
+      touch_autorelabel g
   )
 
 and is_selinux_guest g =
@@ -126,3 +126,6 @@ and use_setfiles g excludes =
 
   (* Relabel everything. *)
   g#setfiles ~excludes specfile mps
+
+and touch_autorelabel g =
+  g#touch "/.autorelabel"
