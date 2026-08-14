@@ -54,6 +54,7 @@ and inspection_t = {
 and virtio_win_t =
   | Virtio_win_iso of iso_t
   | Virtio_win_dir of dir_t
+  | No_virtio_win of string
 and iso_t = {
   iso_path : string;
   g2_lazy : Guestfs.guestfs Lazy.t;
@@ -80,11 +81,12 @@ type virtio_win_installed = {
 let path_of_virtio_win = function
   | Virtio_win_iso iso -> iso.iso_path
   | Virtio_win_dir dir -> dir.dir_path
+  | No_virtio_win path -> path
 
 let make_virtio_win path =
   if is_directory path then
     Virtio_win_dir { dir_path = path }
-  else
+  else if is_regular_file path || is_block_device path then
     let g2_lazy = lazy (
       try
         let g2 = open_guestfs ~identifier:"virtio_win" () in
@@ -96,6 +98,11 @@ let make_virtio_win path =
         error (f_"%s: cannot open virtio-win ISO file: %s") path msg
     ) in
     Virtio_win_iso { iso_path = path; g2_lazy }
+  else
+    (* No valid virtio-win ISO or directory could be found.  We
+     * save the path for info and error messages.
+     *)
+    No_virtio_win path
 
 let rec from_environment g root datadir =
   let inspection = get_inspection g root in
@@ -451,7 +458,12 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
             List.push_front target_name ret
           )
       ) paths;
-    );
+    )
+
+  | No_virtio_win path ->
+     debug "windows: copy_from_virtio_win: no virtio-win ISO or \
+            directory found at %s, skipping driver installation"
+       path
   );
   !ret
 
