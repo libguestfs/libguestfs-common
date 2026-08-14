@@ -332,6 +332,36 @@ It cannot delete directories, only regular files.
 
 This is a compatibility option that does nothing.
 
+=item B<--selinux-relabel-at-boot>
+
+This advanced option lets you defer
+SELinux relabelling until the first time the guest boots
+after conversion.
+
+The advantage of doing this is that conversion is quicker
+and uses less memory.
+
+The disadvantages are:
+
+=over 4
+
+=item *
+
+The guest will take I<much> longer to boot up and become ready
+the first time it boots.
+
+=item *
+
+The guest will reboot at least once.
+
+=item *
+
+SELinux relabelling problems cannot be detected during conversion.
+
+=back
+
+If in doubt, do not use this option.
+
 =item B<--selinux-relabel-exclude> DIR
 
 Exclude directories from being relabelled.
