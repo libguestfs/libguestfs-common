@@ -26,18 +26,14 @@ open Regedit
 
 let re_blnsvr = PCRE.compile ~caseless:true "\\bblnsvr\\.exe$"
 
+let default_block_driver_priority = ["virtio_blk"; "vrtioblk"; "viostor"]
+
 type t = {
   g : Guestfs.guestfs; (** guestfs handle *)
 
   root : string; (** root of inspection *)
 
-  i_arch : string;
-  i_major_version : int;
-  i_minor_version : int;
-  i_osinfo : string;
-  i_product_variant : string;
-  i_windows_current_control_set : string;
-  i_windows_systemroot : string;
+  inspection : inspection_t;
   (** Inspection data needed by this module. *)
 
   virtio_win : virtio_win_t;
@@ -46,7 +42,18 @@ type t = {
   mutable block_driver_priority : string list
   (** List of block drivers *)
 }
-and virtio_win_t = Virtio_win_iso of iso_t | Virtio_win_dir of dir_t
+and inspection_t = {
+  i_arch : string;
+  i_major_version : int;
+  i_minor_version : int;
+  i_osinfo : string;
+  i_product_variant : string;
+  i_windows_current_control_set : string;
+  i_windows_systemroot : string;
+}
+and virtio_win_t =
+  | Virtio_win_iso of iso_t
+  | Virtio_win_dir of dir_t
 and iso_t = {
   iso_path : string;
   g2_lazy : Guestfs.guestfs Lazy.t;
@@ -91,7 +98,7 @@ let make_virtio_win path =
     Virtio_win_iso { iso_path = path; g2_lazy }
 
 let rec from_environment g root datadir =
-  let t = get_inspection g root in
+  let inspection = get_inspection g root in
 
   let path =
     try Sys.getenv "VIRTIO_WIN"
@@ -102,11 +109,15 @@ let rec from_environment g root datadir =
         (if Sys.file_exists iso then iso
          else datadir // "virtio-win") in
 
-  { t with virtio_win = make_virtio_win path }
+  { g; root; inspection;
+    virtio_win = make_virtio_win path;
+    block_driver_priority = default_block_driver_priority }
 
 and from_path g root path =
-  let t = get_inspection g root in
-  { t with virtio_win = make_virtio_win path }
+  let inspection = get_inspection g root in
+  { g; root; inspection;
+    virtio_win = make_virtio_win path;
+    block_driver_priority = default_block_driver_priority }
 
 and get_inspection g root =
   (* Fail hard if inspection hasn't been done or it's not a Windows
@@ -124,11 +135,8 @@ and get_inspection g root =
     g#inspect_get_windows_current_control_set root in
   let i_windows_systemroot = g#inspect_get_windows_systemroot root in
 
-  { g; root;
-    i_arch; i_major_version; i_minor_version; i_osinfo;
-    i_product_variant; i_windows_current_control_set; i_windows_systemroot;
-    virtio_win = Virtio_win_dir { dir_path = "" };
-    block_driver_priority = ["virtio_blk"; "vrtioblk"; "viostor"] }
+  { i_arch; i_major_version; i_minor_version; i_osinfo;
+    i_product_variant; i_windows_current_control_set; i_windows_systemroot }
 
 let get_block_driver_priority t   = t.block_driver_priority
 let set_block_driver_priority t v = t.block_driver_priority <- v
@@ -141,19 +149,20 @@ let vioscsi_modern_pciid = "VEN_1AF4&DEV_1048&REV_01"
 
 let rec inject_virtio_win_drivers ({ g } as t) reg =
   (* Copy the virtio drivers to the guest. *)
-  let driverdir = sprintf "%s/Drivers/VirtIO" t.i_windows_systemroot in
+  let driverdir =
+    sprintf "%s/Drivers/VirtIO" t.inspection.i_windows_systemroot in
   g#mkdir_p driverdir;
 
   (* XXX Inelegant hack copied originally from [Convert_windows].
    * We should be able to work this into the code properly later.
    *)
   let (machine : machine_type) =
-    match t.i_arch with
+    match t.inspection.i_arch with
     | ("i386"|"x86_64") ->
-       (match Libosinfo_utils.get_os_by_short_id t.i_osinfo with
+       (match Libosinfo_utils.get_os_by_short_id t.inspection.i_osinfo with
         | Some os ->
            let devices = os#get_devices () in
-           debug "libosinfo devices for OS \"%s\":\n%s" t.i_osinfo
+           debug "libosinfo devices for OS \"%s\":\n%s" t.inspection.i_osinfo
              (Libosinfo_utils.string_of_osinfo_device_list devices);
            (if Libosinfo_utils.os_devices_supports_q35 devices then Q35
             else I440FX)
@@ -163,15 +172,17 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
             * Luckily this coincides almost exactly with the release of NT 6.
             *)
            debug "osinfo lookup failed. falling back to heuristic for windows machine type";
-           (if t.i_major_version < 6 then I440FX else Q35)
+           (if t.inspection.i_major_version < 6 then I440FX else Q35)
        )
     | _ -> Virt
   in
 
   if not (copy_drivers t driverdir) then (
       warning (f_"there are no virtio drivers available for this version of Windows (%d.%d %s %s %s).  virt-v2v looks for drivers in %s\n\nThe guest will be configured to use slower emulated devices.")
-              t.i_major_version t.i_minor_version t.i_arch
-              t.i_product_variant t.i_osinfo (virtio_win_path t.virtio_win);
+              t.inspection.i_major_version t.inspection.i_minor_version
+              t.inspection.i_arch
+              t.inspection.i_product_variant t.inspection.i_osinfo
+              (virtio_win_path t.virtio_win);
       { block_driver = IDE; net_driver = RTL8139;
         virtio_rng = false; virtio_balloon = false;
         isa_pvpanic = false; virtio_socket = false;
@@ -192,8 +203,8 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
       match viostor_driver with
       | None ->
         warning (f_"there is no virtio block device driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
-                t.i_major_version t.i_minor_version
-                t.i_arch (virtio_win_path t.virtio_win);
+                t.inspection.i_major_version t.inspection.i_minor_version
+                t.inspection.i_arch (virtio_win_path t.virtio_win);
         IDE
 
       | Some driver_name ->
@@ -202,7 +213,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
          *)
         let source = driverdir // (driver_name ^ ".sys") in
         let target = sprintf "%s/system32/drivers/%s.sys"
-                             t.i_windows_systemroot driver_name in
+                             t.inspection.i_windows_systemroot driver_name in
         let target = g#case_sensitive_path target in
         let installed_block_type, legacy_pciid, modern_pciid =
           match driver_name with
@@ -223,8 +234,8 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
         ) filenames in
       if not has_netkvm then (
         warning (f_"there is no virtio network driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
-                t.i_major_version t.i_minor_version
-                t.i_arch (virtio_win_path t.virtio_win);
+                t.inspection.i_major_version t.inspection.i_minor_version
+                t.inspection.i_arch (virtio_win_path t.virtio_win);
         RTL8139
       )
       else
@@ -273,7 +284,8 @@ and inject_qemu_ga ({ g; root } as t) =
 
 and inject_blnsvr ({ g; root } as t) =
   (* Copy the files to the guest. *)
-  let driverdir = sprintf "%s/Drivers/VirtIO" t.i_windows_systemroot in
+  let driverdir =
+    sprintf "%s/Drivers/VirtIO" t.inspection.i_windows_systemroot in
   g#mkdir_p driverdir;
 
   let files = copy_blnsvr t driverdir in
@@ -298,7 +310,7 @@ and add_guestor_to_registry t ((g, root) as reg) drv_name drv_pciid =
 
   let drv_sys_path = sprintf "system32\\drivers\\%s.sys" drv_name in
   let common_regedits = [
-      [ t.i_windows_current_control_set; "Services"; drv_name ],
+      [ t.inspection.i_windows_current_control_set; "Services"; drv_name ],
       [ "Type", REG_DWORD 0x1_l;
         "Start", REG_DWORD 0x0_l;
         "Group", REG_SZ "SCSI miniport";
@@ -314,7 +326,7 @@ and cdb_regedits t drv_name drv_pciid =
    * hive may be modified here.
    *)
   [
-    [ t.i_windows_current_control_set;
+    [ t.inspection.i_windows_current_control_set;
       "Control"; "CriticalDeviceDatabase";
       "PCI#" ^ drv_pciid ],
     [ "Service", REG_SZ drv_name;
@@ -327,7 +339,7 @@ and ddb_regedits inspect drv_name drv_pciid =
    *)
 
   let winarch =
-    match inspect.i_arch with
+    match inspect.inspection.i_arch with
     | "i386" -> "x86" | "x86_64" -> "amd64"
     | _ -> assert false in
 
@@ -449,7 +461,7 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
  *)
 and virtio_iso_path_matches_guest_os t path =
   let { i_arch = arch;
-        i_osinfo = osinfo } = t in
+        i_osinfo = osinfo } = t.inspection in
   try
     (* Lowercased path, since the ISO may contain upper or lowercase path
      * elements.
@@ -534,7 +546,7 @@ and virtio_iso_path_matches_qemu_ga t path =
    * elements.
    *)
   let lc_name = String.lowercase_ascii (Filename.basename path) in
-  match t.i_arch, lc_name with
+  match t.inspection.i_arch, lc_name with
   | ("i386", "qemu-ga-x86.msi")
   | ("i386", "qemu-ga-i386.msi")
   | ("i386", "rhev-qga.msi")
