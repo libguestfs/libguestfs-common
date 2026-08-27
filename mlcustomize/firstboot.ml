@@ -314,11 +314,11 @@ for %%%%f in ("%%scripts%%"\*.bat) do (
   echo .... exit code !elvl!
   popd
 
-  if !elvl! NEQ 249 (
-    echo Script succeeded, moving to scripts-done
-    move "%%%%f" "%%scripts_done%%"
+  if !elvl! EQU 249 (
+    echo Script finished with exit code 249, retrying on next boot
   ) else (
-    echo Script failed, will retry on next boot
+    echo Script finished with exit code !elvl!, moving to scripts-done
+    move "%%%%f" "%%scripts_done%%"
   )
 
   rem Reboot the computer only if exit code indicates.
