@@ -279,7 +279,7 @@ let detect_kernels (g : G.guestfs) root bootloader apps =
             * a debug kernel.
             *)
            let is_debug =
-             String.ends_with "-debug" app.G.app2_name ||
+             String.find app.G.app2_name "-debug" >= 0 ||
              String.ends_with "-dbg" app.G.app2_name in
 
            Some {
