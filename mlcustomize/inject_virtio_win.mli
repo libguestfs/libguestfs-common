@@ -21,7 +21,15 @@
 type t (** Handle *)
 
 type block_type = Virtio_blk | Virtio_SCSI | Emulated
+(* XXX Instead of "Emulated" we should return whether the guest has
+ * SATA or NVMe drivers installed.  (NVMe for newer Windows).
+ * This would allow virt-v2v to make a more intelligent selection
+ * of what emulated device to use, improving performance.  At the
+ * moment it just assumes SATA everywhere.
+ *)
+
 and net_type = Virtio_net | E1000 | RTL8139
+
 and machine_type = I440FX | Q35 | Virt
 
 type virtio_win_installed = {
