@@ -20,7 +20,7 @@
 
 type t (** Handle *)
 
-type block_type = Virtio_blk | Virtio_SCSI | IDE
+type block_type = Virtio_blk | Virtio_SCSI | Emulated
 and net_type = Virtio_net | E1000 | RTL8139
 and machine_type = I440FX | Q35 | Virt
 

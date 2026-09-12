@@ -63,7 +63,7 @@ and dir_t = {
   dir_path : string;
 }
 
-type block_type = Virtio_blk | Virtio_SCSI | IDE
+type block_type = Virtio_blk | Virtio_SCSI | Emulated
 and net_type = Virtio_net | E1000 | RTL8139
 and machine_type = I440FX | Q35 | Virt
 
@@ -190,7 +190,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
               t.inspection.i_arch
               t.inspection.i_product_variant t.inspection.i_osinfo
               (path_of_virtio_win t.virtio_win);
-      { block_driver = IDE; net_driver = RTL8139;
+      { block_driver = Emulated; net_driver = RTL8139;
         virtio_rng = false; virtio_balloon = false;
         isa_pvpanic = false; virtio_socket = false;
         machine; virtio_1_0 = true; }
@@ -212,7 +212,7 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
         warning (f_"there is no virtio block device driver for this version of Windows (%d.%d %s).  virt-v2v looks for this driver in %s\n\nThe guest will be configured to use a slower emulated device.")
                 t.inspection.i_major_version t.inspection.i_minor_version
                 t.inspection.i_arch (path_of_virtio_win t.virtio_win);
-        IDE
+        Emulated
 
       | Some driver_name ->
         (* Block driver needs tweaks to allow booting;
