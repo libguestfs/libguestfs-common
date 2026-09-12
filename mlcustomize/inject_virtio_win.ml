@@ -228,8 +228,8 @@ let rec inject_virtio_win_drivers ({ g } as t) reg =
           | _ -> Virtio_blk, viostor_legacy_pciid, viostor_modern_pciid
         in
         g#cp source target;
-        add_guestor_to_registry t reg driver_name legacy_pciid;
-        add_guestor_to_registry t reg driver_name modern_pciid;
+        add_storage_driver_to_registry t reg driver_name legacy_pciid;
+        add_storage_driver_to_registry t reg driver_name modern_pciid;
         installed_block_type in
 
     (* Can we install the virtio-net driver? *)
@@ -306,7 +306,7 @@ and inject_blnsvr ({ g; root } as t) =
      configure_blnsvr t driverdir blnsvr;
      true
 
-and add_guestor_to_registry t ((g, root) as reg) drv_name drv_pciid =
+and add_storage_driver_to_registry t ((g, root) as reg) drv_name drv_pciid =
   let ddb_node = g#hivex_node_get_child root "DriverDatabase" in
 
   let regedits =
