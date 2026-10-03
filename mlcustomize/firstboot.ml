@@ -315,9 +315,26 @@ for %%%%f in ("%%scripts%%"\*.bat) do (
   popd
 
   if !elvl! EQU 249 (
-    echo Script finished with exit code 249, retrying on next boot
+    rem Exit code 249 asks for a retry on the next boot.  Bound the
+    rem retries: a script that fails the same way every time would
+    rem otherwise reboot the guest forever and block every later
+    rem script.  The attempt count lives next to the script.
+    set /a tries=1
+    if exist "%%%%f.tries" (
+      set /p tries=<"%%%%f.tries"
+      set /a tries+=1
+    )
+    if !tries! GEQ 3 (
+      echo Script finished with exit code 249 on attempt !tries!, giving up and moving to scripts-done
+      del "%%%%f.tries"
+      move "%%%%f" "%%scripts_done%%"
+    ) else (
+      echo Script finished with exit code 249, retrying on next boot ^(attempt !tries!^)
+      (echo !tries!)>"%%%%f.tries"
+    )
   ) else (
     echo Script finished with exit code !elvl!, moving to scripts-done
+    if exist "%%%%f.tries" del "%%%%f.tries"
     move "%%%%f" "%%scripts_done%%"
   )
 
