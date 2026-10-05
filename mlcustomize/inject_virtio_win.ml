@@ -154,11 +154,17 @@ let viostor_modern_pciid = "VEN_1AF4&DEV_1042&REV_01"
 let vioscsi_legacy_pciid = "VEN_1AF4&DEV_1004&REV_00"
 let vioscsi_modern_pciid = "VEN_1AF4&DEV_1048&REV_01"
 
+let make_virtio_driverdir (g : Guestfs.guestfs) systemroot =
+  let driverdir =
+    sprintf "%s/Drivers" systemroot
+    |> g#case_sensitive_path
+    |> sprintf "%s/VirtIO" in
+  g#mkdir_p driverdir;
+  driverdir
+
 let rec inject_virtio_win_drivers ({ g } as t) reg =
   (* Copy the virtio drivers to the guest. *)
-  let driverdir =
-    sprintf "%s/Drivers/VirtIO" t.inspection.i_windows_systemroot in
-  g#mkdir_p driverdir;
+  let driverdir = make_virtio_driverdir g t.inspection.i_windows_systemroot in
 
   (* XXX Inelegant hack copied originally from [Convert_windows].
    * We should be able to work this into the code properly later.
@@ -291,9 +297,7 @@ and inject_qemu_ga ({ g; root } as t) =
 
 and inject_blnsvr ({ g; root } as t) =
   (* Copy the files to the guest. *)
-  let driverdir =
-    sprintf "%s/Drivers/VirtIO" t.inspection.i_windows_systemroot in
-  g#mkdir_p driverdir;
+  let driverdir = make_virtio_driverdir g t.inspection.i_windows_systemroot in
 
   let files = copy_blnsvr t driverdir in
   match files with
