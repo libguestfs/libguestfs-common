@@ -259,10 +259,18 @@ object (self)
                     die 'no $default->{image}' # should never happen
                   }
                " |] in
-          let res = g#command cmd in
-          (match res with
-           | "NODEFAULTSECTION" -> None
-           | _ -> Some res)
+          (* perl-Bootloader on recent SUSE guests (e.g. SLES 15 SP5)
+           * can fail here when run in the appliance; fall back to
+           * enumerating kernels below instead of aborting. *)
+          (try
+             let res = g#command cmd in
+             (match res with
+              | "NODEFAULTSECTION" -> None
+              | _ -> Some res)
+           with G.Error msg ->
+             warning (f_"could not get the default kernel using Perl \
+                         Bootloader::Tools, ignoring: %s") msg;
+             None)
         | MethodNone ->
           None in
       match res with
@@ -298,7 +306,10 @@ object (self)
             my $newdefault = $section->{name};
             SetGlobals(default, \"$newdefault\");
           " vmlinuz |] in
-      ignore (g#command cmd)
+      (try ignore (g#command cmd)
+       with G.Error msg ->
+         warning (f_"could not set the default kernel using Perl \
+                     Bootloader::Tools, ignoring: %s") msg)
     | MethodNone -> ()
 
   method private grub2_update_console ~remove () =
