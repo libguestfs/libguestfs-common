@@ -428,12 +428,31 @@ let detect_bootloader (g : G.guestfs) root i_firmware =
    * https://github.com/libguestfs/libguestfs-common/pull/6
    *)
   let grub_config =
-    match typ with
-    | Grub1 -> grub_config
-    | Grub2 ->
-       let grub2_efi_rex = PCRE.compile "^/boot/efi/EFI/.*/grub.cfg$" in
-       let grub2_real = "/boot/grub2/grub.cfg" in
+    let grub2_efi_rex = PCRE.compile "^/boot/efi/EFI/.*/grub.cfg$" in
+    let grub2_real = "/boot/grub2/grub.cfg" in
 
+    let has_efi_grub =
+      try
+        if g#is_dir "/boot/efi" then
+          let files = g#find "/boot/efi" in
+          Array.exists (
+            fun file ->
+              let full_path = "/boot/efi/" ^ file in
+              PCRE.matches grub2_efi_rex full_path
+          ) files
+        else
+          false
+      with _ -> false in
+
+    let has_grub2 = g#exists grub2_real || has_efi_grub in
+
+    match typ with
+    | Grub1 ->
+       if has_grub2 then
+         error "detected both grub1 and grub2 bootloader configuration"
+       else
+         grub_config
+    | Grub2 ->
        if PCRE.matches grub2_efi_rex grub_config &&
           (* does it look like the "wrapper"? *)
           g#grep "configfile \\$prefix/grub\\.cfg" grub_config <> [||] &&
