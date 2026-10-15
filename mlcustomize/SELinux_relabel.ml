@@ -1,5 +1,5 @@
 (* virt-customize
- * Copyright (C) 2016-2025 Red Hat Inc.
+ * Copyright (C) 2016-2026 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,24 @@ module G = Guestfs
  * [libguestfs.git/daemon/selinux.ml].
  *)
 
-let rec relabel ?(at_boot = false) ?(excludes = []) (g : G.guestfs) =
+(* Updated to FHS 3.0 (June 3, 2015)
+ * https://refspecs.linuxfoundation.org/FHS_3.0/fhs/index.html
+ * "/" is handled explicitly in is_FHS function.
+ *)
+let fhs_paths = [
+  "/bin"; "/boot"; "/dev"; "/etc"; "/home"; "/lib"; "/lib32"; "/lib64";
+  "/media"; "/mnt"; "/opt"; "/root"; "/run"; "/sbin"; "/srv"; "/tmp";
+  "/usr"; "/var";
+]
+
+let rec relabel ?(at_boot = false) ?(excludes = []) ?(fhs = false)
+          (g : G.guestfs) =
   (* Is the guest using SELinux?  (Otherwise this is a no-op). *)
   if is_selinux_guest g then (
     if not at_boot then (
       try
         (* Try to relabel during customization/conversion. *)
-        use_setfiles g excludes;
+        use_setfiles g excludes fhs;
         (* That worked, so we don't need to autorelabel. *)
         g#rm_f "/.autorelabel"
       with Failure _ ->
@@ -54,7 +65,7 @@ and is_selinux_guest g =
   g#is_file ~followsymlinks:true "/usr/sbin/load_policy" &&
   g#is_file ~followsymlinks:true "/etc/selinux/config"
 
-and use_setfiles g excludes =
+and use_setfiles g excludes fhs =
   (* Is setfiles / SELinux relabelling functionality available? *)
   if not (g#feature_available [| "selinuxrelabel" |]) then
     failwith "no selinux relabel feature";
@@ -120,19 +131,30 @@ and use_setfiles g excludes =
     g#copy_attributes ~all:true old_specfile specfile
   );
 
-  (* Get the list of mountpoints, since setfiles does not cross
-   * filesystems (RHEL-108174).
+  (* Get the sorted list of mountpoints, since setfiles does
+   * not cross filesystems (RHEL-108174).
    *)
-  let mps = g#mountpoints () |>
-            List.map snd |>       (* the list of directories *)
-            List.sort compare |>  (* sort them for consistency *)
-            Array.of_list in
-
-  (* Excludes is actually a string array, not string list. *)
-  let excludes = Array.of_list excludes in
+  let mps = g#mountpoints () |> List.map snd |> List.sort compare in
+  let mps = if fhs then List.filter (is_FHS g) mps else mps in
 
   (* Relabel everything. *)
+  let excludes = Array.of_list excludes in
+  let mps = Array.of_list mps in
   g#setfiles ~excludes specfile mps
+
+(* The dir parameter comes from g#mountpoints which only returns
+ * directory names that exist in their canonical form.  Thus we do
+ * not need to call realpath or check for directories here.
+ *)
+and is_FHS g dir =
+  let r =
+    dir = "/" ||
+    List.exists ((=) dir) fhs_paths ||
+    List.exists (fun p ->
+        let prefix = sprintf "%s/" p in
+        String.starts_with ~prefix dir) fhs_paths in
+  debug "is_FHS: %S => %s" dir (if r then "accepted" else "rejected");
+  r
 
 and touch_autorelabel g =
   let path = "/.autorelabel" in

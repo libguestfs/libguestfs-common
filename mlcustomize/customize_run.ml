@@ -1,5 +1,5 @@
 (* virt-customize
- * Copyright (C) 2014 Red Hat Inc.
+ * Copyright (C) 2014-2026 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -361,12 +361,14 @@ let run (g : G.guestfs) root (ops : ops) =
 
   if not ops.flags.no_selinux_relabel then (
     let at_boot = ops.flags.selinux_relabel_at_boot in
-    if not at_boot then
-      message (f_"SELinux relabelling")
-    else
-      message (f_"SELinux relabelling deferred to first boot");
     let excludes = ops.flags.selinux_relabel_excludes in
-    SELinux_relabel.relabel ~at_boot ~excludes g
+    let fhs = ops.flags.selinux_relabel_fhs in
+    (match at_boot, fhs with
+     | false, false -> message (f_"SELinux relabelling")
+     | false, true -> message (f_"SELinux relabelling only FHS")
+     | true, _ -> message (f_"SELinux relabelling deferred to first boot")
+    );
+    SELinux_relabel.relabel ~at_boot ~excludes ~fhs g
   );
 
   (* Clean up the log file:
