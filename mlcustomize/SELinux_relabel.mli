@@ -28,10 +28,10 @@ val relabel : ?at_boot : bool -> ?excludes : string list ->
     The required parameter is the guestfs handle.
 
     Optional [?at_boot] (if true) defers labelling to boot
-    (I<--selinux-relabel-at-boot>).
+    ([--selinux-relabel-at-boot]).
 
     Optional [?excludes] is a list of directories that may be excluded
-    (by passing I<--selinux-relabel-exclude> one or more times).
+    (by passing [--selinux-relabel-exclude] one or more times).
 
     In case relabelling is not possible (since it is an optional
     feature which requires the setfiles(8) program), instead we
