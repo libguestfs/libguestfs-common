@@ -119,6 +119,8 @@ and flags = {
       (* --selinux-relabel-at-boot *)
   selinux_relabel_excludes : string list;
       (* --selinux-relabel-exclude *)
+  selinux_relabel_fhs : bool;
+      (* --selinux-relabel-fhs *)
 }
 
 type argspec = Getopt.keys * Getopt.spec * Getopt.doc
@@ -131,6 +133,7 @@ let rec argspec ?(v2v = false) () =
   let selinux_relabel_ignored = ref false in
   let selinux_relabel_at_boot = ref false in
   let selinux_relabel_excludes = ref [] in
+  let selinux_relabel_fhs = ref false in
 
   let rec get_ops () = {
     ops = List.rev !ops;
@@ -143,6 +146,7 @@ let rec argspec ?(v2v = false) () =
     selinux_relabel_ignored = !selinux_relabel_ignored;
     selinux_relabel_at_boot = !selinux_relabel_at_boot;
     selinux_relabel_excludes = !selinux_relabel_excludes;
+    selinux_relabel_fhs = !selinux_relabel_fhs;
   }
   in
 
@@ -511,6 +515,12 @@ let rec argspec ?(v2v = false) () =
       s_"Exclude directories from SELinux relabelling"
     ),
     Some "DIR", "Exclude directories from being relabelled.\n\nThis advanced option lets you list directories in the guest which\nshould not be relabelled, even when SELinux relabelling is\nenabled.  Use this carefully, as any changes that are made\ninside these directories during customization will have incorrect\nSELinux labels, leading to potential failures later, so you must\nbe sure that the directories do not need relabelling.\n\nB<If in doubt, do not use this option>.\n\nYou can pass the option multiple times, eg.\nI<--selinux-relabel-exclude=/foo> I<--selinux-relabel-exclude=/bar>", false;
+    (
+      [ L"selinux-relabel-fhs" ],
+      Getopt.Set selinux_relabel_fhs,
+      s_"Only relabel FHS directories"
+    ),
+    None, "This option lets you only relabel in\nLinux Filesystem Hierarchy Standard (FHS) mountpoints\n(L<https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard>).\n\nSpecifically this means that a separate mountpoint which\ndoes not match a directory from the FHS is ignored.  For\nexample if F</etc/fstab> contained:\n\n /dev/sdb /database xfs defaults 0 0\n\nthen F</database> would not be relabelled since that directory\nis not one listed in the FHS.\n\nThis option only works at the fstab mountpoint level.  If\nF</> was the only mountpoint then everything underneath would\nstill be relabelled even if not an FHS directory.\n\nUse this option with care, since incorrectly labelled files\neven outside the FHS may cause the guest to fail to boot.\n\nThe default is to relabel the whole filesystem.", false;
   ]
   and customize_read_from_file filename =
     let forbidden_commands = [

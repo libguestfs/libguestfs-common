@@ -111,6 +111,8 @@ and flags = {
       (* --selinux-relabel-at-boot *)
   selinux_relabel_excludes : string list;
       (* --selinux-relabel-exclude *)
+  selinux_relabel_fhs : bool;
+      (* --selinux-relabel-fhs *)
 }
 
 type argspec = Getopt.keys * Getopt.spec * Getopt.doc
