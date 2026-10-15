@@ -1,5 +1,5 @@
 (* virt-customize
- * Copyright (C) 2016 Red Hat Inc.
+ * Copyright (C) 2016-2026 Red Hat Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 (** SELinux-relabel the filesystem. *)
 
-val relabel : ?at_boot : bool -> ?excludes : string list ->
+val relabel : ?at_boot : bool -> ?excludes : string list -> ?fhs : bool ->
               Guestfs.guestfs -> unit
 (** Relabel the mounted guestfs filesystem using the current SELinux
     policy that applies to the guest.
@@ -32,6 +32,9 @@ val relabel : ?at_boot : bool -> ?excludes : string list ->
 
     Optional [?excludes] is a list of directories that may be excluded
     (by passing [--selinux-relabel-exclude] one or more times).
+
+    Optional [?fhs] (if true) relabels only in FHS mountpoints
+    ([--selinux-relabel-fhs]).
 
     In case relabelling is not possible (since it is an optional
     feature which requires the setfiles(8) program), instead we
