@@ -379,7 +379,7 @@ echo uninstalling firstboot service
             "Start", REG_DWORD 0x2_l;
             "ErrorControl", REG_DWORD 0x1_l;
             "ImagePath",
-            REG_SZ (sprintf "%s\\%s -s firstboot" firstboot_dir_win srvany);
+            REG_SZ (sprintf "\"%s\\%s\" -s firstboot" firstboot_dir_win srvany);
             "DisplayName", REG_SZ "Virt tools firstboot service";
             "ObjectName", REG_SZ "LocalSystem" ];
 
