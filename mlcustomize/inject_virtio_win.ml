@@ -631,3 +631,6 @@ and configure_blnsvr t driverdir blnsvr =
                      echo Installing %s\n\
                      \"%s\\%s\" -i\n" blnsvr driverdir blnsvr in
   Firstboot.add_firstboot_script t.g t.root "install-blnsvr" cmd
+
+and get_driverdir t =
+  make_virtio_driverdir t.g t.inspection.i_windows_systemroot
