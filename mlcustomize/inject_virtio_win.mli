@@ -100,3 +100,9 @@ val inject_blnsvr : t -> bool
     the server by running [blnsvr -i].
 
     Returns [true] iff we were able to inject the Balloon Server. *)
+
+val get_driverdir : t -> string
+(** Return the libguestfs path where drivers get installed, usually
+    something like ["/Windows/system32/Drivers/VirtIO"].
+    [guestfs_case_sensitive_path] has been called already and the
+    directory exists. *)
