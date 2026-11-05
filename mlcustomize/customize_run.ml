@@ -396,7 +396,7 @@ let run (g : G.guestfs) root (ops : ops) =
    * XXX fuser returns an error if it doesn't kill any processes, which
    * is not very useful.
    *)
-  (try ignore (g#debug "sh" [| "fuser"; "-k"; "/sysroot" |])
+  (try ignore (g#debug "sh" [| "fuser"; "-k"; "/sysroot"; "||"; "true" |])
    with exn ->
      if verbose () then
        warning (f_"%s (ignored)") (Printexc.to_string exn)
