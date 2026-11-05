@@ -82,16 +82,20 @@ object
       (* Get the default kernel from grub if it's set. *)
       let default =
         let expr = sprintf "/files%s/default" grub_config in
-        try
-          let idx = g#aug_get expr in
-          let idx = int_of_string idx in
-          (* Grub indices are zero-based, augeas is 1-based. *)
-          let expr =
-            sprintf "/files%s/title[%d]/kernel" grub_config (idx+1) in
-          Some expr
-        with G.Error msg
-             when String.find msg "aug_get: no matching node" >= 0 ->
-          None in
+        let nodes = g#aug_match expr in
+        if Array.length nodes = 0 then
+          None
+        else
+          try
+            let idx = g#aug_get expr in
+            let idx = int_of_string idx in
+            (* Grub indices are zero-based, augeas is 1-based. *)
+            let expr =
+              sprintf "/files%s/title[%d]/kernel" grub_config (idx+1) in
+            Some expr
+          with G.Error msg
+               when String.find msg "aug_get: no matching node" >= 0 ->
+            None in
 
       (* If a default kernel was set, put it at the beginning of the paths
        * list.  If not set, assume the first kernel always boots (?)
