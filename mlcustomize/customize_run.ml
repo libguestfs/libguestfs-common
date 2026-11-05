@@ -83,7 +83,10 @@ let run (g : G.guestfs) root (ops : ops) =
   let () =
     let etc_machine_id = "/etc/machine-id" in
     let statbuf =
-      try Some (g#lstatns etc_machine_id) with G.Error _ -> None in
+      if g#exists etc_machine_id then
+        try Some (g#lstatns etc_machine_id) with G.Error _ -> None
+      else
+        None in
     (match statbuf with
      | Some { G.st_size = 0L; G.st_mode = mode }
           when (Int64.logand mode 0o170000_L) = 0o100000_L ->
