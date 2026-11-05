@@ -42,7 +42,9 @@ let run (g : G.guestfs) root (ops : ops) =
 
   (* Function to cat the log file, for debugging and error messages. *)
   let debug_logfile () =
-    try g#download logfile "/dev/stderr"
+    try
+      if g#exists logfile then
+        g#download logfile "/dev/stderr"
     with exn ->
       warning (f_"log file %s: %s (ignored)") logfile (Printexc.to_string exn)
   in
