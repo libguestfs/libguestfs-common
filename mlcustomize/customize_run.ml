@@ -392,13 +392,5 @@ let run (g : G.guestfs) root (ops : ops) =
 
   (* Kill any daemons (eg. started by newly installed packages) using
    * the sysroot.
-   * XXX How to make this nicer?
-   * XXX fuser returns an error if it doesn't kill any processes, which
-   * is not very useful.
    *)
-  (try ignore (g#debug "sh" [| "fuser"; "-k"; "/sysroot"; "||"; "true" |])
-   with exn ->
-     if verbose () then
-       warning (f_"%s (ignored)") (Printexc.to_string exn)
-  );
-  g#ping_daemon () (* tiny delay after kill *)
+  g#kill_procs ()
