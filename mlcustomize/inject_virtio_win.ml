@@ -454,7 +454,7 @@ and copy_from_virtio_win ({ g } as t) srcdir destdir filter missing =
       Array.iter (
         fun path ->
           let source = srcdir ^ "/" ^ path in
-          if g2#is_file source ~followsymlinks:false && filter path then (
+          if filter path && g2#is_file source ~followsymlinks:false then (
             let target_name = String.lowercase_ascii (Filename.basename path) in
             let target = destdir ^ "/" ^ target_name in
             debug "windows: copying guest tools bits: '%s:%s' -> '%s'"
